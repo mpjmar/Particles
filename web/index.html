@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Particles – Electron Simulation</title>
+	<meta name="description"
+		content="A futuristic particle simulation: red electrons chase blue photons across a quantum grid." />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link
+		href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=Inter:wght@300;400;600&display=swap"
+		rel="stylesheet" />
+	<link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+	<!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+	<aside class="sidebar">
+		<div class="logo">
+			<span class="logo-icon">⚛</span>
+			<h1>PARTICLES</h1>
+			<p class="logo-sub">Electron Simulation</p>
+		</div>
+
+		<!-- Scoreboard -->
+		<section class="panel" id="scoreboard">
+			<h2 class="panel-title">Survivors</h2>
+			<div class="score-row runner">
+				<span class="score-dot"></span>
+				<span class="score-label">Photons</span>
+				<span class="score-count" id="cnt-runners">0</span>
+			</div>
+			<div class="score-row chaser">
+				<span class="score-dot"></span>
+				<span class="score-label">Electrons</span>
+				<span class="score-count" id="cnt-chasers">0</span>
+			</div>
+			<div class="score-row turn-row">
+				<span class="score-label">Turn</span>
+				<span class="score-count neutral" id="cnt-turn">0</span>
+			</div>
+		</section>
+
+		<!-- Board size -->
+		<section class="panel">
+			<h2 class="panel-title">Board Size</h2>
+			<div class="control-row">
+				<label for="inp-rows">Rows</label>
+				<input type="number" id="inp-rows" min="10" max="100" value="20" />
+			</div>
+			<div class="control-row">
+				<label for="inp-cols">Cols</label>
+				<input type="number" id="inp-cols" min="10" max="100" value="30" />
+			</div>
+		</section>
+
+		<!-- Speed -->
+		<section class="panel">
+			<h2 class="panel-title">Simulation Speed</h2>
+			<div class="control-row">
+				<label for="inp-speed">Speed</label>
+				<input type="number" id="inp-speed" min="1" max="20" value="2" />
+				<span class="val-badge">x</span>
+			</div>
+		</section>
+
+		<!-- Elements -->
+		<section class="panel">
+			<h2 class="panel-title">Elements Count</h2>
+			<div class="control-row">
+				<label for="inp-run">Photons</label>
+				<input type="number" id="inp-run" min="1" max="100" value="10" />
+			</div>
+			<div class="control-row">
+				<label for="inp-cha">Electrons</label>
+				<input type="number" id="inp-cha" min="1" max="100" value="10" />
+			</div>
+			<div class="control-row">
+				<label for="inp-obs">Obstacles</label>
+				<input type="number" id="inp-obs" min="0" max="200" value="15" />
+			</div>
+			<div class="control-row">
+				<label for="inp-hea">Healers</label>
+				<input type="number" id="inp-hea" min="0" max="50" value="2" />
+			</div>
+			<div class="control-row">
+				<label for="inp-spe">Speeders</label>
+				<input type="number" id="inp-spe" min="0" max="50" value="2" />
+			</div>
+		</section>
+
+		<!-- Controls -->
+		<section class="controls">
+			<button id="btn-start">▶ Start</button>
+			<button id="btn-pause" disabled>⏸ Pause</button>
+			<button id="btn-reset" class="reset">↺ Reset</button>
+		</section>
+
+		<!-- Legend -->
+		<section class="legend">
+			<div class="leg-row"><span class="leg-dot runner"></span><span>Photon</span></div>
+			<div class="leg-row"><span class="leg-dot chaser"></span><span>Electron</span></div>
+			<div class="leg-row"><span class="leg-dot healer"></span><span>Healer</span></div>
+			<div class="leg-row"><span class="leg-dot speeder"></span><span>Speeder</span></div>
+			<div class="leg-row"><span class="leg-dot obstacle"></span><span>Obstacle</span></div>
+		</section>
+	</aside>
+
+	<!-- ── Canvas area ───────────────────────────────────────────────────── -->
+	<main class="board-wrap">
+		<canvas id="board-canvas"></canvas>
+
+		<!-- Winner overlay -->
+		<div id="overlay" class="overlay hidden">
+			<div class="overlay-card">
+				<div class="overlay-icon">⚛</div>
+				<p class="overlay-result" id="overlay-msg">Game Over</p>
+				<button id="btn-overlay-reset">↺ Play Again</button>
+			</div>
+		</div>
+	</main>
+
+	<script src="main.js" defer></script>
+
+</body>
+
+</html>

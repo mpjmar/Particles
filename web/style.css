@@ -1,0 +1,535 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Particles – Futuristic / Space Theme
+   ───────────────────────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=Inter:wght@300;400;600&display=swap');
+
+/* CSS tokens */
+:root {
+	--bg: #050d1a;
+	--surface: #0c1829;
+	--border: #1e3a5f;
+	--accent: #0ea5e9;
+	--runner: #0760f1;
+	--chaser: #ef4444;
+	--healer: #22c55e;
+	--speeder: #f755df;
+	--obstacle: #2d3547;
+	--text: #e2e8f0;
+	--text-muted: #64748b;
+	--glow-blue: 0 0 16px rgba(59, 130, 246, 0.55);
+	--glow-red: 0 0 16px rgba(239, 68, 68, 0.55);
+	--glow-accent: 0 0 24px rgba(14, 165, 233, 0.4);
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html,
+body {
+	height: 100%;
+	font-family: 'Inter', sans-serif;
+	background: var(--bg);
+	color: var(--text);
+	overflow: hidden;
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────────────── */
+body {
+	display: flex;
+	height: 100vh;
+	flex-direction: row;
+}
+
+/* ── Sidebar ────────────────────────────────────────────────────────────────── */
+.sidebar {
+	width: 240px;
+	min-width: 240px;
+	background: var(--surface);
+	border-right: 1px solid var(--border);
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 18px 14px;
+	overflow-y: auto;
+	scrollbar-width: thin;
+	scrollbar-color: var(--border) transparent;
+	z-index: 5;
+}
+
+/* Logo */
+.logo {
+	text-align: center;
+	padding-bottom: 10px;
+	border-bottom: 1px solid var(--border);
+	flex-shrink: 0;
+}
+
+.logo-icon {
+	font-size: 2rem;
+	display: block;
+	margin-bottom: 4px;
+}
+
+.logo h1 {
+	font-family: 'Orbitron', monospace;
+	font-size: 1.25rem;
+	font-weight: 900;
+	letter-spacing: 0.2em;
+	background: linear-gradient(135deg, var(--accent), var(--runner) 50%, var(--healer));
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
+
+.logo-sub {
+	font-size: 0.62rem;
+	letter-spacing: 0.12em;
+	color: var(--text-muted);
+	margin-top: 2px;
+	text-transform: uppercase;
+}
+
+/* Panels */
+.panel {
+	border-radius: 8px;
+	padding: 10px 12px;
+	flex-shrink: 0;
+	position: relative;
+	overflow: hidden;
+
+	/* Default glow effect */
+	border: 1px solid var(--accent);
+	box-shadow: 0 0 20px rgba(14, 165, 233, 0.6), inset 0 0 10px rgba(14, 165, 233, 0.2);
+	background: rgba(14, 165, 233, 0.08);
+}
+
+.panel-title {
+	font-family: 'Orbitron', monospace;
+	font-size: 0.62rem;
+	letter-spacing: 0.18em;
+	color: var(--accent);
+	text-transform: uppercase;
+	margin-bottom: 8px;
+}
+
+/* Scoreboard */
+.score-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 0;
+}
+
+.score-dot {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	flex-shrink: 0;
+}
+
+.score-row.runner .score-dot {
+	background: var(--runner);
+	box-shadow: var(--glow-blue);
+}
+
+.score-row.chaser .score-dot {
+	background: var(--chaser);
+	box-shadow: var(--glow-red);
+}
+
+.score-label {
+	flex: 1;
+	font-size: 0.78rem;
+	color: var(--text-muted);
+	line-height: 1.2;
+}
+
+.score-count {
+	font-family: 'Orbitron', monospace;
+	font-size: 1.1rem;
+	font-weight: 600;
+	min-width: 32px;
+	text-align: right;
+}
+
+.score-row.runner .score-count {
+	color: var(--runner);
+}
+
+.score-row.chaser .score-count {
+	color: var(--chaser);
+}
+
+.score-count.neutral {
+	color: var(--accent);
+	font-size: 0.9rem;
+}
+
+.turn-row {
+	margin-top: 4px;
+	border-top: 1px solid var(--border);
+	padding-top: 6px;
+}
+
+/* Sliders */
+.control-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	/* Incremented gap to separate elements */
+	margin-bottom: 6px;
+}
+
+.control-row label {
+	width: 70px;
+	/* Increased width to prevent clipping text */
+	font-size: 0.72rem;
+	color: var(--text-muted);
+	flex-shrink: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Numeric Inputs */
+.control-row input[type=number] {
+	flex: 1;
+	width: 0;
+	background: rgba(14, 165, 233, 0.05);
+	border: 1px solid var(--border);
+	border-radius: 4px;
+	color: var(--accent);
+	font-family: 'Orbitron', monospace;
+	font-size: 0.75rem;
+	padding: 2px 6px;
+	outline: none;
+	transition: all 0.2s;
+}
+
+.control-row input[type=number]:focus {
+	border-color: var(--accent);
+	box-shadow: 0 0 8px rgba(14, 165, 233, 0.3);
+	background: rgba(14, 165, 233, 0.1);
+}
+
+.val-badge {
+	font-family: 'Orbitron', monospace;
+	font-size: 0.68rem;
+	color: var(--text-muted);
+	min-width: 28px;
+	text-align: right;
+}
+
+/* Select */
+select {
+	width: 100%;
+	background: var(--bg);
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	color: var(--text);
+	padding: 6px 10px;
+	font-size: 0.8rem;
+	cursor: pointer;
+	outline: none;
+}
+
+select:focus {
+	border-color: var(--accent);
+}
+
+/* Control buttons */
+.controls {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	flex-shrink: 0;
+}
+
+.controls button {
+	padding: 9px;
+	border: 1px solid #374151;
+	/* Dark grey like reset */
+	border-radius: 8px;
+	background: transparent;
+	/* Transparent like reset */
+	color: var(--text-muted);
+	/* Muted text like reset */
+	font-family: 'Orbitron', monospace;
+	font-size: 0.72rem;
+	letter-spacing: 0.1em;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.controls button:hover:not(:disabled) {
+	background: rgba(14, 165, 233, 0.08);
+	/* Slight blue tint */
+	border-color: var(--accent);
+	/* Accent border on hover */
+	color: var(--accent);
+	/* Accent text on hover */
+	box-shadow: 0 0 15px rgba(14, 165, 233, 0.4), inset 0 0 8px rgba(14, 165, 233, 0.1);
+	/* Glow on hover */
+}
+
+.controls button:disabled {
+	opacity: 0.35;
+	cursor: not-allowed;
+}
+
+/* Legend */
+.legend {
+	margin-top: auto;
+	padding-top: 8px;
+	border-top: 1px solid var(--border);
+	flex-shrink: 0;
+}
+
+.leg-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 3px 0;
+	font-size: 0.7rem;
+	color: var(--text-muted);
+}
+
+.leg-dot {
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+	flex-shrink: 0;
+}
+
+.leg-dot.runner {
+	background: var(--runner);
+}
+
+.leg-dot.chaser {
+	background: var(--chaser);
+}
+
+.leg-dot.healer {
+	background: var(--healer);
+	clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+.leg-dot.speeder {
+	background: var(--speeder);
+	clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+
+.leg-dot.obstacle {
+	background: var(--obstacle);
+	border-radius: 2px;
+}
+
+/* ── Board area ─────────────────────────────────────────────────────────────── */
+.board-wrap {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+	background:
+		radial-gradient(ellipse at 20% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 60%),
+		radial-gradient(ellipse at 80% 70%, rgba(239, 68, 68, 0.08) 0%, transparent 60%),
+		/* Dot pattern */
+		radial-gradient(var(--border) 1px, transparent 1px),
+		var(--bg);
+	background-size: 100% 100%, 100% 100%, 20px 20px, 100% 100%;
+	/* Sizing for the dot pattern */
+	overflow: hidden;
+	padding: 80px;
+	/* Increased padding so it doesn't touch the edges */
+}
+
+canvas {
+	display: block;
+	border-radius: 8px;
+	border: 1px solid var(--accent);
+	/* Same blue border as panels */
+	box-shadow: 0 0 20px rgba(14, 165, 233, 0.6), 0 0 60px rgba(14, 165, 233, 0.1);
+	/* Glow effect */
+	max-width: calc(100% - 40px);
+	max-height: calc(100% - 40px);
+	object-fit: contain;
+}
+
+/* ── Winner overlay ─────────────────────────────────────────────────────────── */
+.overlay {
+	position: absolute;
+	inset: 0;
+	background: rgba(5, 13, 26, 0.82);
+	backdrop-filter: blur(6px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 10;
+	transition: opacity 0.3s;
+}
+
+.overlay.hidden {
+	display: none;
+}
+
+.overlay-card {
+	text-align: center;
+	padding: 40px 60px;
+	background: var(--surface);
+	border: 1px solid var(--accent);
+	border-radius: 16px;
+	box-shadow: 0 0 60px rgba(14, 165, 233, 0.25);
+	max-width: 90%;
+}
+
+.overlay-icon {
+	font-size: 3rem;
+	margin-bottom: 12px;
+}
+
+.overlay-result {
+	font-family: 'Orbitron', monospace;
+	font-size: 1.5rem;
+	font-weight: 900;
+	color: var(--text);
+	margin-bottom: 24px;
+	letter-spacing: 0.05em;
+}
+
+.overlay-card button {
+	padding: 12px 30px;
+	background: var(--accent);
+	border: none;
+	border-radius: 8px;
+	color: var(--bg);
+	font-family: 'Orbitron', monospace;
+	font-size: 0.85rem;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	cursor: pointer;
+	transition: box-shadow 0.2s;
+}
+
+.overlay-card button:hover {
+	box-shadow: var(--glow-accent);
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+	width: 5px;
+	height: 5px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--border);
+	border-radius: 4px;
+}
+
+/* ── Responsive Mobile overrides ───────────────────────────────────────────── */
+@media (max-width: 768px) {
+	body {
+		flex-direction: column;
+	}
+
+	.sidebar {
+		width: 100%;
+		min-width: 100%;
+		height: 35vh;
+		min-height: 250px;
+		border-right: none;
+		border-bottom: 1px solid var(--border);
+		padding: 12px;
+		gap: 8px;
+	}
+
+	.logo {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 12px;
+		padding-bottom: 6px;
+	}
+
+	.logo-icon {
+		margin-bottom: 0;
+		font-size: 1.5rem;
+	}
+
+	.logo h1 {
+		font-size: 1.1rem;
+	}
+
+	.logo-sub {
+		display: none;
+	}
+
+	/* hide subtitle to save space */
+
+	/* Make panels display in a grid/flex layout to save vertical space */
+	.panel {
+		padding: 8px 10px;
+	}
+
+	.score-row {
+		padding: 2px 0;
+	}
+
+	.controls {
+		flex-direction: row;
+		flex-wrap: wrap;
+		justify-content: center;
+	}
+
+	.controls button {
+		flex: 1;
+		min-width: 30%;
+	}
+
+	/* Make legend flow horizontally */
+	.legend {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+		justify-content: center;
+	}
+
+	.leg-row {
+		padding: 0;
+	}
+
+	.board-wrap {
+		height: 65vh;
+		padding: 10px;
+	}
+}
+
+@media (max-width: 480px) {
+
+	/* Ultra small screens */
+	.sidebar {
+		height: 40vh;
+	}
+
+	.board-wrap {
+		height: 60vh;
+	}
+
+	.overlay-card {
+		padding: 24px 20px;
+	}
+
+	.overlay-result {
+		font-size: 1.2rem;
+	}
+}

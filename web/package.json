@@ -1,0 +1,13 @@
+{
+	"name": "particles-web",
+	"version": "1.0.0",
+	"description": "Particles – Electron Simulation (GitHub Pages)",
+	"scripts": {
+		"build": "tsc",
+		"watch": "tsc --watch",
+		"dev": "npx serve ."
+	},
+	"devDependencies": {
+		"typescript": "^5.4.0"
+	}
+}
