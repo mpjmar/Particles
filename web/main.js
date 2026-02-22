@@ -527,18 +527,13 @@ class Renderer {
 		if (!this.board) return;
 		const ctx = this.ctx;
 		const cs = this.cellSize;
-		ctx.fillStyle = Colors.bg;
-		ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-		ctx.fillStyle = colorWithAlpha(Colors.text || "#ffffff", 0.04);
-		for (let r = 0; r < this.board.rows; r++) {
-			for (let c = 0; c < this.board.cols; c++) {
-				const cx = c * cs + cs / 2;
-				const cy = r * cs + cs / 2;
-				ctx.beginPath();
-				ctx.arc(cx, cy, 0.8, 0, Math.PI * 2);
-				ctx.fill();
-			}
-		}
+
+		// 1. Transparent clean for backdrop-filter
+		ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+		// 2. Dynamic Quantum Grid (Background layer)
+		this.drawQuantumGrid(ctx, cs);
+
 		const ease = this.turnProgress;
 		for (const e of this.elements) {
 			let targetX = e.col * cs + cs / 2;
@@ -554,42 +549,143 @@ class Renderer {
 			}
 			const cx = startX + (targetX - startX) * ease;
 			const cy = startY + (targetY - startY) * ease;
-			const r = Math.max(2, cs * 0.28);
+			const r = Math.max(2, cs * 0.32);
+
+			// Obstacles (Static Cyber-blocks)
 			if (e instanceof Obstacle) {
-				const s = cs * 0.9;
-				const rad = 4;
-				const x = cx - s / 2;
-				const y = cy - s / 2;
-				ctx.fillStyle = Colors.obstacle;
-				ctx.beginPath();
-				ctx.moveTo(x + rad, y);
-				ctx.lineTo(x + s - rad, y);
-				ctx.quadraticCurveTo(x + s, y, x + s, y + rad);
-				ctx.lineTo(x + s, y + s - rad);
-				ctx.quadraticCurveTo(x + s, y + s, x + s - rad, y + s);
-				ctx.lineTo(x + rad, y + s);
-				ctx.quadraticCurveTo(x, y + s, x, y + s - rad);
-				ctx.lineTo(x, y + rad);
-				ctx.quadraticCurveTo(x, y, x + rad, y);
-				ctx.closePath();
-				ctx.fill();
+				this.drawCyberObstacle(ctx, cx, cy, cs);
 				continue;
 			}
+
+			// Movement Trails
 			if (startX !== targetX || startY !== targetY) {
 				ctx.beginPath();
 				ctx.moveTo(startX, startY);
 				ctx.lineTo(cx, cy);
-				ctx.strokeStyle = colorWithAlpha(e instanceof Runner ? Colors.runner : Colors.chaser, 0.2);
-				ctx.lineWidth = r * 0.8;
+				ctx.strokeStyle = colorWithAlpha(e instanceof Runner ? Colors.runner : Colors.chaser, 0.15);
+				ctx.lineWidth = r * 1.2;
 				ctx.lineCap = "round";
 				ctx.stroke();
 			}
-			if (e instanceof Runner) { this.drawElectron(ctx, cx, cy, r, Colors.runner); continue; }
-			if (e instanceof Chaser) { this.drawElectron(ctx, cx, cy, r, Colors.chaser); continue; }
-			if (e instanceof Healer) { this.drawHealer(ctx, cx, cy, r * 0.75, Colors.healer); continue; }
-			if (e instanceof Speeder) { this.drawSpeeder(ctx, cx, cy, r * 0.75, Colors.speeder); }
+
+			if (e instanceof Runner) { this.drawElectron(ctx, cx, cy, r, Colors.runner, true); continue; }
+			if (e instanceof Chaser) { this.drawElectron(ctx, cx, cy, r, Colors.chaser, false); continue; }
+			if (e instanceof Healer) { this.drawCyberIcon(ctx, cx, cy, r * 0.8, Colors.healer, 'plus'); continue; }
+			if (e instanceof Speeder) { this.drawCyberIcon(ctx, cx, cy, r * 0.8, Colors.speeder, 'bolt'); }
 		}
 		this.drawParticles(ctx);
+	}
+
+	drawQuantumGrid(ctx, cs) {
+		const time = performance.now() / 2000;
+		ctx.save();
+		ctx.strokeStyle = colorWithAlpha(Colors.accent, 0.08);
+		ctx.lineWidth = 0.5;
+
+		// Subtle scanning line
+		const scanY = (performance.now() / 10) % this.canvas.height;
+		const grad = ctx.createLinearGradient(0, scanY - 50, 0, scanY + 50);
+		grad.addColorStop(0, "rgba(56, 189, 248, 0)");
+		grad.addColorStop(0.5, "rgba(56, 189, 248, 0.1)");
+		grad.addColorStop(1, "rgba(56, 189, 248, 0)");
+		ctx.fillStyle = grad;
+		ctx.fillRect(0, scanY - 50, this.canvas.width, 100);
+
+		// Grid dots
+		ctx.fillStyle = colorWithAlpha(Colors.text, 0.05);
+		for (let r = 0; r < this.board.rows; r++) {
+			for (let c = 0; c < this.board.cols; c++) {
+				if ((r + c + Math.floor(time)) % 7 === 0) {
+					ctx.beginPath();
+					ctx.arc(c * cs + cs / 2, r * cs + cs / 2, 0.7, 0, Math.PI * 2);
+					ctx.fill();
+				}
+			}
+		}
+		ctx.restore();
+	}
+
+	drawCyberObstacle(ctx, cx, cy, cs) {
+		const s = cs * 0.85;
+		const x = cx - s / 2;
+		const y = cy - s / 2;
+		ctx.fillStyle = "#1e293b";
+		ctx.strokeStyle = "#334155";
+		ctx.lineWidth = 1;
+
+		// Beveled rect
+		ctx.beginPath();
+		ctx.roundRect(x, y, s, s, 4);
+		ctx.fill();
+		ctx.stroke();
+
+		// Inner detail
+		ctx.strokeStyle = "rgba(255,255,255,0.05)";
+		ctx.beginPath();
+		ctx.moveTo(x + 4, y + 4);
+		ctx.lineTo(x + s - 4, y + s - 4);
+		ctx.stroke();
+	}
+
+	drawCyberIcon(ctx, cx, cy, r, color, type) {
+		ctx.save();
+		ctx.shadowBlur = 10;
+		ctx.shadowColor = color;
+		ctx.fillStyle = color;
+
+		if (type === 'plus') {
+			ctx.beginPath();
+			ctx.rect(cx - r, cy - r / 4, r * 2, r / 2);
+			ctx.rect(cx - r / 4, cy - r, r / 2, r * 2);
+			ctx.fill();
+		} else {
+			ctx.beginPath();
+			ctx.moveTo(cx, cy - r);
+			ctx.lineTo(cx + r, cy + r);
+			ctx.lineTo(cx - r, cy + r);
+			ctx.closePath();
+			ctx.fill();
+		}
+
+		// White glow core
+		ctx.fillStyle = "white";
+		ctx.beginPath();
+		ctx.arc(cx, cy, r * 0.3, 0, Math.PI * 2);
+		ctx.fill();
+
+		ctx.restore();
+	}
+
+	drawElectron(ctx, cx, cy, r, color, isPhoton) {
+		const time = performance.now();
+		const pulse = Math.sin(time / 250) * 0.2 + 0.8;
+
+		ctx.save();
+
+		// Glow layers
+		ctx.shadowBlur = 15 * pulse;
+		ctx.shadowColor = color;
+
+		// Main body
+		const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * pulse);
+		grad.addColorStop(0, "white");
+		grad.addColorStop(0.3, color);
+		grad.addColorStop(1, "transparent");
+
+		ctx.fillStyle = grad;
+		ctx.beginPath();
+		ctx.arc(cx, cy, r * 1.5, 0, Math.PI * 2);
+		ctx.fill();
+
+		// Orbital ring
+		ctx.rotate(time / (isPhoton ? 500 : -700));
+		ctx.strokeStyle = colorWithAlpha(color, 0.4);
+		ctx.lineWidth = 1;
+		ctx.beginPath();
+		ctx.ellipse(cx, cy, r * 1.8, r * 0.6, time / 1000, 0, Math.PI * 2);
+		ctx.stroke();
+
+		ctx.restore();
 	}
 	spawnFlash(x, y, color, intensityMultiplier = 1) {
 		for (let i = 0; i < 5 * intensityMultiplier; i++) {
