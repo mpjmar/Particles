@@ -1194,17 +1194,24 @@ class Renderer {
 
 	// ── OBSTACLE — dark void tile, barely visible ─────────────────────────────
 	_drawObstacle(ctx, cx, cy, cs) {
-		const s = cs * 0.78;
+		const s = cs * 0.85;
 		const x = cx - s / 2;
 		const y = cy - s / 2;
 		ctx.save();
-		ctx.fillStyle = "rgba(8,12,28,0.9)";
-		ctx.strokeStyle = "rgba(40,60,120,0.35)";
-		ctx.lineWidth = 0.8;
+		
+		// Subtle outer glow
+		ctx.shadowBlur = cs * 0.3;
+		ctx.shadowColor = "rgba(0, 229, 255, 0.25)"; 
+
+		ctx.fillStyle = "rgba(10, 18, 42, 0.95)"; 
+		ctx.strokeStyle = "rgba(0, 229, 255, 0.35)"; 
+		ctx.lineWidth = 1.0;
+		
 		ctx.beginPath();
-		ctx.roundRect(x, y, s, s, 3);
+		ctx.roundRect(x, y, s, s, 4);
 		ctx.fill();
 		ctx.stroke();
+		
 		ctx.restore();
 	}
 

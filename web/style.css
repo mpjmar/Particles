@@ -18,7 +18,7 @@
 	--accent-secondary: #3b82f6;
 	/* Deep Blue */
 	--runner: #00d8ff;
-	--chaser: #f87171;
+	--chaser: #ff780a;
 	--healer: #4ade80;
 	--speeder: #ff2a2a;
 	--obstacle: #1e293b;
@@ -32,7 +32,7 @@
 	--shadow-glow: 0 8px 32px 0 rgba(0, 0, 0, 0.85);
 	--glow-primary: 0 0 15px rgba(0, 229, 255, 0.6);
 	--glow-runner: 0 0 12px rgba(0, 216, 255, 0.5);
-	--glow-chaser: 0 0 12px rgba(248, 113, 113, 0.3);
+	--glow-chaser: 0 0 12px rgba(255, 120, 10, 0.5);
 
 	/* Transitions */
 	--transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
@@ -513,19 +513,40 @@ canvas {
 }
 
 .leg-dot {
-	width: 6px;
-	height: 6px;
+	width: 10px;
+	height: 10px;
 	border-radius: 50%;
+	flex-shrink: 0;
+}
+
+.leg-dot.runner {
+	background: #ffffff;
+	box-shadow: 0 0 8px #00d8ff, 0 0 15px rgba(0, 216, 255, 0.6);
+}
+
+.leg-dot.chaser {
+	background: #ffffff;
+	box-shadow: 0 0 8px #ff780a, 0 0 15px rgba(255, 120, 10, 0.6);
 }
 
 .leg-dot.healer {
+	background: #4ade80;
 	clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
 	border-radius: 0;
+	box-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
 }
 
 .leg-dot.speeder {
+	background: #ff2a2a;
 	clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
 	border-radius: 0;
+	box-shadow: 0 0 8px rgba(255, 42, 42, 0.5);
+}
+
+.leg-dot.obstacle {
+	background: #0a122a;
+	border: 1px solid rgba(0, 229, 255, 0.4);
+	border-radius: 2px;
 }
 
 /* ── Responsive ─────────────────────────────────────────────────────────────── */
