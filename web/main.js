@@ -56,7 +56,7 @@ class DeformationWave {
 		this.maxRadius = maxRadius;
 		this.r = 0;
 		this.life = 1.0;
-		this.speed = 14; 
+		this.speed = 14;
 		this.amplitude = 12; // Back to a bit more localized kick
 	}
 	update(dt) {
@@ -110,7 +110,7 @@ class Runner extends Role {
 		let minEnergyDist = 8;
 		this._enemyTarget = null;
 		this._energyTarget = null;
-		
+
 		for (const e of elements) {
 			if (e instanceof Chaser) {
 				const dist = Position.calcDistance(this.pos, e.pos);
@@ -153,7 +153,7 @@ class Chaser extends Role {
 		let minEnergyDist = 8;
 		this._enemyTarget = null;
 		this._energyTarget = null;
-		
+
 		for (const e of elements) {
 			if (e instanceof Runner) {
 				const dist = Position.calcDistance(this.pos, e.pos);
@@ -237,7 +237,7 @@ class Board {
 					name === "Runner" ? 2 :
 						name === "Chaser" ? 3 :
 							name === "Healer" ? 4 :
-								name === "Speeder" ? 5 : 
+								name === "Speeder" ? 5 :
 									name === "EnergyNode" ? 6 : 0;
 			this.setCell(e.row, e.col, value);
 		}
@@ -455,7 +455,7 @@ class EnergyManager {
 				if (e.life <= 0) elements.splice(i, 1);
 			}
 		}
-		
+
 		// 2. Consume nodes if a Runner or Chaser is nearby
 		i = elements.length;
 		while (i--) {
@@ -463,12 +463,12 @@ class EnergyManager {
 			if (e instanceof EnergyNode) {
 				for (const actor of elements) {
 					// We say distance <= 1 allows consumption 
-					if ((actor instanceof Runner || actor instanceof Chaser) && 
+					if ((actor instanceof Runner || actor instanceof Chaser) &&
 						(actor.row === e.row && actor.col === e.col || MovUtils.isNeighbour(e.pos, actor.pos))) {
-						
+
 						if (actor instanceof Runner) actor.sumLife(generateRandom(15, 30));
 						if (actor instanceof Chaser) actor.speedTurns += 3;
-						
+
 						// trigger a visual explosion for node consumption
 						EventManager.emit({ type: "fight", row: e.row, col: e.col, color: Colors.energy });
 						elements.splice(i, 1);
@@ -477,7 +477,7 @@ class EnergyManager {
 				}
 			}
 		}
-		
+
 		// 3. Random spawn
 		const nodes = elements.filter(e => e instanceof EnergyNode);
 		// Increased limit to 4 and doubled probability (from 4% to 8% per turn)
@@ -643,7 +643,7 @@ class Renderer {
 		// Only update the noise every N frames for performance
 		this._noiseFrame = 0;
 		this.isMousePresent = false;
-		
+
 		this.deformationWaves = [];
 		// Screen shake state
 		this.shake = 0;
@@ -734,7 +734,7 @@ class Renderer {
 	drawFrame(timeMs, ms) {
 		const dt = Math.min(32, timeMs - this.lastTime);
 		this.lastTime = timeMs;
-		
+
 		this._updateDeformationWaves(dt);
 
 		// Calculate turn evolution strictly from time delta, decouple from ticks logic
@@ -755,7 +755,7 @@ class Renderer {
 		const cs = this.cellSize;
 
 		ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-		
+
 		ctx.save();
 
 		// Layer 1 – deep space background with bokeh
@@ -780,12 +780,12 @@ class Renderer {
 			}
 			let cx = startX + (targetX - startX) * ease;
 			let cy = startY + (targetY - startY) * ease;
-			
+
 			// Apply Lattice Deformation
 			const def = this.getDeformationAt(cx, cy);
 			cx += def.dx;
 			cy += def.dy;
-			
+
 			// Apply soft magnetic pull from cursor
 			if (this.isMousePresent) {
 				const dx = this.mouseX - cx;
@@ -794,12 +794,12 @@ class Renderer {
 				const pullRange = cs * 6; // Magnetic field radius
 				if (dist < pullRange && dist > 1) {
 					// Pull strength curve: stronger near middle, zero at exact center and edge
-					const pull = Math.pow(1 - dist / pullRange, 1.5) * cs * 0.35; 
+					const pull = Math.pow(1 - dist / pullRange, 1.5) * cs * 0.35;
 					cx += (dx / dist) * pull;
 					cy += (dy / dist) * pull;
 				}
 			}
-			
+
 			const r = Math.max(3, cs * 0.34);
 
 			if (e instanceof Obstacle) { this._drawObstacle(ctx, cx, cy, cs); continue; }
@@ -837,7 +837,7 @@ class Renderer {
 			// Smaller, more localized ripple width
 			const rippleWidth = 120;
 			const delta = dist - wave.r;
-			
+
 			if (Math.abs(delta) < rippleWidth) {
 				// Sine wave shaped deformation
 				const strength = (1 - Math.abs(delta) / rippleWidth) * wave.life;
@@ -864,16 +864,16 @@ class Renderer {
 		const data = img.data;
 
 		const palette = [
-			[ 0,  1,   5],  // near-black base
-			[ 0,  5,  18],  // very dark navy
-			[ 0, 18,  48],  // deep midnight blue
-			[ 0, 38,  72],  // dark teal highlight (barely visible)
+			[0, 1, 5],  // near-black base
+			[0, 5, 18],  // very dark navy
+			[0, 18, 48],  // deep midnight blue
+			[0, 38, 72],  // dark teal highlight (barely visible)
 		];
 		const lerpPal = (v) => {
 			const idx = Math.min(palette.length - 2, Math.floor(v * (palette.length - 1)));
 			const t = v * (palette.length - 1) - idx;
 			const a = palette[idx], b = palette[idx + 1];
-			return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t];
+			return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 		};
 
 		const p = this._perlin;
@@ -888,7 +888,7 @@ class Renderer {
 				const val = Math.pow(p.fbm(nx + warpX * 0.6, ny + warpY * 0.6, 3), 1.6);
 				const [r, g, b] = lerpPal(Math.min(1, val));
 				const i = (y * nw + x) * 4;
-				data[i] = r; data[i+1] = g; data[i+2] = b; data[i+3] = 255;
+				data[i] = r; data[i + 1] = g; data[i + 2] = b; data[i + 3] = 255;
 			}
 		}
 		nc.putImageData(img, 0, 0);
@@ -904,7 +904,7 @@ class Renderer {
 		if (this._noiseCanvas.width > 0) {
 			ctx.drawImage(this._noiseCanvas, 0, 0, W, H);
 		}
-		
+
 		// Overlay subtle bokeh for extra depth on top of the noise
 		if (this._starField) {
 			const now = performance.now() / 1000;
@@ -929,14 +929,14 @@ class Renderer {
 	_drawNetworkConnections(ctx, cs) {
 		ctx.save();
 		ctx.globalCompositeOperation = "lighter";
-		
+
 		const runners = this.elements.filter(e => e instanceof Runner);
 		const chasers = this.elements.filter(e => e instanceof Chaser);
 		const ease = this._easeInOut(this.turnProgress);
 
 		// Draw Cyan Network for Runners
 		this._drawNetLinks(ctx, runners, cs, ease, cs * 3.5, "0, 229, 255");
-		
+
 		// Draw Red/Orange Neuronal Network for Chasers
 		this._drawNetLinks(ctx, chasers, cs, ease, cs * 4.5, "255, 100, 40");
 
@@ -970,7 +970,7 @@ class Renderer {
 			for (let j = i + 1; j < arr.length; j++) {
 				const p1 = arr[i];
 				const p2 = arr[j];
-				
+
 				let x1 = (p1.prevPos ? p1.prevPos.col : p1.col) * cs + cs / 2;
 				let y1 = (p1.prevPos ? p1.prevPos.row : p1.row) * cs + cs / 2;
 				x1 += ((p1.col * cs + cs / 2) - x1) * ease;
@@ -984,7 +984,7 @@ class Renderer {
 				const d = Math.hypot(x2 - x1, y2 - y1);
 				if (d < maxDist) {
 					// More subtle alpha so network doesn't compete with particles
-					const alpha = Math.pow(1 - d / maxDist, 1.2) * 0.40; 
+					const alpha = Math.pow(1 - d / maxDist, 1.2) * 0.40;
 					ctx.beginPath();
 					ctx.moveTo(x1, y1);
 					ctx.lineTo(x2, y2);
@@ -1005,7 +1005,7 @@ class Renderer {
 		const pulse = 0.82 + 0.18 * Math.sin(T / 160);
 		const cs = this.cellSize;
 		// Photon is a small but intense electric node (scaled down to be smaller)
-		const rp = cs * 0.18 * pulse; 
+		const rp = cs * 0.18 * pulse;
 		ctx.save();
 		ctx.globalCompositeOperation = "lighter";
 
@@ -1216,7 +1216,7 @@ class Renderer {
 
 		ctx.save();
 		ctx.globalCompositeOperation = "lighter";
-		
+
 		// 1. Soft radial gradient glow (matches Electrons/Photons perfectly)
 		const glowR = rc * 2.5;
 		const gRadius = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowR);
@@ -1224,7 +1224,7 @@ class Renderer {
 		gRadius.addColorStop(0.2, colorWithAlpha(color, 0.9)); // intense colored inner halo
 		gRadius.addColorStop(0.5, colorWithAlpha(color, 0.4)); // fading colored plasma
 		gRadius.addColorStop(1, colorWithAlpha(color, 0)); // transparent edge
-		
+
 		ctx.fillStyle = gRadius;
 		ctx.beginPath();
 		ctx.arc(cx, cy, glowR, 0, Math.PI * 2);
@@ -1239,17 +1239,17 @@ class Renderer {
 				const dist = Math.random() * (r * 3.5) + r;
 				const pX = cx + Math.cos(angle) * dist;
 				const pY = cy + Math.sin(angle) * dist;
-				
+
 				this.particles.push({
 					x: pX, y: pY,
-					vx: (cx - pX) * 0.08 + Math.cos(angle + Math.PI/2) * 0.4,
-					vy: (cy - pY) * 0.08 + Math.sin(angle + Math.PI/2) * 0.4,
+					vx: (cx - pX) * 0.08 + Math.cos(angle + Math.PI / 2) * 0.4,
+					vy: (cy - pY) * 0.08 + Math.sin(angle + Math.PI / 2) * 0.4,
 					life: Math.random() * 120 + 50,
 					maxLife: 200,
-					color: Math.random() < 0.25 ? '#ffffff' : color, 
+					color: Math.random() < 0.25 ? '#ffffff' : color,
 					size: Math.random() * 2 + 1,
 					isLine: false,
-					isCloud: Math.random() > 0.4 
+					isCloud: Math.random() > 0.4
 				});
 			}
 		}
@@ -1299,19 +1299,19 @@ class Renderer {
 		// 1. Standard explosion (volumetric clouds)
 		this.spawnExplosion(x, y, color);
 		this.spawnFlash(x, y, color, 1.5);
-		
-		// 2. Geometric network nodes (the fine lines the user mentioned)
-		for (let i = 0; i < 15; i++) {
+
+		// 2. Geometric network nodes (the fine lines) - Reduced count for performance
+		for (let i = 0; i < 8; i++) {
 			const angle = Math.random() * Math.PI * 2;
-			const speed = Math.random() * 5 + 2;
+			const speed = Math.random() * 4 + 2;
 			this.particles.push({
 				x, y,
 				vx: Math.cos(angle) * speed,
 				vy: Math.sin(angle) * speed,
-				life: Math.random() * 800 + 400,
-				maxLife: 1200,
+				life: Math.random() * 600 + 300,
+				maxLife: 900,
 				color: color,
-				size: Math.random() * 3 + 2,
+				size: Math.random() * 2 + 1,
 				isNetworkNode: true
 			});
 		}
@@ -1333,10 +1333,10 @@ class Renderer {
 		ctx.globalCompositeOperation = "lighter";
 		for (const ring of this.energyRings) {
 			const alpha = ring.life * (ring.type === 'death' ? 0.9 : (ring.type === 'ripple' ? 0.4 : 0.6));
-			
+
 			// Handle rgb strings vs rgba strings for ripples
-			const colorStr = ring.color.includes('rgba') || ring.color.includes('#') 
-				? colorWithAlpha(ring.color, alpha) 
+			const colorStr = ring.color.includes('rgba') || ring.color.includes('#')
+				? colorWithAlpha(ring.color, alpha)
 				: `rgba(${ring.color}, ${alpha})`;
 
 			ctx.strokeStyle = colorStr;
@@ -1352,17 +1352,18 @@ class Renderer {
 
 	// ── PARTICLE SPARKS ───────────────────────────────────────────────────────
 	spawnFlash(x, y, color, intensityMultiplier = 1) {
-		for (let i = 0; i < 8 * intensityMultiplier; i++) {
+		const count = Math.min(6 * intensityMultiplier, 12);
+		for (let i = 0; i < count; i++) {
 			const angle = Math.random() * Math.PI * 2;
 			const speed = Math.random() * 3 * intensityMultiplier + 0.5;
 			this.particles.push({
 				x, y,
 				vx: Math.cos(angle) * speed,
 				vy: Math.sin(angle) * speed,
-				life: Math.random() * 300 + 150,
-				maxLife: 450,
+				life: Math.random() * 250 + 100,
+				maxLife: 350,
 				color,
-				size: Math.random() * 4 + 2,
+				size: Math.random() * 3 + 1,
 				isLine: false,
 				isCloud: true
 			});
@@ -1370,21 +1371,21 @@ class Renderer {
 	}
 
 	spawnExplosion(x, y, color) {
-		// Medium volumetric burst for clicks/minor impacts
-		for (let i = 0; i < 25; i++) {
+		// Medium volumetric burst - Reduced count
+		for (let i = 0; i < 15; i++) {
 			const angle = Math.random() * Math.PI * 2;
 			const speedStr = Math.pow(Math.random(), 1.5);
-			const speed = speedStr * 6 + 1.5;
-			const isCore = speedStr < 0.4;
-			
+			const speed = speedStr * 5 + 1.2;
+			const isCore = speedStr < 0.35;
+
 			this.particles.push({
 				x, y,
 				vx: Math.cos(angle) * speed,
 				vy: Math.sin(angle) * speed,
-				life: Math.random() * 500 + 200,
-				maxLife: 700,
+				life: Math.random() * 400 + 150,
+				maxLife: 550,
 				color: isCore ? "#ffffff" : color,
-				size: isCore ? (Math.random() * 2.5 + 1.5) : (Math.random() * 6 + 3),
+				size: isCore ? (Math.random() * 2 + 1) : (Math.random() * 4 + 2),
 				isLine: false,
 				isCloud: !isCore
 			});
@@ -1393,6 +1394,10 @@ class Renderer {
 
 	updateParticles(dt) {
 		let i = this.particles.length;
+		// Hard limit on particles to preserve FPS
+		if (i > 400) this.particles.splice(0, i - 400);
+		
+		i = this.particles.length;
 		while (i--) {
 			const p = this.particles[i];
 			p.life -= dt;
@@ -1409,12 +1414,12 @@ class Renderer {
 		ctx.globalCompositeOperation = "lighter";
 		for (const p of this.particles) {
 			const alpha = Math.max(0, p.life / p.maxLife);
-			
+
 			// Apply Lattice Deformation to particles too
 			const def = this.getDeformationAt(p.x, p.y);
 			const drawX = p.x + def.dx;
 			const drawY = p.y + def.dy;
-			
+
 			if (p.isLine) {
 				// High energy ray (kept for specific directional bursts if needed later)
 				ctx.beginPath();
@@ -1426,12 +1431,9 @@ class Renderer {
 				ctx.shadowColor = p.color;
 				ctx.stroke();
 			} else if (p.isCloud) {
-				// Soft, dense volumetric explosion cloud (made much brighter and more opaque)
-				const size = p.size * (1 + (1 - alpha) * 0.5); // Slight expansion as it fades
+				const size = p.size * (1 + (1 - alpha) * 0.5);
 				const gr = ctx.createRadialGradient(drawX, drawY, 0, drawX, drawY, size);
-				// Increased opacity multipliers to make them pop more against the background
-				gr.addColorStop(0, colorWithAlpha(p.color, Math.min(1, alpha * 2.0))); // Strong bright center
-				gr.addColorStop(0.4, colorWithAlpha(p.color, Math.min(1, alpha * 1.2))); // Solid mid-body
+				gr.addColorStop(0, colorWithAlpha(p.color, Math.min(1, alpha * 1.5)));
 				gr.addColorStop(1, "rgba(0,0,0,0)");
 				ctx.fillStyle = gr;
 				ctx.beginPath();
@@ -1444,7 +1446,7 @@ class Renderer {
 				ctx.beginPath();
 				ctx.moveTo(drawX, drawY);
 				ctx.lineTo(drawX - p.vx * len, drawY - p.vy * len);
-				
+
 				if (p.isKinetic) {
 					// Chromatic streak
 					ctx.strokeStyle = colorWithAlpha('#ffffff', alpha);
@@ -1464,17 +1466,11 @@ class Renderer {
 					ctx.stroke();
 				}
 			} else {
-				// Standard sharp orb / network node / explosion core debris
-				const gr = ctx.createRadialGradient(drawX, drawY, 0, drawX, drawY, p.size * alpha + 0.5);
-				gr.addColorStop(0, colorWithAlpha(p.color, alpha));
-				gr.addColorStop(1, "rgba(0,0,0,0)");
-				ctx.fillStyle = gr;
-				ctx.shadowBlur = p.size * 3;
-				ctx.shadowColor = p.color;
+				const r = p.size * alpha + 0.3;
+				ctx.fillStyle = colorWithAlpha(p.color, alpha * 0.8);
 				ctx.beginPath();
-				ctx.arc(drawX, drawY, p.size * alpha + 0.5, 0, Math.PI * 2);
+				ctx.arc(drawX, drawY, r, 0, Math.PI * 2);
 				ctx.fill();
-				ctx.shadowBlur = 0; // reset
 			}
 		}
 		ctx.restore();
@@ -1549,7 +1545,7 @@ function initGame() {
 	renderer.updateLogicState(elements, board);
 	renderer.attachMouseEvents(); // Hook gravity tracker
 	overlay.classList.add("hidden");
-	
+
 	logicTimer = performance.now();
 
 	if (animFrameId !== null) cancelAnimationFrame(animFrameId);
@@ -1590,7 +1586,7 @@ function animLoop(time) {
 	if (logicRunning && !paused) {
 		// If real-time jump is more than 3x speed, we reset logicTimer
 		if (time - logicTimer > ms * 3) logicTimer = time - ms;
-		
+
 		while (time - logicTimer >= ms) {
 			tick();
 			logicTimer += ms;
