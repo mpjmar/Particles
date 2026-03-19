@@ -49,6 +49,24 @@ class EventManager {
 	}
 }
 
+class DeformationWave {
+	constructor(x, y, maxRadius) {
+		this.x = x;
+		this.y = y;
+		this.maxRadius = maxRadius;
+		this.r = 0;
+		this.life = 1.0;
+		this.speed = 14; 
+		this.amplitude = 12; // Back to a bit more localized kick
+	}
+	update(dt) {
+		const step = (dt / 16) * this.speed;
+		this.r += step;
+		this.life -= dt / 800; // Decay faster (800ms)
+		return this.life > 0;
+	}
+}
+
 // ── BOARD ELEMENTS ───────────────────────────────────────────────────────────
 
 class BoardElement {
@@ -624,10 +642,11 @@ class Renderer {
 		this._noiseCtx = this._noiseCanvas.getContext('2d');
 		// Only update the noise every N frames for performance
 		this._noiseFrame = 0;
-		// Mouse Gravity state
-		this.mouseX = -1000;
-		this.mouseY = -1000;
 		this.isMousePresent = false;
+		
+		this.deformationWaves = [];
+		// Screen shake state
+		this.shake = 0;
 	}
 
 	attachMouseEvents() {
@@ -636,6 +655,14 @@ class Renderer {
 			this.mouseX = e.clientX - rect.left;
 			this.mouseY = e.clientY - rect.top;
 			this.isMousePresent = true;
+		});
+		this.canvas.addEventListener('click', (e) => {
+			const rect = this.canvas.getBoundingClientRect();
+			const x = e.clientX - rect.left;
+			const y = e.clientY - rect.top;
+			this._spawnRipple(x, y);
+			// Space deformation on click
+			this.deformationWaves.push(new DeformationWave(x, y, Math.max(this.canvas.width, this.canvas.height) * 1.5));
 		});
 		this.canvas.addEventListener('mouseleave', () => {
 			this.isMousePresent = false;
@@ -694,17 +721,29 @@ class Renderer {
 			}
 			if (ev.type === "death") {
 				this._spawnDeathNova(cx, cy, ev.color || Colors.accent);
+				// Local wave on death, capped to 2 waves total
+				if (this.deformationWaves.length < 2) {
+					const deathWave = new DeformationWave(cx, cy, 300);
+					deathWave.amplitude = 15;
+					this.deformationWaves.push(deathWave);
+				}
 			}
 		}
 	}
 
-	drawFrame(timeMs) {
-		const dt = timeMs - this.lastTime;
+	drawFrame(timeMs, ms) {
+		const dt = Math.min(32, timeMs - this.lastTime);
 		this.lastTime = timeMs;
-		if (this.turnProgress < 1) {
-			this.turnProgress += dt / this.turnDurationMs;
+		
+		this._updateDeformationWaves(dt);
+
+		// Calculate turn evolution strictly from time delta, decouple from ticks logic
+		if (this.logicTimer && ms > 0) {
+			this.turnProgress = (timeMs - this.logicTimer) / ms;
 			if (this.turnProgress > 1) this.turnProgress = 1;
+			if (this.turnProgress < 0) this.turnProgress = 0;
 		}
+
 		this.updateParticles(dt);
 		this._updateEnergyRings(dt);
 		this.renderAll();
@@ -712,11 +751,12 @@ class Renderer {
 
 	// ── MAIN RENDER ───────────────────────────────────────────────────────────
 	renderAll() {
-		if (!this.board) return;
 		const ctx = this.ctx;
 		const cs = this.cellSize;
 
 		ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		
+		ctx.save();
 
 		// Layer 1 – deep space background with bokeh
 		this._drawDeepSpace(ctx);
@@ -740,6 +780,11 @@ class Renderer {
 			}
 			let cx = startX + (targetX - startX) * ease;
 			let cy = startY + (targetY - startY) * ease;
+			
+			// Apply Lattice Deformation
+			const def = this.getDeformationAt(cx, cy);
+			cx += def.dx;
+			cy += def.dy;
 			
 			// Apply soft magnetic pull from cursor
 			if (this.isMousePresent) {
@@ -771,9 +816,38 @@ class Renderer {
 
 	// ── EASING ────────────────────────────────────────────────────────────────
 	_easeInOut(t) {
-		// Strictly linear. By avoiding easing, velocity never reaches 0 at turn boundaries.
-		// This creates perfectly continuous, unbroken motion across tiles.
+		// Linear interpolation: essential for constant velocity between tile transitions
+		// Any non-linear easing will cause a perceived "pause" or hitch at boundary points.
 		return t;
+	}
+
+	_updateDeformationWaves(dt) {
+		let i = this.deformationWaves.length;
+		while (i--) {
+			if (!this.deformationWaves[i].update(dt)) {
+				this.deformationWaves.splice(i, 1);
+			}
+		}
+	}
+
+	getDeformationAt(x, y) {
+		let dx = 0, dy = 0;
+		for (const wave of this.deformationWaves) {
+			const dist = Math.hypot(x - wave.x, y - wave.y);
+			// Smaller, more localized ripple width
+			const rippleWidth = 120;
+			const delta = dist - wave.r;
+			
+			if (Math.abs(delta) < rippleWidth) {
+				// Sine wave shaped deformation
+				const strength = (1 - Math.abs(delta) / rippleWidth) * wave.life;
+				const angle = Math.atan2(y - wave.y, x - wave.x);
+				const push = Math.sin((delta / rippleWidth) * Math.PI) * wave.amplitude * strength;
+				dx += Math.cos(angle) * push;
+				dy += Math.sin(angle) * push;
+			}
+		}
+		return { dx, dy };
 	}
 
 	// ── STATIC PERLIN NOISE BACKGROUND ─────────────────────────────────────────────
@@ -1222,56 +1296,23 @@ class Renderer {
 	}
 
 	_spawnDeathNova(x, y, color) {
-		const cs = this.cellSize;
-
-		// LAYER 1: White-hot core flash (tiny, fast, very bright)
-		for (let i = 0; i < 8; i++) {
+		// 1. Standard explosion (volumetric clouds)
+		this.spawnExplosion(x, y, color);
+		this.spawnFlash(x, y, color, 1.5);
+		
+		// 2. Geometric network nodes (the fine lines the user mentioned)
+		for (let i = 0; i < 15; i++) {
 			const angle = Math.random() * Math.PI * 2;
-			const speed = Math.random() * 4 + 3;
+			const speed = Math.random() * 5 + 2;
 			this.particles.push({
 				x, y,
 				vx: Math.cos(angle) * speed,
 				vy: Math.sin(angle) * speed,
-				life: Math.random() * 180 + 80,
-				maxLife: 260,
-				color: '#ffffff',
-				size: Math.random() * 2.5 + 1.5,
-				isLine: false,
-				isCloud: false
-			});
-		}
-
-		// LAYER 2: Mid-range colored plasma clouds (large, expand slowly)
-		for (let i = 0; i < 20; i++) {
-			const angle = Math.random() * Math.PI * 2;
-			const speed = Math.random() * 4 + 1.5;
-			const isCoreTinted = Math.random() < 0.4;
-			this.particles.push({
-				x, y,
-				vx: Math.cos(angle) * speed,
-				vy: Math.sin(angle) * speed,
-				life: Math.random() * 500 + 350,
-				maxLife: 850,
-				color: isCoreTinted ? '#ffffff' : color,
-				size: Math.random() * cs * 0.3 + cs * 0.15,
-				isLine: false,
-				isCloud: true
-			});
-		}
-
-		// LAYER 3: Outer high-energy debris shards (fast motion-blur streaks)
-		for (let i = 0; i < 16; i++) {
-			const angle = (i / 16) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
-			const speed = Math.random() * 9 + 5;
-			this.particles.push({
-				x, y,
-				vx: Math.cos(angle) * speed,
-				vy: Math.sin(angle) * speed,
-				life: Math.random() * 280 + 120,
-				maxLife: 400,
-				color,
-				size: Math.random() * 2 + 1,
-				isLine: true
+				life: Math.random() * 800 + 400,
+				maxLife: 1200,
+				color: color,
+				size: Math.random() * 3 + 2,
+				isNetworkNode: true
 			});
 		}
 	}
@@ -1369,11 +1410,16 @@ class Renderer {
 		for (const p of this.particles) {
 			const alpha = Math.max(0, p.life / p.maxLife);
 			
+			// Apply Lattice Deformation to particles too
+			const def = this.getDeformationAt(p.x, p.y);
+			const drawX = p.x + def.dx;
+			const drawY = p.y + def.dy;
+			
 			if (p.isLine) {
 				// High energy ray (kept for specific directional bursts if needed later)
 				ctx.beginPath();
-				ctx.moveTo(p.x, p.y);
-				ctx.lineTo(p.x - p.vx * 3.5, p.y - p.vy * 3.5);
+				ctx.moveTo(drawX, drawY);
+				ctx.lineTo(drawX - p.vx * 3.5, drawY - p.vy * 3.5);
 				ctx.strokeStyle = colorWithAlpha(p.color, alpha);
 				ctx.lineWidth = p.size;
 				ctx.shadowBlur = p.size * 2;
@@ -1382,25 +1428,51 @@ class Renderer {
 			} else if (p.isCloud) {
 				// Soft, dense volumetric explosion cloud (made much brighter and more opaque)
 				const size = p.size * (1 + (1 - alpha) * 0.5); // Slight expansion as it fades
-				const gr = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size);
+				const gr = ctx.createRadialGradient(drawX, drawY, 0, drawX, drawY, size);
 				// Increased opacity multipliers to make them pop more against the background
 				gr.addColorStop(0, colorWithAlpha(p.color, Math.min(1, alpha * 2.0))); // Strong bright center
 				gr.addColorStop(0.4, colorWithAlpha(p.color, Math.min(1, alpha * 1.2))); // Solid mid-body
 				gr.addColorStop(1, "rgba(0,0,0,0)");
 				ctx.fillStyle = gr;
 				ctx.beginPath();
-				ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+				ctx.arc(drawX, drawY, size, 0, Math.PI * 2);
 				ctx.fill();
+			} else if (p.isLine) {
+				// Kinetic shards or standard lines
+				const alpha = Math.max(0, p.life / p.maxLife);
+				const len = p.isKinetic ? 12 : 3.5;
+				ctx.beginPath();
+				ctx.moveTo(drawX, drawY);
+				ctx.lineTo(drawX - p.vx * len, drawY - p.vy * len);
+				
+				if (p.isKinetic) {
+					// Chromatic streak
+					ctx.strokeStyle = colorWithAlpha('#ffffff', alpha);
+					ctx.lineWidth = p.size * 1.5;
+					ctx.stroke();
+					ctx.beginPath();
+					ctx.moveTo(drawX, drawY);
+					ctx.lineTo(drawX - p.vx * (len * 0.6), drawY - p.vy * (len * 0.6));
+					ctx.strokeStyle = colorWithAlpha(p.secondaryColor || p.color, alpha * 0.6);
+					ctx.lineWidth = p.size * 3;
+					ctx.stroke();
+				} else {
+					ctx.strokeStyle = colorWithAlpha(p.color, alpha);
+					ctx.lineWidth = p.size;
+					ctx.shadowBlur = p.size * 2;
+					ctx.shadowColor = p.color;
+					ctx.stroke();
+				}
 			} else {
 				// Standard sharp orb / network node / explosion core debris
-				const gr = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * alpha + 0.5);
+				const gr = ctx.createRadialGradient(drawX, drawY, 0, drawX, drawY, p.size * alpha + 0.5);
 				gr.addColorStop(0, colorWithAlpha(p.color, alpha));
 				gr.addColorStop(1, "rgba(0,0,0,0)");
 				ctx.fillStyle = gr;
 				ctx.shadowBlur = p.size * 3;
 				ctx.shadowColor = p.color;
 				ctx.beginPath();
-				ctx.arc(p.x, p.y, p.size * alpha + 0.5, 0, Math.PI * 2);
+				ctx.arc(drawX, drawY, p.size * alpha + 0.5, 0, Math.PI * 2);
 				ctx.fill();
 				ctx.shadowBlur = 0; // reset
 			}
@@ -1512,16 +1584,25 @@ function tick() {
 }
 
 function animLoop(time) {
+	if (!renderer.lastTime) renderer.lastTime = time;
+	const ms = getSpeedMs();
+
 	if (logicRunning && !paused) {
-		const ms = getSpeedMs();
-		if (time - logicTimer >= ms) {
+		// If real-time jump is more than 3x speed, we reset logicTimer
+		if (time - logicTimer > ms * 3) logicTimer = time - ms;
+		
+		while (time - logicTimer >= ms) {
 			tick();
 			logicTimer += ms;
-			// Prevent spiral of death if tab was inactive
-			if (time - logicTimer > ms) logicTimer = time;
+			// Pass current logic sync point to renderer for smooth interpolation
+			renderer.logicTimer = logicTimer;
 		}
+	} else {
+		// When stopped/paused, keep progress frozen or resetting
+		renderer.logicTimer = time - ms;
 	}
-	renderer.drawFrame(time);
+
+	renderer.drawFrame(time, ms);
 	animFrameId = requestAnimationFrame(animLoop);
 }
 
