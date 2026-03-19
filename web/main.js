@@ -305,7 +305,7 @@ class ChaserStrategy {
 				const p2Prev = prev && p2.row === prev.row && p2.col === prev.col;
 				if (p1Prev && !p2Prev) return 1;
 				if (!p1Prev && p2Prev) return -1;
-				return generateRandom(-1, 2);
+				return Math.random() - 0.5;
 			});
 			for (const p of availPos) {
 				if (MovUtils.isEmpty(elements, p.row, p.col)) { bestPos = p; break; }
@@ -344,7 +344,7 @@ class RunnerStrategy {
 				const p2Prev = prev && p2.row === prev.row && p2.col === prev.col;
 				if (p1Prev && !p2Prev) return 1;
 				if (!p1Prev && p2Prev) return -1;
-				return generateRandom(-1, 2);
+				return Math.random() - 0.5;
 			});
 			for (const p of availPos) {
 				if (MovUtils.isEmpty(elements, p.row, p.col)) { bestPos = p; break; }
