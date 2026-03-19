@@ -96,18 +96,19 @@ body::after {
 /* ── Top Bar (Relocated Title) ────────────────────────────────────────── */
 .top-bar {
 	position: fixed;
-	top: 8px;
+	top: 16px;
 	left: 280px; /* Offset by sidebar */
 	right: 0;
-	height: 80px; /* Slightly taller */
+	height: 100px;
 	padding: 0 40px;
 	background: linear-gradient(to bottom, var(--surface-base), transparent);
 	display: flex;
+	flex-direction: column;
 	align-items: center;
 	justify-content: center; /* Centered */
 	z-index: 100;
 	pointer-events: none;
-    gap: 20px;
+	gap: 4px;
 }
 
 .top-bar-branding {
@@ -116,15 +117,15 @@ body::after {
 	justify-content: center;
 	gap: 20px;
 	pointer-events: auto;
-    width: 100%; /* Take full width to center */
+	width: 100%; /* Take full width to center */
 }
 
 .top-bar-info {
-    position: absolute;
-    right: 40px;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none;
+	position: static;
+	transform: none;
+	pointer-events: none;
+	text-align: center;
+	width: 100%;
 }
 
 .top-bar .logo-icon {
@@ -142,7 +143,7 @@ body::after {
 	background-clip: text;
 	-webkit-text-fill-color: transparent;
 	text-transform: uppercase;
-    margin: 6px 0 0;
+	margin: 12px 0 0;
 }
 
 /* ── Sidebar (Compacted) ────────────────────────────────────────────── */
@@ -155,11 +156,15 @@ body::after {
 	border-right: 1px solid var(--border);
 	display: flex;
 	flex-direction: column;
-	gap: 8px; /* Even tighter gap */
-	padding: 12px; /* Even tighter padding */
+	gap: 10px;
+	padding: 28px 12px 12px;
 	overflow-y: auto;
 	box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
 	z-index: 50;
+}
+
+.sidebar > .panel:first-of-type {
+	margin-top: 4px;
 }
 
 /* Hide Logo in sidebar across all pages */
@@ -314,11 +319,17 @@ body::after {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 6px; /* Reduced gap */
+	align-items: stretch;
+	grid-auto-rows: minmax(54px, auto);
 }
 
 .control-row.full-width {
 	grid-column: span 2;
 	margin-top: 4px;
+}
+
+.control-row.full-width .control-input-wrap {
+	min-height: 34px;
 }
 
 .control-row label {
@@ -385,7 +396,7 @@ body::after {
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
-	margin-top: auto;
+	margin-top: 0;
 }
 
 .controls button {
@@ -455,7 +466,7 @@ body::after {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	padding: 96px 40px 40px;
+	padding: 124px 40px 40px;
 	z-index: 10;
 }
 
@@ -598,13 +609,19 @@ canvas {
 }
 
 .leg-dot.runner {
-	background: #ffffff;
-	box-shadow: 0 0 8px #00d8ff, 0 0 15px rgba(0, 216, 255, 0.6);
+	background: radial-gradient(circle at 38% 35%, #ffffff 0%, #bff7ff 28%, #00d8ff 58%, rgba(0, 216, 255, 0.05) 100%);
+	box-shadow:
+		0 0 12px rgba(0, 216, 255, 0.95),
+		0 0 24px rgba(0, 216, 255, 0.75),
+		inset 0 0 3px rgba(255, 255, 255, 0.8);
 }
 
 .leg-dot.chaser {
-	background: #ffffff;
-	box-shadow: 0 0 8px #ff780a, 0 0 15px rgba(255, 120, 10, 0.6);
+	background: radial-gradient(circle at 38% 35%, #ffffff 0%, #ffe5c4 24%, #ff9c2e 50%, #ff5a00 72%, rgba(255, 90, 0, 0.05) 100%);
+	box-shadow:
+		0 0 12px rgba(255, 120, 10, 0.95),
+		0 0 24px rgba(255, 120, 10, 0.75),
+		inset 0 0 3px rgba(255, 255, 255, 0.8);
 }
 
 .leg-dot.healer {

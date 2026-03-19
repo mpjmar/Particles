@@ -205,10 +205,11 @@ class Speeder extends BoardElement {
 }
 
 class EnergyNode extends BoardElement {
-	constructor(row, col) {
+	constructor(row, col, energyValue = generateRandom(1, 4)) {
 		super(row, col);
-		this.life = 25; // turns until it disappears
-		this.maxLife = 25;
+		this.energyValue = energyValue;
+		this.life = generateRandom(18, 36); // turns until it disappears
+		this.maxLife = this.life;
 	}
 }
 
@@ -465,9 +466,10 @@ class EnergyManager {
 					// We say distance <= 1 allows consumption 
 					if ((actor instanceof Runner || actor instanceof Chaser) &&
 						(actor.row === e.row && actor.col === e.col || MovUtils.isNeighbour(e.pos, actor.pos))) {
+						const value = Math.max(1, e.energyValue || 1);
 
-						if (actor instanceof Runner) actor.sumLife(generateRandom(15, 30));
-						if (actor instanceof Chaser) actor.speedTurns += 3;
+						if (actor instanceof Runner) actor.sumLife(generateRandom(10, 20) * value);
+						if (actor instanceof Chaser) actor.speedTurns += (value + 2);
 
 						// trigger a visual explosion for node consumption
 						EventManager.emit({ type: "fight", row: e.row, col: e.col, color: Colors.energy });
@@ -956,10 +958,10 @@ class Renderer {
 		const ease = this._easeInOut(this.turnProgress);
 
 		// Draw Cyan Network for Runners
-		this._drawNetLinks(ctx, runners, cs, ease, cs * 3.5, "0, 229, 255");
+		this._drawNetLinks(ctx, runners, cs, ease, cs * 5.0, "0, 229, 255");
 
 		// Draw Red/Orange Neuronal Network for Chasers
-		this._drawNetLinks(ctx, chasers, cs, ease, cs * 4.5, "255, 100, 40");
+		this._drawNetLinks(ctx, chasers, cs, ease, cs * 6.5, "255, 100, 40");
 
 		// Also draw connections for temporary spawn nodes (cyan)
 		const nodes = this.particles.filter(p => p.isNetworkNode);
