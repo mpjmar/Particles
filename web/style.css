@@ -539,6 +539,11 @@ canvas {
 	box-shadow: 0 0 10px #ff2a2a, 0 0 20px rgba(255, 42, 42, 0.5);
 }
 
+.leg-dot.energy {
+	background: #ff77ff;
+	box-shadow: 0 0 10px #ff00ff, 0 0 20px rgba(255, 0, 255, 0.6);
+}
+
 .leg-dot.obstacle {
 	width: 10px;
 	height: 10px;

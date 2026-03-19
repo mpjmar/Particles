@@ -207,8 +207,8 @@ class Speeder extends BoardElement {
 class EnergyNode extends BoardElement {
 	constructor(row, col) {
 		super(row, col);
-		this.life = 15; // turns until it disappears
-		this.maxLife = 15;
+		this.life = 25; // turns until it disappears
+		this.maxLife = 25;
 	}
 }
 
@@ -480,8 +480,8 @@ class EnergyManager {
 
 		// 3. Random spawn
 		const nodes = elements.filter(e => e instanceof EnergyNode);
-		// Increased limit to 4 and doubled probability (from 4% to 8% per turn)
-		if (nodes.length < 4 && Math.random() < 0.08) {
+		// Increased limit to 6 and probability to 15% per turn
+		if (nodes.length < 6 && Math.random() < 0.15) {
 			let row = generateRandom(0, board.rows);
 			let col = generateRandom(0, board.cols);
 			if (MovUtils.isEmpty(elements, row, col)) {
