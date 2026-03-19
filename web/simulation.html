@@ -18,6 +18,7 @@
 
 	<!-- ── Sidebar ──────────────────────────────────────────────────────── -->
 	<aside class="sidebar">
+		<!-- Logo Section (Hidden via CSS, kept for structure if needed) -->
 		<div class="logo">
 			<span class="logo-icon">⚛</span>
 			<h1>PARTICLES</h1>
@@ -50,13 +51,13 @@
 				<div class="control-row">
 					<label for="inp-rows">Rows</label>
 					<div class="control-input-wrap">
-						<input type="number" id="inp-rows" min="10" max="100" value="40" />
+						<input type="number" id="inp-rows" min="10" max="100" value="30" />
 					</div>
 				</div>
 				<div class="control-row">
 					<label for="inp-cols">Cols</label>
 					<div class="control-input-wrap">
-						<input type="number" id="inp-cols" min="10" max="100" value="50" />
+						<input type="number" id="inp-cols" min="10" max="100" value="60" />
 					</div>
 				</div>
 				<div class="control-row full-width">
@@ -64,6 +65,15 @@
 					<div class="control-input-wrap">
 						<input type="number" id="inp-speed" min="1" max="20" value="2" />
 						<span class="val-badge">x</span>
+					</div>
+				</div>
+				<div class="control-row full-width">
+					<label for="inp-quality">Visual FX</label>
+					<div class="control-input-wrap">
+						<select id="inp-quality">
+							<option value="high" selected>High</option>
+							<option value="low">Performance</option>
+						</select>
 					</div>
 				</div>
 			</div>
@@ -127,6 +137,17 @@
 
 	<!-- ── Canvas area ───────────────────────────────────────────────────── -->
 	<main class="board-wrap">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div class="top-bar-branding">
+                <span class="logo-icon">⚛</span>
+                <h1>PARTICLES</h1>
+            </div>
+            <div class="top-bar-info">
+                <span class="logo-sub">SYSTEM SIMULATION</span>
+            </div>
+        </header>
+
 		<canvas id="board-canvas"></canvas>
 
 		<!-- Winner overlay -->

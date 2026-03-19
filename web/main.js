@@ -56,8 +56,8 @@ class DeformationWave {
 		this.maxRadius = maxRadius;
 		this.r = 0;
 		this.life = 1.0;
-		this.speed = 14;
-		this.amplitude = 12; // Back to a bit more localized kick
+		this.speed = 10;
+		this.amplitude = 7;
 	}
 	update(dt) {
 		const step = (dt / 16) * this.speed;
@@ -647,9 +647,22 @@ class Renderer {
 		this.deformationWaves = [];
 		// Screen shake state
 		this.shake = 0;
+		this._mouseEventsAttached = false;
+		this.fxQuality = 'high';
+		this.fxMultiplier = 1;
+		this.maxParticles = 250;
+	}
+
+	setFxQuality(mode) {
+		this.fxQuality = mode === 'low' ? 'low' : 'high';
+		this.fxMultiplier = this.fxQuality === 'low' ? 0.45 : 1;
+		this.maxParticles = this.fxQuality === 'low' ? 130 : 250;
 	}
 
 	attachMouseEvents() {
+		if (this._mouseEventsAttached) return;
+		this._mouseEventsAttached = true;
+
 		this.canvas.addEventListener('mousemove', (e) => {
 			const rect = this.canvas.getBoundingClientRect();
 			this.mouseX = e.clientX - rect.left;
@@ -661,8 +674,13 @@ class Renderer {
 			const x = e.clientX - rect.left;
 			const y = e.clientY - rect.top;
 			this._spawnRipple(x, y);
-			// Space deformation on click
-			this.deformationWaves.push(new DeformationWave(x, y, Math.max(this.canvas.width, this.canvas.height) * 1.5));
+			// Subtle space deformation on click (capped)
+			if (this.deformationWaves.length < 2) {
+				const clickWave = new DeformationWave(x, y, Math.max(this.canvas.width, this.canvas.height) * 0.9);
+				clickWave.amplitude = 5;
+				clickWave.speed = 9;
+				this.deformationWaves.push(clickWave);
+			}
 		});
 		this.canvas.addEventListener('mouseleave', () => {
 			this.isMousePresent = false;
@@ -671,7 +689,10 @@ class Renderer {
 
 	resize(rows, cols) {
 		const maxW = this.canvas.parentElement?.clientWidth ?? 800;
-		const maxH = this.canvas.parentElement?.clientHeight ?? 600;
+		const parentH = this.canvas.parentElement?.clientHeight ?? 600;
+		const topBar = document.querySelector(".top-bar");
+		const reservedTopSpace = topBar ? (topBar.offsetHeight + 16) : 0;
+		const maxH = Math.max(120, parentH - reservedTopSpace);
 		this.cellSize = Math.max(4, Math.min(Math.floor(maxW / cols), Math.floor(maxH / rows)));
 		this.canvas.width = cols * this.cellSize;
 		this.canvas.height = rows * this.cellSize;
@@ -762,7 +783,7 @@ class Renderer {
 		this._drawDeepSpace(ctx);
 
 		// Layer 3.5 - Network connections between particles
-		this._drawNetworkConnections(ctx, cs);
+		if (this.fxQuality !== 'low') this._drawNetworkConnections(ctx, cs);
 
 		// Layer 4 – energy rings (interaction shockwaves)
 		this._drawEnergyRings(ctx);
@@ -1240,8 +1261,10 @@ class Renderer {
 
 		// 2. Heavy particle emission (swirling storm effect)
 		// Emitting multiple particles per frame makes it look like a dense energy well
-		if (Math.random() < 0.9) { // 90% chance each frame
-			for (let i = 0; i < 2; i++) { // Spawn 2 at a time
+		const emitChance = this.fxQuality === 'low' ? 0.45 : 0.9;
+		const emitCount = this.fxQuality === 'low' ? 1 : 2;
+		if (Math.random() < emitChance) {
+			for (let i = 0; i < emitCount; i++) {
 				const angle = performance.now() / 200 + Math.random() * Math.PI * 2;
 				const dist = Math.random() * (r * 3.5) + r;
 				const pX = cx + Math.cos(angle) * dist;
@@ -1264,21 +1287,22 @@ class Renderer {
 
 	// ── INTERACTION EFFECTS ───────────────────────────────────────────────────
 	_spawnRipple(x, y) {
-		// Energetic explosion rays
-		this.spawnExplosion(x, y, "rgba(0, 229, 255, 1)");
+		// Soft click feedback, lighter than combat explosions
+		this.spawnFlash(x, y, "rgba(0, 229, 255, 0.9)", this.fxQuality === 'low' ? 0.7 : 1.1);
 
 		// Reduced geometric network nodes for better click performance
-		for (let i = 0; i < 8; i++) {
+		const rippleNodes = Math.max(1, Math.round(3 * this.fxMultiplier));
+		for (let i = 0; i < rippleNodes; i++) {
 			const angle = Math.random() * Math.PI * 2;
-			const speed = Math.random() * 5 + 2;
+			const speed = Math.random() * 2.2 + 0.8;
 			this.particles.push({
 				x, y,
 				vx: Math.cos(angle) * speed,
 				vy: Math.sin(angle) * speed,
-				life: Math.random() * 600 + 400,
-				maxLife: 1000,
+				life: Math.random() * 220 + 120,
+				maxLife: 340,
 				color: "rgba(0, 229, 255, 1)",
-				size: Math.random() * 2 + 1,
+				size: Math.random() * 1.3 + 0.6,
 				isNetworkNode: true
 			});
 		}
@@ -1288,11 +1312,11 @@ class Renderer {
 			const dx = p.x - x;
 			const dy = p.y - y;
 			const dist = Math.hypot(dx, dy);
-			const pushRadius = this.cellSize * 6;
+			const pushRadius = this.cellSize * 4;
 			if (dist < pushRadius && dist > 1) {
 				const force = (pushRadius - dist) / pushRadius;
-				p.vx += (dx / dist) * force * 25;
-				p.vy += (dy / dist) * force * 25;
+				p.vx += (dx / dist) * force * 8;
+				p.vy += (dy / dist) * force * 8;
 			}
 		}
 	}
@@ -1305,10 +1329,11 @@ class Renderer {
 	_spawnDeathNova(x, y, color) {
 		// 1. Standard explosion (volumetric clouds)
 		this.spawnExplosion(x, y, color);
-		this.spawnFlash(x, y, color, 1.5);
+		this.spawnFlash(x, y, color, this.fxQuality === 'low' ? 1.0 : 1.5);
 
 		// 2. Geometric network nodes (the fine lines) - Reduced count for performance
-		for (let i = 0; i < 8; i++) {
+		const nodeCount = Math.max(3, Math.round(8 * this.fxMultiplier));
+		for (let i = 0; i < nodeCount; i++) {
 			const angle = Math.random() * Math.PI * 2;
 			const speed = Math.random() * 4 + 2;
 			this.particles.push({
@@ -1359,7 +1384,7 @@ class Renderer {
 
 	// ── PARTICLE SPARKS ───────────────────────────────────────────────────────
 	spawnFlash(x, y, color, intensityMultiplier = 1) {
-		const count = Math.min(6 * intensityMultiplier, 12);
+		const count = Math.max(2, Math.round(Math.min(6 * intensityMultiplier * this.fxMultiplier, this.fxQuality === 'low' ? 7 : 12)));
 		for (let i = 0; i < count; i++) {
 			const angle = Math.random() * Math.PI * 2;
 			const speed = Math.random() * 3 * intensityMultiplier + 0.5;
@@ -1378,8 +1403,9 @@ class Renderer {
 	}
 
 	spawnExplosion(x, y, color) {
-		// Medium volumetric burst - Reduced count
-		for (let i = 0; i < 15; i++) {
+		// Medium volumetric burst - quality aware
+		const burstCount = Math.max(6, Math.round(15 * this.fxMultiplier));
+		for (let i = 0; i < burstCount; i++) {
 			const angle = Math.random() * Math.PI * 2;
 			const speedStr = Math.pow(Math.random(), 1.5);
 			const speed = speedStr * 5 + 1.2;
@@ -1401,8 +1427,8 @@ class Renderer {
 
 	updateParticles(dt) {
 		let i = this.particles.length;
-		// Stricter hard limit on particles to preserve FPS (250 instead of 400)
-		if (i > 250) this.particles.splice(0, i - 250);
+		// Hard limit (quality aware) to preserve FPS
+		if (i > this.maxParticles) this.particles.splice(0, i - this.maxParticles);
 
 		i = this.particles.length;
 		while (i--) {
@@ -1490,6 +1516,7 @@ const inpCols = document.getElementById("inp-cols");
 const lblRows = document.getElementById("lbl-rows");
 const lblCols = document.getElementById("lbl-cols");
 const inpSpeed = document.getElementById("inp-speed");
+const inpQuality = document.getElementById("inp-quality");
 const lblSpeed = document.getElementById("lbl-speed");
 const inpRun = document.getElementById("inp-run");
 const inpCha = document.getElementById("inp-cha");
@@ -1517,8 +1544,16 @@ let paused = false;
 let turn = 0;
 let idleMoves = 0;
 
-function getRows() { return inpRows ? parseInt(inpRows.value, 10) : 40; }
-function getCols() { return inpCols ? parseInt(inpCols.value, 10) : 50; }
+function getRows() {
+	const rows = inpRows ? parseInt(inpRows.value, 10) : 30;
+	if (!Number.isFinite(rows)) return 30;
+	return Math.max(10, Math.min(100, rows));
+}
+function getCols() {
+	const cols = inpCols ? parseInt(inpCols.value, 10) : 60;
+	if (!Number.isFinite(cols)) return 60;
+	return Math.max(10, Math.min(100, cols));
+}
 function getCounts() {
 	return {
 		runners: inpRun ? parseInt(inpRun.value, 10) : 20,
@@ -1529,6 +1564,21 @@ function getCounts() {
 	};
 }
 function getSpeedMs() { return inpSpeed ? Math.round(1000 / parseInt(inpSpeed.value, 10)) : 500; }
+function getFxQuality() {
+	if (!inpQuality) return 'high';
+	return inpQuality.value === 'low' ? 'low' : 'high';
+}
+
+function applyBoardSizeInputs() {
+	if (!inpRows || !inpCols) return;
+	inpRows.value = String(getRows());
+	inpCols.value = String(getCols());
+}
+
+function handleBoardResizeControlChange() {
+	applyBoardSizeInputs();
+	if (board) resetGame();
+}
 
 function initGame() {
     if (!renderer) return;
@@ -1540,6 +1590,7 @@ function initGame() {
 	ElementsGenerator.generateElements(board, getCounts(), elements);
 	board.placeElements(elements);
 	renderer.resize(rows, cols);
+	renderer.setFxQuality(getFxQuality());
 	turn = 0;
 	idleMoves = 0;
 	if (typeof updateStats === 'function') updateStats();
@@ -1657,23 +1708,27 @@ function updateStats() {
 
 // ── LISTENERS ────────────────────────────────────────────────────────────────
 
-if (canvas) {
-    canvas.addEventListener("click", (e) => {
-        if (!renderer) return;
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        const x = (e.clientX - rect.left) * scaleX;
-        const y = (e.clientY - rect.top) * scaleY;
-        renderer._spawnRipple(x, y);
-    });
-}
-
 if (inpSpeed) {
     inpSpeed.addEventListener("input", () => {
         const ms = getSpeedMs();
         renderer.setTurnSpeed(ms);
     });
+}
+
+if (inpQuality) {
+	inpQuality.addEventListener("change", () => {
+		if (renderer) renderer.setFxQuality(getFxQuality());
+	});
+}
+
+if (inpRows) {
+	inpRows.addEventListener("change", handleBoardResizeControlChange);
+	inpRows.addEventListener("blur", handleBoardResizeControlChange);
+}
+
+if (inpCols) {
+	inpCols.addEventListener("change", handleBoardResizeControlChange);
+	inpCols.addEventListener("blur", handleBoardResizeControlChange);
 }
 
 if (btnStart) btnStart.addEventListener("click", () => { if (!board) initGame(); startGame(); });
@@ -1697,5 +1752,7 @@ window.addEventListener("focus", () => {
 
 // Initialization - Don't auto-init if in game mode
 if (!window.location.href.includes('game.html')) {
+	applyBoardSizeInputs();
+	if (inpQuality) inpQuality.value = getFxQuality();
     initGame();
 }

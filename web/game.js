@@ -7,6 +7,7 @@ const params = new URLSearchParams(window.location.search);
 const playerRole = params.get('role') || 'photon'; // 'photon' or 'electron'
 let playerParticle = null;
 let abilityCharges = 5;
+const MAX_ABILITY_CHARGES = 5;
 let mousePos = { row: 0, col: 0 };
 
 // UI Elements specific to game.html
@@ -31,6 +32,29 @@ if (btnBegin) {
     });
 }
 
+function rechargeAbilitiesFromEnergyNodes() {
+    if (!playerParticle || !elements || !Array.isArray(elements)) return;
+
+    let i = elements.length;
+    while (i--) {
+        const ent = elements[i];
+        if (!(ent instanceof EnergyNode)) continue;
+
+        const inRange =
+            (ent.row === playerParticle.row && ent.col === playerParticle.col) ||
+            MovUtils.isNeighbour(ent.pos, playerParticle.pos);
+        if (!inRange) continue;
+
+        elements.splice(i, 1);
+        abilityCharges = Math.min(MAX_ABILITY_CHARGES, abilityCharges + 1);
+        if (renderer) {
+            renderer.spawnFlash(ent.col * renderer.cellSize, ent.row * renderer.cellSize, Colors.energy, 2);
+        }
+        EventManager.emit({ type: 'fight', row: ent.row, col: ent.col, color: Colors.energy });
+        break; // max 1 recarga por tick
+    }
+}
+
 /**
  * Override tick function to include player logic
  */
@@ -42,6 +66,7 @@ window.tick = function() {
     if (playerParticle && playerParticle.life > 0) {
         // Move towards mousePos (immediate for better feel)
         playerParticle.setPos(mousePos.row, mousePos.col);
+		rechargeAbilitiesFromEnergyNodes();
     }
 
     // 2. Run standard simulation logic
@@ -75,9 +100,6 @@ if (canvas) {
         const scaleY = canvas.height / rect.height;
         const x = (e.clientX - rect.left) * scaleX;
         const y = (e.clientY - rect.top) * scaleY;
-
-        // Visual feedback (Ripple) - even if charges are 0
-        if (renderer) renderer._spawnRipple(x, y);
 
         if (!logicRunning || paused || abilityCharges <= 0 || !playerParticle) return;
 

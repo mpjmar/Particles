@@ -93,7 +93,59 @@ body::after {
 	/* More visible thin light line */
 }
 
-/* ── Sidebar ────────────────────────────────────────────────────────────────── */
+/* ── Top Bar (Relocated Title) ────────────────────────────────────────── */
+.top-bar {
+	position: fixed;
+	top: 8px;
+	left: 280px; /* Offset by sidebar */
+	right: 0;
+	height: 80px; /* Slightly taller */
+	padding: 0 40px;
+	background: linear-gradient(to bottom, var(--surface-base), transparent);
+	display: flex;
+	align-items: center;
+	justify-content: center; /* Centered */
+	z-index: 100;
+	pointer-events: none;
+    gap: 20px;
+}
+
+.top-bar-branding {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 20px;
+	pointer-events: auto;
+    width: 100%; /* Take full width to center */
+}
+
+.top-bar-info {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.top-bar .logo-icon {
+	font-size: 2.2rem; /* Larger icon */
+	margin-bottom: 0;
+}
+
+.top-bar h1 {
+	font-family: 'Orbitron', sans-serif;
+	font-size: 2.2rem; /* Much larger title */
+	font-weight: 900;
+	letter-spacing: 0.4em;
+	background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-transform: uppercase;
+    margin: 6px 0 0;
+}
+
+/* ── Sidebar (Compacted) ────────────────────────────────────────────── */
 .sidebar {
 	width: 280px;
 	min-width: 280px;
@@ -103,19 +155,16 @@ body::after {
 	border-right: 1px solid var(--border);
 	display: flex;
 	flex-direction: column;
-	gap: 20px;
-	padding: 24px;
+	gap: 8px; /* Even tighter gap */
+	padding: 12px; /* Even tighter padding */
 	overflow-y: auto;
 	box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
 	z-index: 50;
 }
 
-/* Logo Section */
-.logo {
-	text-align: left;
-	padding-bottom: 12px;
-	margin-bottom: 8px;
-	border-bottom: 1px dashed var(--border);
+/* Hide Logo in sidebar across all pages */
+.sidebar .logo {
+    display: none;
 }
 
 .logo-icon {
@@ -165,27 +214,28 @@ body::after {
 	background: var(--surface-bright);
 	border: 1px solid var(--border-bright);
 	border-radius: 12px;
-	padding: 12px;
+	padding: 8px; /* Tighter padding */
 	transition: var(--transition-smooth);
+    margin-bottom: 2px; /* Tighter margin */
 }
 
 .panel:hover {
 	border-color: var(--border);
 	background: rgba(30, 41, 59, 0.6);
-	transform: translateY(-2px);
+	transform: translateY(-1px);
 }
 
 .panel-title {
 	font-family: 'Orbitron', sans-serif;
-	font-size: 0.65rem;
-	font-weight: 600;
-	letter-spacing: 0.15em;
+	font-size: 0.6rem; /* Smaller title */
+	font-weight: 700;
+	letter-spacing: 0.12em;
 	color: var(--accent-primary);
 	text-transform: uppercase;
-	margin-bottom: 12px;
+	margin-bottom: 8px; /* Reduced margin */
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: 6px;
 }
 
 .panel-title::before {
@@ -256,14 +306,14 @@ body::after {
 .control-row {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
+	gap: 4px; /* Reduced gap */
 	margin-bottom: 0;
 }
 
 .control-grid {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
-	gap: 12px;
+	gap: 6px; /* Reduced gap */
 }
 
 .control-row.full-width {
@@ -301,9 +351,26 @@ body::after {
 	border: none;
 	color: var(--text-primary);
 	font-family: 'JetBrains Mono', monospace;
-	font-size: 0.9rem;
+	font-size: 0.8rem; /* Smaller font */
 	outline: none;
 	width: 100%;
+}
+
+.control-row select {
+	flex: 1;
+	background: transparent;
+	border: none;
+	color: var(--text-primary);
+	font-family: 'JetBrains Mono', monospace;
+	font-size: 0.8rem;
+	outline: none;
+	width: 100%;
+	cursor: pointer;
+}
+
+.control-row select option {
+	background: #081426;
+	color: var(--text-primary);
 }
 
 .val-badge {
@@ -388,7 +455,7 @@ body::after {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	padding: 40px;
+	padding: 96px 40px 40px;
 	z-index: 10;
 }
 
@@ -508,17 +575,17 @@ canvas {
 
 /* ── Legend ─────────────────────────────────────────────────────────────────── */
 .legend {
-	margin-top: auto;
-	padding-top: 16px;
+	margin-top: 8px; /* Reduced margin */
+	padding-top: 10px; /* Reduced padding */
 	border-top: 1px dashed var(--border);
 }
 
 .leg-row {
 	display: flex;
 	align-items: center;
-	gap: 12px;
-	padding: 4px 0;
-	font-size: 0.7rem;
+	gap: 8px; /* Reduced gap */
+	padding: 2px 0; /* Tighter padding */
+	font-size: 0.65rem; /* Smaller font */
 	color: var(--text-secondary);
 }
 
