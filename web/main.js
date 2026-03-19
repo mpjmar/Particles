@@ -1198,20 +1198,20 @@ class Renderer {
 		const x = cx - s / 2;
 		const y = cy - s / 2;
 		ctx.save();
-		
+
 		// Subtle outer glow
 		ctx.shadowBlur = cs * 0.3;
-		ctx.shadowColor = "rgba(0, 229, 255, 0.25)"; 
+		ctx.shadowColor = "rgba(0, 229, 255, 0.25)";
 
-		ctx.fillStyle = "rgba(10, 18, 42, 0.95)"; 
-		ctx.strokeStyle = "rgba(0, 229, 255, 0.35)"; 
+		ctx.fillStyle = "rgba(10, 18, 42, 0.95)";
+		ctx.strokeStyle = "rgba(0, 229, 255, 0.35)";
 		ctx.lineWidth = 1.0;
-		
+
 		ctx.beginPath();
 		ctx.roundRect(x, y, s, s, 4);
 		ctx.fill();
 		ctx.stroke();
-		
+
 		ctx.restore();
 	}
 
@@ -1403,7 +1403,7 @@ class Renderer {
 		let i = this.particles.length;
 		// Hard limit on particles to preserve FPS
 		if (i > 400) this.particles.splice(0, i - 400);
-		
+
 		i = this.particles.length;
 		while (i--) {
 			const p = this.particles[i];
