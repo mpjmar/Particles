@@ -1267,18 +1267,18 @@ class Renderer {
 		// Energetic explosion rays
 		this.spawnExplosion(x, y, "rgba(0, 229, 255, 1)");
 
-		// Spawn geometric network nodes that connect to each other dynamically
-		for (let i = 0; i < 20; i++) {
+		// Reduced geometric network nodes for better click performance
+		for (let i = 0; i < 8; i++) {
 			const angle = Math.random() * Math.PI * 2;
 			const speed = Math.random() * 5 + 2;
 			this.particles.push({
 				x, y,
 				vx: Math.cos(angle) * speed,
 				vy: Math.sin(angle) * speed,
-				life: Math.random() * 800 + 400,
-				maxLife: 1200,
+				life: Math.random() * 600 + 400,
+				maxLife: 1000,
 				color: "rgba(0, 229, 255, 1)",
-				size: Math.random() * 3 + 2,
+				size: Math.random() * 2 + 1,
 				isNetworkNode: true
 			});
 		}
@@ -1401,8 +1401,8 @@ class Renderer {
 
 	updateParticles(dt) {
 		let i = this.particles.length;
-		// Hard limit on particles to preserve FPS
-		if (i > 400) this.particles.splice(0, i - 400);
+		// Stricter hard limit on particles to preserve FPS (250 instead of 400)
+		if (i > 250) this.particles.splice(0, i - 250);
 
 		i = this.particles.length;
 		while (i--) {
@@ -1439,10 +1439,7 @@ class Renderer {
 				ctx.stroke();
 			} else if (p.isCloud) {
 				const size = p.size * (1 + (1 - alpha) * 0.5);
-				const gr = ctx.createRadialGradient(drawX, drawY, 0, drawX, drawY, size);
-				gr.addColorStop(0, colorWithAlpha(p.color, Math.min(1, alpha * 1.5)));
-				gr.addColorStop(1, "rgba(0,0,0,0)");
-				ctx.fillStyle = gr;
+				ctx.fillStyle = colorWithAlpha(p.color, alpha * 0.4); // Simple fill instead of radial gradient
 				ctx.beginPath();
 				ctx.arc(drawX, drawY, size, 0, Math.PI * 2);
 				ctx.fill();
@@ -1468,9 +1465,7 @@ class Renderer {
 				} else {
 					ctx.strokeStyle = colorWithAlpha(p.color, alpha);
 					ctx.lineWidth = p.size;
-					ctx.shadowBlur = p.size * 2;
-					ctx.shadowColor = p.color;
-					ctx.stroke();
+					ctx.stroke(); // Removed shadowBlur for standard lines
 				}
 			} else {
 				const r = p.size * alpha + 0.3;
