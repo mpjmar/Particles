@@ -1,146 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>Particles – Electron Simulation</title>
-	<meta name="description"
-		content="A futuristic particle simulation: red electrons chase blue photons across a quantum grid." />
+	<title>PARTICLES – Choose Your Mode</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
-	<link
-		href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=Inter:wght@300;400;600&display=swap"
-		rel="stylesheet" />
+	<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
 	<link rel="stylesheet" href="style.css" />
+	<style>
+		body {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: 100vh;
+			margin: 0;
+			overflow: hidden;
+			background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+		}
+
+		.landing-container {
+			text-align: center;
+			z-index: 10;
+		}
+
+		.landing-logo {
+			margin-bottom: 4rem;
+			animation: logoFloat 4s ease-in-out infinite;
+		}
+
+		@keyframes logoFloat {
+			0%, 100% { transform: translateY(0); }
+			50% { transform: translateY(-15px); }
+		}
+
+		.landing-logo h1 {
+			font-size: 5rem;
+			margin: 0;
+			background: linear-gradient(to bottom, #fff 20%, #38bdf8 100%);
+			-webkit-background-clip: text;
+			background-clip: text;
+			-webkit-text-fill-color: transparent;
+			text-shadow: 0 0 40px rgba(56, 189, 248, 0.4);
+		}
+
+		.mode-options {
+			display: flex;
+			gap: 30px;
+			justify-content: center;
+		}
+
+		.mode-card {
+			width: 280px;
+			padding: 40px 20px;
+			background: rgba(30, 41, 59, 0.4);
+			border: 2px solid rgba(56, 189, 248, 0.2);
+			border-radius: 20px;
+			backdrop-filter: blur(10px);
+			cursor: pointer;
+			transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+			text-decoration: none;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+
+		.mode-card:hover {
+			transform: scale(1.05) translateY(-10px);
+			border-color: #38bdf8;
+			background: rgba(30, 41, 59, 0.7);
+			box-shadow: 0 0 50px rgba(56, 189, 248, 0.3);
+		}
+
+		.mode-card h2 {
+			font-family: 'Orbitron', sans-serif;
+			color: #fff;
+			font-size: 1.5rem;
+			margin: 20px 0 10px;
+		}
+
+		.mode-card p {
+			color: #94a3b8;
+			font-size: 0.9rem;
+			line-height: 1.5;
+		}
+
+		.mode-icon {
+			font-size: 3rem;
+			height: 80px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		/* Decorative backgrounds */
+		.bg-particle {
+			position: absolute;
+			border-radius: 50%;
+			filter: blur(1px);
+			opacity: 0.6;
+			pointer-events: none;
+		}
+	</style>
 </head>
-
 <body>
-
-	<!-- ── Sidebar ──────────────────────────────────────────────────────── -->
-	<aside class="sidebar">
-		<div class="logo">
-			<span class="logo-icon">⚛</span>
+	<div class="landing-container">
+		<div class="landing-logo">
 			<h1>PARTICLES</h1>
-			<p class="logo-sub">Electron Simulation</p>
+			<p style="letter-spacing: 0.5em; color: #38bdf8; font-family: 'Orbitron'; font-size: 0.8rem; margin-top: 10px;">QUANTUM DYNAMICS</p>
 		</div>
 
-		<!-- Scoreboard -->
-		<section class="panel" id="scoreboard">
-			<h2 class="panel-title">Survivors</h2>
-			<div class="score-row runner">
-				<span class="score-dot"></span>
-				<span class="score-label">Photons</span>
-				<span class="score-count" id="cnt-runners">0</span>
-			</div>
-			<div class="score-row chaser">
-				<span class="score-dot"></span>
-				<span class="score-label">Electrons</span>
-				<span class="score-count" id="cnt-chasers">0</span>
-			</div>
-			<div class="score-row turn-row">
-				<span class="score-label">Turn</span>
-				<span class="score-count neutral" id="cnt-turn">0</span>
-			</div>
-		</section>
-
-		<!-- System Settings (Merged Board & Speed) -->
-		<section class="panel">
-			<h2 class="panel-title">System Settings</h2>
-			<div class="control-grid">
-				<div class="control-row">
-					<label for="inp-rows">Rows</label>
-					<div class="control-input-wrap">
-						<input type="number" id="inp-rows" min="10" max="100" value="40" />
-					</div>
-				</div>
-				<div class="control-row">
-					<label for="inp-cols">Cols</label>
-					<div class="control-input-wrap">
-						<input type="number" id="inp-cols" min="10" max="100" value="50" />
-					</div>
-				</div>
-				<div class="control-row full-width">
-					<label for="inp-speed">Sim. Speed</label>
-					<div class="control-input-wrap">
-						<input type="number" id="inp-speed" min="1" max="20" value="2" />
-						<span class="val-badge">x</span>
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<!-- Elements Count (Merged into a grid) -->
-		<section class="panel">
-			<h2 class="panel-title">Particle Density</h2>
-			<div class="control-grid">
-				<div class="control-row">
-					<label for="inp-run">Photons</label>
-					<div class="control-input-wrap">
-						<input type="number" id="inp-run" min="1" max="100" value="20" />
-					</div>
-				</div>
-				<div class="control-row">
-					<label for="inp-cha">Electrons</label>
-					<div class="control-input-wrap">
-						<input type="number" id="inp-cha" min="1" max="100" value="20" />
-					</div>
-				</div>
-				<div class="control-row">
-					<label for="inp-obs">Obstacl.</label>
-					<div class="control-input-wrap">
-						<input type="number" id="inp-obs" min="0" max="200" value="25" />
-					</div>
-				</div>
-				<div class="control-row">
-					<label for="inp-hea">Healers</label>
-					<div class="control-input-wrap">
-						<input type="number" id="inp-hea" min="0" max="50" value="5" />
-					</div>
-				</div>
-				<div class="control-row">
-					<label for="inp-spe">Speeders</label>
-					<div class="control-input-wrap">
-						<input type="number" id="inp-spe" min="0" max="50" value="5" />
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<!-- Controls -->
-		<section class="controls">
-			<button id="btn-start">▶ Start</button>
-			<button id="btn-pause" disabled>⏸ Pause</button>
-			<button id="btn-reset" class="reset">↺ Reset</button>
-		</section>
-
-		<!-- Legend -->
-		<section class="legend">
-			<div class="leg-row"><span class="leg-dot runner"></span><span>Photon</span></div>
-			<div class="leg-row"><span class="leg-dot chaser"></span><span>Electron</span></div>
-			<div class="leg-row"><span class="leg-dot healer"></span><span>Healer</span></div>
-			<div class="leg-row"><span class="leg-dot speeder"></span><span>Speeder</span></div>
-			<div class="leg-row"><span class="leg-dot energy"></span><span>Energy Node</span></div>
-			<div class="leg-row"><span class="leg-dot obstacle"></span><span>Obstacle</span></div>
-		</section>
-	</aside>
-
-	<!-- ── Canvas area ───────────────────────────────────────────────────── -->
-	<main class="board-wrap">
-		<canvas id="board-canvas"></canvas>
-
-		<!-- Winner overlay -->
-		<div id="overlay" class="overlay hidden">
-			<div class="overlay-card">
-				<div class="overlay-icon">⚛</div>
-				<p class="overlay-result" id="overlay-msg">Game Over</p>
-				<button id="btn-overlay-reset">↺ Play Again</button>
-			</div>
+		<div class="mode-options">
+			<a href="simulation.html" class="mode-card">
+				<div class="mode-icon" style="color: #38bdf8; text-shadow: 0 0 20px #38bdf8;">⚛</div>
+				<h2>SIMULATION</h2>
+				<p>Observe emergent behaviors and complex evolution in autonomous mode.</p>
+			</a>
+			
+			<a href="game_selection.html" class="mode-card">
+				<div class="mode-icon" style="color: #fb923c; text-shadow: 0 0 20px #fb923c;">🎮</div>
+				<h2>PLAYABLE</h2>
+				<p>Take control. Choose your side and dominate the grid using special abilities.</p>
+			</a>
 		</div>
-	</main>
+	</div>
 
-	<script src="main.js?v=3" defer></script>
-
-	<div class="window-glow"></div>
+	<script>
+		// Simple background particle effect
+		for (let i = 0; i < 40; i++) {
+			const p = document.createElement('div');
+			p.className = 'bg-particle';
+			const size = Math.random() * 4 + 2;
+			const isBlue = Math.random() > 0.5;
+			p.style.width = size + 'px';
+			p.style.height = size + 'px';
+			p.style.background = isBlue ? '#38bdf8' : '#fb923c';
+			p.style.boxShadow = `0 0 10px ${isBlue ? '#38bdf8' : '#fb923c'}`;
+			p.style.left = Math.random() * 100 + 'vw';
+			p.style.top = Math.random() * 100 + 'vh';
+			document.body.appendChild(p);
+			
+			// Simple drift
+			const vx = (Math.random() - 0.5) * 0.5;
+			const vy = (Math.random() - 0.5) * 0.5;
+			let x = parseFloat(p.style.left);
+			let y = parseFloat(p.style.top);
+			
+			function move() {
+				x += vx;
+				y += vy;
+				if (x < 0) x = 100; if (x > 100) x = 0;
+				if (y < 0) y = 100; if (y > 100) y = 0;
+				p.style.left = x + 'vw';
+				p.style.top = y + 'vh';
+				requestAnimationFrame(move);
+			}
+			move();
+		}
+	</script>
 </body>
-
 </html>

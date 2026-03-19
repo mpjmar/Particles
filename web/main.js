@@ -1507,7 +1507,7 @@ const cntTurn = document.getElementById("cnt-turn");
 const overlay = document.getElementById("overlay");
 const overlayMsg = document.getElementById("overlay-msg");
 
-const renderer = new Renderer(canvas);
+const renderer = canvas ? new Renderer(canvas) : null;
 let board;
 let elements;
 let logicRunning = false;
@@ -1517,20 +1517,21 @@ let paused = false;
 let turn = 0;
 let idleMoves = 0;
 
-function getRows() { return parseInt(inpRows.value, 10); }
-function getCols() { return parseInt(inpCols.value, 10); }
+function getRows() { return inpRows ? parseInt(inpRows.value, 10) : 40; }
+function getCols() { return inpCols ? parseInt(inpCols.value, 10) : 50; }
 function getCounts() {
 	return {
-		runners: parseInt(inpRun.value, 10),
-		chasers: parseInt(inpCha.value, 10),
-		obstacles: parseInt(inpObs.value, 10),
-		healers: parseInt(inpHea.value, 10),
-		speeders: parseInt(inpSpe.value, 10)
+		runners: inpRun ? parseInt(inpRun.value, 10) : 20,
+		chasers: inpCha ? parseInt(inpCha.value, 10) : 20,
+		obstacles: inpObs ? parseInt(inpObs.value, 10) : 25,
+		healers: inpHea ? parseInt(inpHea.value, 10) : 5,
+		speeders: inpSpe ? parseInt(inpSpe.value, 10) : 5
 	};
 }
-function getSpeedMs() { return Math.round(1000 / parseInt(inpSpeed.value, 10)); }
+function getSpeedMs() { return inpSpeed ? Math.round(1000 / parseInt(inpSpeed.value, 10)) : 500; }
 
 function initGame() {
+    if (!renderer) return;
 	updateColorsFromCSS();
 	const rows = getRows();
 	const cols = getCols();
@@ -1541,15 +1542,14 @@ function initGame() {
 	renderer.resize(rows, cols);
 	turn = 0;
 	idleMoves = 0;
-	updateStats();
+	if (typeof updateStats === 'function') updateStats();
 	const ms = getSpeedMs();
 	renderer.setTurnSpeed(ms);
 	renderer.updateLogicState(elements, board);
-	renderer.attachMouseEvents(); // Hook gravity tracker
-	overlay.classList.add("hidden");
+	renderer.attachMouseEvents();
+	if (overlay) overlay.classList.add("hidden");
 
 	logicTimer = performance.now();
-
 	if (animFrameId !== null) cancelAnimationFrame(animFrameId);
 	animLoop(performance.now());
 }
@@ -1647,6 +1647,7 @@ function showWinner(runners, chasers) {
 }
 
 function updateStats() {
+    if (!cntRunners || !cntChasers || !cntTurn) return;
 	const runners = ListUtils.countCharacters(elements ?? [], "Runner");
 	const chasers = ListUtils.countCharacters(elements ?? [], "Chaser");
 	cntRunners.textContent = String(runners);
@@ -1656,27 +1657,33 @@ function updateStats() {
 
 // ── LISTENERS ────────────────────────────────────────────────────────────────
 
-canvas.addEventListener("click", (e) => {
-	const rect = canvas.getBoundingClientRect();
-	const scaleX = canvas.width / rect.width;
-	const scaleY = canvas.height / rect.height;
-	const x = (e.clientX - rect.left) * scaleX;
-	const y = (e.clientY - rect.top) * scaleY;
-	renderer._spawnRipple(x, y);
-});
+if (canvas) {
+    canvas.addEventListener("click", (e) => {
+        if (!renderer) return;
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+        renderer._spawnRipple(x, y);
+    });
+}
 
-inpSpeed.addEventListener("input", () => {
-	const ms = getSpeedMs();
-	renderer.setTurnSpeed(ms);
-});
+if (inpSpeed) {
+    inpSpeed.addEventListener("input", () => {
+        const ms = getSpeedMs();
+        renderer.setTurnSpeed(ms);
+    });
+}
 
-btnStart.addEventListener("click", () => { if (!board) initGame(); startGame(); });
-btnPause.addEventListener("click", pauseGame);
-btnReset.addEventListener("click", resetGame);
-document.getElementById("btn-overlay-reset").addEventListener("click", resetGame);
+if (btnStart) btnStart.addEventListener("click", () => { if (!board) initGame(); startGame(); });
+if (btnPause) btnPause.addEventListener("click", pauseGame);
+if (btnReset) btnReset.addEventListener("click", resetGame);
+const overlayBtn = document.getElementById("btn-overlay-reset");
+if (overlayBtn) overlayBtn.addEventListener("click", resetGame);
 
 window.addEventListener("resize", () => {
-	if (board) {
+	if (board && renderer) {
 		updateColorsFromCSS();
 		renderer.resize(board.rows, board.cols);
 		renderer.updateLogicState(elements, board);
@@ -1685,8 +1692,10 @@ window.addEventListener("resize", () => {
 
 window.addEventListener("focus", () => {
 	updateColorsFromCSS();
-	if (board) renderer.updateLogicState(elements, board);
+	if (board && renderer) renderer.updateLogicState(elements, board);
 });
 
-// Initialization
-initGame();
+// Initialization - Don't auto-init if in game mode
+if (!window.location.href.includes('game.html')) {
+    initGame();
+}

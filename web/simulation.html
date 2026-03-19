@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Particles – Electron Simulation</title>
+	<meta name="description"
+		content="A futuristic particle simulation: red electrons chase blue photons across a quantum grid." />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link
+		href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=Inter:wght@300;400;600&display=swap"
+		rel="stylesheet" />
+	<link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+	<!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+	<aside class="sidebar">
+		<div class="logo">
+			<span class="logo-icon">⚛</span>
+			<h1>PARTICLES</h1>
+			<p class="logo-sub">Electron Simulation</p>
+		</div>
+
+		<!-- Scoreboard -->
+		<section class="panel" id="scoreboard">
+			<h2 class="panel-title">Survivors</h2>
+			<div class="score-row runner">
+				<span class="score-dot"></span>
+				<span class="score-label">Photons</span>
+				<span class="score-count" id="cnt-runners">0</span>
+			</div>
+			<div class="score-row chaser">
+				<span class="score-dot"></span>
+				<span class="score-label">Electrons</span>
+				<span class="score-count" id="cnt-chasers">0</span>
+			</div>
+			<div class="score-row turn-row">
+				<span class="score-label">Turn</span>
+				<span class="score-count neutral" id="cnt-turn">0</span>
+			</div>
+		</section>
+
+		<!-- System Settings (Merged Board & Speed) -->
+		<section class="panel">
+			<h2 class="panel-title">System Settings</h2>
+			<div class="control-grid">
+				<div class="control-row">
+					<label for="inp-rows">Rows</label>
+					<div class="control-input-wrap">
+						<input type="number" id="inp-rows" min="10" max="100" value="40" />
+					</div>
+				</div>
+				<div class="control-row">
+					<label for="inp-cols">Cols</label>
+					<div class="control-input-wrap">
+						<input type="number" id="inp-cols" min="10" max="100" value="50" />
+					</div>
+				</div>
+				<div class="control-row full-width">
+					<label for="inp-speed">Sim. Speed</label>
+					<div class="control-input-wrap">
+						<input type="number" id="inp-speed" min="1" max="20" value="2" />
+						<span class="val-badge">x</span>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Elements Count (Merged into a grid) -->
+		<section class="panel">
+			<h2 class="panel-title">Particle Density</h2>
+			<div class="control-grid">
+				<div class="control-row">
+					<label for="inp-run">Photons</label>
+					<div class="control-input-wrap">
+						<input type="number" id="inp-run" min="1" max="100" value="20" />
+					</div>
+				</div>
+				<div class="control-row">
+					<label for="inp-cha">Electrons</label>
+					<div class="control-input-wrap">
+						<input type="number" id="inp-cha" min="1" max="100" value="20" />
+					</div>
+				</div>
+				<div class="control-row">
+					<label for="inp-obs">Obstacl.</label>
+					<div class="control-input-wrap">
+						<input type="number" id="inp-obs" min="0" max="200" value="25" />
+					</div>
+				</div>
+				<div class="control-row">
+					<label for="inp-hea">Healers</label>
+					<div class="control-input-wrap">
+						<input type="number" id="inp-hea" min="0" max="50" value="5" />
+					</div>
+				</div>
+				<div class="control-row">
+					<label for="inp-spe">Speeders</label>
+					<div class="control-input-wrap">
+						<input type="number" id="inp-spe" min="0" max="50" value="5" />
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Controls -->
+		<section class="controls">
+			<button id="btn-start">▶ Start</button>
+			<button id="btn-pause" disabled>⏸ Pause</button>
+			<button id="btn-reset" class="reset">↺ Reset</button>
+			<a href="index.html" style="text-decoration:none;"><button style="width:100%; margin-top:10px; opacity:0.8;">← Exit to Menu</button></a>
+		</section>
+
+		<!-- Legend -->
+		<section class="legend">
+			<div class="leg-row"><span class="leg-dot runner"></span><span>Photon</span></div>
+			<div class="leg-row"><span class="leg-dot chaser"></span><span>Electron</span></div>
+			<div class="leg-row"><span class="leg-dot healer"></span><span>Healer</span></div>
+			<div class="leg-row"><span class="leg-dot speeder"></span><span>Speeder</span></div>
+			<div class="leg-row"><span class="leg-dot energy"></span><span>Energy Node</span></div>
+			<div class="leg-row"><span class="leg-dot obstacle"></span><span>Obstacle</span></div>
+		</section>
+	</aside>
+
+	<!-- ── Canvas area ───────────────────────────────────────────────────── -->
+	<main class="board-wrap">
+		<canvas id="board-canvas"></canvas>
+
+		<!-- Winner overlay -->
+		<div id="overlay" class="overlay hidden">
+			<div class="overlay-card">
+				<div class="overlay-icon">⚛</div>
+				<p class="overlay-result" id="overlay-msg">Game Over</p>
+				<button id="btn-overlay-reset">↺ Play Again</button>
+			</div>
+		</div>
+	</main>
+
+	<script src="main.js?v=3" defer></script>
+
+	<div class="window-glow"></div>
+</body>
+
+</html>

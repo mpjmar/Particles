@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Choose Your Particle – PARTICLES</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="style.css" />
+	<style>
+		body {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: 100vh;
+			margin: 0;
+			overflow: hidden;
+			background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+		}
+
+		.selection-container {
+			text-align: center;
+			z-index: 10;
+		}
+
+		.selection-title {
+			margin-bottom: 3rem;
+		}
+
+		.selection-title h1 {
+			font-family: 'Orbitron', sans-serif;
+			font-size: 2.5rem;
+			color: #fff;
+			letter-spacing: 0.2em;
+			text-transform: uppercase;
+		}
+
+		.particle-options {
+			display: flex;
+			gap: 40px;
+			justify-content: center;
+		}
+
+		.particle-card {
+			width: 320px;
+			padding: 40px 20px;
+			background: rgba(15, 23, 42, 0.6);
+			border: 2px solid rgba(255, 255, 255, 0.1);
+			border-radius: 24px;
+			cursor: pointer;
+			transition: all 0.4s ease;
+			text-decoration: none;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+
+		/* Photon Style */
+		.particle-card.photon:hover {
+			border-color: #00e5ff;
+			background: rgba(0, 229, 255, 0.05);
+			box-shadow: 0 0 60px rgba(0, 229, 255, 0.2);
+			transform: translateY(-15px);
+		}
+
+		/* Electron Style */
+		.particle-card.electron:hover {
+			border-color: #fb923c;
+			background: rgba(251, 146, 60, 0.05);
+			box-shadow: 0 0 60px rgba(251, 146, 60, 0.2);
+			transform: translateY(-15px);
+		}
+
+		.particle-preview {
+			width: 100px;
+			height: 100px;
+			border-radius: 50%;
+			margin-bottom: 25px;
+			position: relative;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.photon .particle-preview {
+			background: radial-gradient(circle, #fff 0%, #00e5ff 60%, transparent 100%);
+			box-shadow: 0 0 30px #00e5ff;
+		}
+
+		.electron .particle-preview {
+			background: radial-gradient(circle, #fff 0%, #fb923c 60%, transparent 100%);
+			box-shadow: 0 0 30px #fb923c;
+		}
+
+		.particle-card h2 {
+			font-family: 'Orbitron', sans-serif;
+			font-size: 1.8rem;
+			color: #fff;
+			margin: 10px 0;
+		}
+
+		.particle-card p {
+			color: #94a3b8;
+			font-size: 0.95rem;
+			margin-bottom: 20px;
+		}
+
+		.ability-badge {
+			padding: 8px 16px;
+			border-radius: 100px;
+			font-size: 0.75rem;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.1em;
+			background: rgba(255,255,255,0.05);
+			color: #fff;
+			border: 1px solid rgba(255,255,255,0.1);
+		}
+
+		.photon .ability-badge { color: #00e5ff; border-color: rgba(0, 229, 255, 0.3); }
+		.electron .ability-badge { color: #fb923c; border-color: rgba(251, 146, 60, 0.3); }
+
+		.back-btn {
+			margin-top: 3rem;
+			display: inline-block;
+			color: #64748b;
+			text-decoration: none;
+			font-family: 'Orbitron';
+			font-size: 0.8rem;
+			transition: color 0.3s;
+		}
+		.back-btn:hover { color: #fff; }
+	</style>
+</head>
+<body>
+	<div class="selection-container">
+		<div class="selection-title">
+			<h1>SELECT YOUR SIDE</h1>
+		</div>
+
+		<div class="particle-options">
+			<!-- Link with query params for mode -->
+			<a href="game.html?role=photon" class="particle-card photon">
+				<div class="particle-preview"></div>
+				<h2>PHOTON</h2>
+				<p>High Agility • Survival Mode</p>
+				<span class="ability-badge">⚡ SHOCKWAVE (3-Cell Radius)</span>
+			</a>
+			
+			<a href="game.html?role=electron" class="particle-card electron">
+				<div class="particle-preview"></div>
+				<h2>ELECTRON</h2>
+				<p>Swarm Leader • Hunt Mode</p>
+				<span class="ability-badge">🧬 CLONE (Summon Ally)</span>
+			</a>
+		</div>
+
+		<a href="index.html" class="back-btn">← BACK TO MODES</a>
+	</div>
+</body>
+</html>
