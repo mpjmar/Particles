@@ -43,66 +43,65 @@
 			</div>
 		</section>
 
-		<!-- Board size -->
+		<!-- System Settings (Merged Board & Speed) -->
 		<section class="panel">
-			<h2 class="panel-title">Board Size</h2>
-			<div class="control-row">
-				<label for="inp-rows">Rows</label>
-				<div class="control-input-wrap">
-					<input type="number" id="inp-rows" min="10" max="100" value="40" />
+			<h2 class="panel-title">System Settings</h2>
+			<div class="control-grid">
+				<div class="control-row">
+					<label for="inp-rows">Rows</label>
+					<div class="control-input-wrap">
+						<input type="number" id="inp-rows" min="10" max="100" value="40" />
+					</div>
 				</div>
-			</div>
-			<div class="control-row">
-				<label for="inp-cols">Cols</label>
-				<div class="control-input-wrap">
-					<input type="number" id="inp-cols" min="10" max="100" value="50" />
+				<div class="control-row">
+					<label for="inp-cols">Cols</label>
+					<div class="control-input-wrap">
+						<input type="number" id="inp-cols" min="10" max="100" value="50" />
+					</div>
+				</div>
+				<div class="control-row full-width">
+					<label for="inp-speed">Sim. Speed</label>
+					<div class="control-input-wrap">
+						<input type="number" id="inp-speed" min="1" max="20" value="2" />
+						<span class="val-badge">x</span>
+					</div>
 				</div>
 			</div>
 		</section>
 
-		<!-- Speed -->
+		<!-- Elements Count (Merged into a grid) -->
 		<section class="panel">
-			<h2 class="panel-title">Simulation Speed</h2>
-			<div class="control-row">
-				<label for="inp-speed">Speed</label>
-				<div class="control-input-wrap">
-					<input type="number" id="inp-speed" min="1" max="20" value="2" />
-					<span class="val-badge">x</span>
+			<h2 class="panel-title">Particle Density</h2>
+			<div class="control-grid">
+				<div class="control-row">
+					<label for="inp-run">Photons</label>
+					<div class="control-input-wrap">
+						<input type="number" id="inp-run" min="1" max="100" value="20" />
+					</div>
 				</div>
-			</div>
-		</section>
-
-		<!-- Elements -->
-		<section class="panel">
-			<h2 class="panel-title">Elements Count</h2>
-			<div class="control-row">
-				<label for="inp-run">Photons</label>
-				<div class="control-input-wrap">
-					<input type="number" id="inp-run" min="1" max="100" value="20" />
+				<div class="control-row">
+					<label for="inp-cha">Electrons</label>
+					<div class="control-input-wrap">
+						<input type="number" id="inp-cha" min="1" max="100" value="20" />
+					</div>
 				</div>
-			</div>
-			<div class="control-row">
-				<label for="inp-cha">Electrons</label>
-				<div class="control-input-wrap">
-					<input type="number" id="inp-cha" min="1" max="100" value="20" />
+				<div class="control-row">
+					<label for="inp-obs">Obstacl.</label>
+					<div class="control-input-wrap">
+						<input type="number" id="inp-obs" min="0" max="200" value="25" />
+					</div>
 				</div>
-			</div>
-			<div class="control-row">
-				<label for="inp-obs">Obstacles</label>
-				<div class="control-input-wrap">
-					<input type="number" id="inp-obs" min="0" max="200" value="25" />
+				<div class="control-row">
+					<label for="inp-hea">Healers</label>
+					<div class="control-input-wrap">
+						<input type="number" id="inp-hea" min="0" max="50" value="5" />
+					</div>
 				</div>
-			</div>
-			<div class="control-row">
-				<label for="inp-hea">Healers</label>
-				<div class="control-input-wrap">
-					<input type="number" id="inp-hea" min="0" max="50" value="5" />
-				</div>
-			</div>
-			<div class="control-row">
-				<label for="inp-spe">Speeders</label>
-				<div class="control-input-wrap">
-					<input type="number" id="inp-spe" min="0" max="50" value="5" />
+				<div class="control-row">
+					<label for="inp-spe">Speeders</label>
+					<div class="control-input-wrap">
+						<input type="number" id="inp-spe" min="0" max="50" value="5" />
+					</div>
 				</div>
 			</div>
 		</section>

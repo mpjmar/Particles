@@ -165,7 +165,7 @@ body::after {
 	background: var(--surface-bright);
 	border: 1px solid var(--border-bright);
 	border-radius: 12px;
-	padding: 16px;
+	padding: 12px;
 	transition: var(--transition-smooth);
 }
 
@@ -182,7 +182,7 @@ body::after {
 	letter-spacing: 0.15em;
 	color: var(--accent-primary);
 	text-transform: uppercase;
-	margin-bottom: 16px;
+	margin-bottom: 12px;
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -256,8 +256,19 @@ body::after {
 .control-row {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
-	margin-bottom: 16px;
+	gap: 6px;
+	margin-bottom: 0;
+}
+
+.control-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+}
+
+.control-row.full-width {
+	grid-column: span 2;
+	margin-top: 4px;
 }
 
 .control-row label {
