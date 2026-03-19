@@ -81,23 +81,33 @@ class Role extends BoardElement {
 class Runner extends Role {
 	constructor(row, col) {
 		super(row, col);
-		this._target = null;
+		this._enemyTarget = null;
+		this._energyTarget = null;
 		this._prevPos = new Position(row, col);
 	}
-	getTarget() { return this._target; }
+	getTarget() { return this._energyTarget || this._enemyTarget; }
+	isTargetingEnergy() { return this._energyTarget !== null; }
 	setTarget(elements) {
-		let minDist = 5;
-		let target = null;
+		let minEnemyDist = 5;
+		let minEnergyDist = 8;
+		this._enemyTarget = null;
+		this._energyTarget = null;
+		
 		for (const e of elements) {
 			if (e instanceof Chaser) {
 				const dist = Position.calcDistance(this.pos, e.pos);
-				if (dist < minDist) {
-					minDist = dist;
-					target = e;
+				if (dist < minEnemyDist) {
+					minEnemyDist = dist;
+					this._enemyTarget = e;
+				}
+			} else if (e instanceof EnergyNode) {
+				const dist = Position.calcDistance(this.pos, e.pos);
+				if (dist < minEnergyDist) {
+					minEnergyDist = dist;
+					this._energyTarget = e;
 				}
 			}
 		}
-		this._target = target;
 	}
 	get prevPos() { return this._prevPos; }
 	setPos(row, col) {
@@ -111,27 +121,36 @@ class Chaser extends Role {
 		super(row, col);
 		this._speed = 1;
 		this._speedTurns = 0;
-		this._target = null;
+		this._enemyTarget = null;
+		this._energyTarget = null;
 		this._prevPos = new Position(row, col);
 	}
 	get chaserSpeed() { return this._speed; }
 	set chaserSpeed(v) { this._speed = v; }
 	get speedTurns() { return this._speedTurns; }
 	set speedTurns(v) { this._speedTurns = v; }
-	getTarget() { return this._target; }
+	getTarget() { return this._energyTarget || this._enemyTarget; }
 	setTarget(elements) {
-		let minDist = Number.MAX_SAFE_INTEGER;
-		let target = null;
+		let minEnemyDist = Number.MAX_SAFE_INTEGER;
+		let minEnergyDist = 8;
+		this._enemyTarget = null;
+		this._energyTarget = null;
+		
 		for (const e of elements) {
 			if (e instanceof Runner) {
 				const dist = Position.calcDistance(this.pos, e.pos);
-				if (dist < minDist) {
-					minDist = dist;
-					target = e;
+				if (dist < minEnemyDist) {
+					minEnemyDist = dist;
+					this._enemyTarget = e;
+				}
+			} else if (e instanceof EnergyNode) {
+				const dist = Position.calcDistance(this.pos, e.pos);
+				if (dist < minEnergyDist) {
+					minEnergyDist = dist;
+					this._energyTarget = e;
 				}
 			}
 		}
-		this._target = target;
 	}
 	get prevPos() { return this._prevPos; }
 	setPos(row, col) {
@@ -167,6 +186,14 @@ class Speeder extends BoardElement {
 	set speed(v) { this._speedValue = v; }
 }
 
+class EnergyNode extends BoardElement {
+	constructor(row, col) {
+		super(row, col);
+		this.life = 15; // turns until it disappears
+		this.maxLife = 15;
+	}
+}
+
 // ── BOARD ────────────────────────────────────────────────────────────────────
 
 class Board {
@@ -192,7 +219,8 @@ class Board {
 					name === "Runner" ? 2 :
 						name === "Chaser" ? 3 :
 							name === "Healer" ? 4 :
-								name === "Speeder" ? 5 : 0;
+								name === "Speeder" ? 5 : 
+									name === "EnergyNode" ? 6 : 0;
 			this.setCell(e.row, e.col, value);
 		}
 	}
@@ -290,7 +318,8 @@ class RunnerStrategy {
 				MovUtils.isWithinLimits(board, p) && !MovUtils.isObstacle(elements, p.row, p.col)
 			);
 			availPos.sort((p1, p2) => {
-				const cmpDist = p2.dist - p1.dist;
+				const sign = r.isTargetingEnergy() ? 1 : -1;
+				const cmpDist = (p1.dist - p2.dist) * sign;
 				if (cmpDist !== 0) return cmpDist;
 				const prev = r.prevPos;
 				const p1Prev = prev && p1.row === prev.row && p1.col === prev.col;
@@ -397,12 +426,60 @@ class Speed {
 	}
 }
 
+class EnergyManager {
+	static processNodes(elements, board) {
+		// 1. Decay life, remove dead nodes
+		let i = elements.length;
+		while (i--) {
+			const e = elements[i];
+			if (e instanceof EnergyNode) {
+				e.life--;
+				if (e.life <= 0) elements.splice(i, 1);
+			}
+		}
+		
+		// 2. Consume nodes if a Runner or Chaser is nearby
+		i = elements.length;
+		while (i--) {
+			const e = elements[i];
+			if (e instanceof EnergyNode) {
+				for (const actor of elements) {
+					// We say distance <= 1 allows consumption 
+					if ((actor instanceof Runner || actor instanceof Chaser) && 
+						(actor.row === e.row && actor.col === e.col || MovUtils.isNeighbour(e.pos, actor.pos))) {
+						
+						if (actor instanceof Runner) actor.sumLife(generateRandom(15, 30));
+						if (actor instanceof Chaser) actor.speedTurns += 3;
+						
+						// trigger a visual explosion for node consumption
+						EventManager.emit({ type: "fight", row: e.row, col: e.col, color: Colors.energy });
+						elements.splice(i, 1);
+						break;
+					}
+				}
+			}
+		}
+		
+		// 3. Random spawn
+		const nodes = elements.filter(e => e instanceof EnergyNode);
+		// Increased limit to 4 and doubled probability (from 4% to 8% per turn)
+		if (nodes.length < 4 && Math.random() < 0.08) {
+			let row = generateRandom(0, board.rows);
+			let col = generateRandom(0, board.cols);
+			if (MovUtils.isEmpty(elements, row, col)) {
+				elements.push(new EnergyNode(row, col));
+			}
+		}
+	}
+}
+
 class Game {
 	static playGame(elements, board) {
 		Movements.move(elements, board);
 		Fight.searchEnemies(elements);
 		Heal.healRunners(elements);
 		Speed.speedChasers(elements);
+		EnergyManager.processNodes(elements, board);
 	}
 }
 
@@ -434,9 +511,10 @@ const Colors = {
 	runner: "#3b82f6",
 	chaser: "#ef4444",
 	healer: "#22c55e",
-	speeder: "#a855f7",
+	speeder: "#ff2a2a",
 	obstacle: "#9da0a6",
 	accent: "#0ea5e9",
+	energy: "#d946ef", // bright fuchsia/purple for energy nodes
 	text: "#e2e8f0"
 };
 
@@ -450,6 +528,7 @@ function updateColorsFromCSS() {
 	Colors.speeder = get('--speeder', Colors.speeder);
 	Colors.obstacle = get('--obstacle', Colors.obstacle);
 	Colors.accent = get('--accent', Colors.accent);
+	Colors.energy = get('--energy', Colors.energy);
 	Colors.text = get('--text', Colors.text);
 	console.log("Colors updated from CSS:", Colors);
 }
@@ -478,41 +557,147 @@ function colorWithAlpha(color, alpha) {
 	return color;
 }
 
+// ── TRAIL SYSTEM REMOVED ─────────────────────────────────────────────────────
+
+// ── PERLIN NOISE ─────────────────────────────────────────────────────────────
+// Classic 2D Perlin gradient noise + fBm for organic nebula backgrounds
+class PerlinNoise {
+	constructor(seed = 0) {
+		const p = new Uint8Array(256);
+		for (let i = 0; i < 256; i++) p[i] = i;
+		let s = (seed | 0) || 42;
+		for (let i = 255; i > 0; i--) {
+			s = (Math.imul(s, 1664525) + 1013904223) | 0;
+			const j = (s >>> 0) % (i + 1);
+			[p[i], p[j]] = [p[j], p[i]];
+		}
+		this.perm = new Uint8Array(512);
+		for (let i = 0; i < 512; i++) this.perm[i] = p[i & 255];
+	}
+	_fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+	_lerp(a, b, t) { return a + t * (b - a); }
+	_grad(h, x, y) {
+		const g = h & 3;
+		const u = g < 2 ? x : y, v = g < 2 ? y : x;
+		return ((g & 1) ? -u : u) + ((g & 2) ? -v : v);
+	}
+	noise(x, y) {
+		const X = Math.floor(x) & 255, Y = Math.floor(y) & 255;
+		x -= Math.floor(x); y -= Math.floor(y);
+		const u = this._fade(x), v = this._fade(y);
+		const a = this.perm[X] + Y, b = this.perm[X + 1] + Y;
+		return this._lerp(
+			this._lerp(this._grad(this.perm[a], x, y), this._grad(this.perm[b], x - 1, y), u),
+			this._lerp(this._grad(this.perm[a + 1], x, y - 1), this._grad(this.perm[b + 1], x - 1, y - 1), u),
+			v
+		) * 0.5 + 0.5;
+	}
+	fbm(x, y, octaves = 4) {
+		let val = 0, amp = 1, freq = 1, max = 0;
+		for (let i = 0; i < octaves; i++) {
+			val += this.noise(x * freq, y * freq) * amp;
+			max += amp; amp *= 0.5; freq *= 2;
+		}
+		return val / max;
+	}
+}
+
 class Renderer {
 	constructor(canvas) {
 		this.canvas = canvas;
 		this.ctx = canvas.getContext("2d");
 		this.cellSize = 0;
 		this.particles = [];
+		this.energyRings = [];   // shockwave rings for interactions
 		this.board = null;
 		this.elements = [];
 		this.lastTime = 0;
 		this.turnProgress = 1;
 		this.turnDurationMs = 500;
+		// Nebula field – generated once, repainted every frame
+		this._nebulaSeed = Math.floor(Math.random() * 99999);
+		this._starField = null;
+		// Perlin noise engine
+		this._perlin = new PerlinNoise(this._nebulaSeed);
+		// Offscreen canvas for the low-res noise texture
+		this._noiseCanvas = document.createElement('canvas');
+		this._noiseCtx = this._noiseCanvas.getContext('2d');
+		// Only update the noise every N frames for performance
+		this._noiseFrame = 0;
+		// Mouse Gravity state
+		this.mouseX = -1000;
+		this.mouseY = -1000;
+		this.isMousePresent = false;
 	}
+
+	attachMouseEvents() {
+		this.canvas.addEventListener('mousemove', (e) => {
+			const rect = this.canvas.getBoundingClientRect();
+			this.mouseX = e.clientX - rect.left;
+			this.mouseY = e.clientY - rect.top;
+			this.isMousePresent = true;
+		});
+		this.canvas.addEventListener('mouseleave', () => {
+			this.isMousePresent = false;
+		});
+	}
+
 	resize(rows, cols) {
 		const maxW = this.canvas.parentElement?.clientWidth ?? 800;
 		const maxH = this.canvas.parentElement?.clientHeight ?? 600;
 		this.cellSize = Math.max(4, Math.min(Math.floor(maxW / cols), Math.floor(maxH / rows)));
 		this.canvas.width = cols * this.cellSize;
 		this.canvas.height = rows * this.cellSize;
+		this._buildBokeh(rows, cols);
+		this._buildNoiseBackground(); // Generate once, never recompute
 	}
+
+	_buildBokeh(rows, cols) {
+		// Bokeh circles — 3 layers of depth for digital tech background
+		const bokeh = [];
+		const count = Math.floor(rows * cols * 0.015);
+		for (let i = 0; i < count; i++) {
+			const type = Math.random();
+			let r, speed, alphaMod;
+			if (type < 0.2) { // Layer 1: Large, slow, background auroras
+				r = Math.random() * 25 + 15; speed = Math.random() * 0.1 + 0.02; alphaMod = 0.5;
+			} else if (type < 0.6) { // Layer 2: Medium glowing orbs
+				r = Math.random() * 10 + 5; speed = Math.random() * 0.2 + 0.05; alphaMod = 0.8;
+			} else { // Layer 3: Small, sharp foreground tech sparks
+				r = Math.random() * 3 + 1; speed = Math.random() * 0.4 + 0.1; alphaMod = 1.2;
+			}
+			bokeh.push({
+				x: Math.random() * cols * this.cellSize,
+				y: Math.random() * rows * this.cellSize,
+				r, speed, alphaMod,
+				phase: Math.random() * Math.PI * 2,
+				color: Math.random() < 0.25 ? "rgba(0, 229, 255," : "rgba(100, 180, 255," // Cyan vs Ice Blue
+			});
+		}
+		this._starField = bokeh; // reuse same field name
+	}
+
 	setTurnSpeed(ms) { this.turnDurationMs = ms; }
+
 	updateLogicState(elements, board) {
+		const cs = this.cellSize;
 		this.elements = elements;
 		this.board = board;
 		this.turnProgress = 0;
 		const events = EventManager.consumeAll();
 		for (const ev of events) {
-			const cx = ev.col * this.cellSize + this.cellSize / 2;
-			const cy = ev.row * this.cellSize + this.cellSize / 2;
-			if (ev.type === "fight") this.spawnFlash(cx, cy, ev.color || Colors.accent || "#fff", 2);
+			const cx = ev.col * cs + cs / 2;
+			const cy = ev.row * cs + cs / 2;
+			if (ev.type === "fight") {
+				this._spawnAbsorptionWave(cx, cy, ev.color || Colors.accent);
+				this.spawnFlash(cx, cy, ev.color || Colors.accent, 3);
+			}
 			if (ev.type === "death") {
-				this.spawnFlash(cx, cy, Colors.text || "#ffffff", 6);
-				this.spawnExplosion(cx, cy, ev.color || Colors.accent || "#fff");
+				this._spawnDeathNova(cx, cy, ev.color || Colors.accent);
 			}
 		}
 	}
+
 	drawFrame(timeMs) {
 		const dt = timeMs - this.lastTime;
 		this.lastTime = timeMs;
@@ -521,192 +706,650 @@ class Renderer {
 			if (this.turnProgress > 1) this.turnProgress = 1;
 		}
 		this.updateParticles(dt);
+		this._updateEnergyRings(dt);
 		this.renderAll();
 	}
+
+	// ── MAIN RENDER ───────────────────────────────────────────────────────────
 	renderAll() {
 		if (!this.board) return;
 		const ctx = this.ctx;
 		const cs = this.cellSize;
 
-		// 1. Transparent clean for backdrop-filter
 		ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-		// 2. Dynamic Quantum Grid (Background layer)
-		this.drawQuantumGrid(ctx, cs);
+		// Layer 1 – deep space background with bokeh
+		this._drawDeepSpace(ctx);
 
-		const ease = this.turnProgress;
+		// Layer 3.5 - Network connections between particles
+		this._drawNetworkConnections(ctx, cs);
+
+		// Layer 4 – energy rings (interaction shockwaves)
+		this._drawEnergyRings(ctx);
+
+		// Layer 5 – elements
+		const ease = this._easeInOut(this.turnProgress);
 		for (const e of this.elements) {
 			let targetX = e.col * cs + cs / 2;
 			let targetY = e.row * cs + cs / 2;
 			let startX = targetX;
 			let startY = targetY;
-			if (e instanceof Role) {
-				const prevPos = e.prevPos;
-				if (prevPos) {
-					startX = prevPos.col * cs + cs / 2;
-					startY = prevPos.row * cs + cs / 2;
+			if (e instanceof Role && e.prevPos) {
+				startX = e.prevPos.col * cs + cs / 2;
+				startY = e.prevPos.row * cs + cs / 2;
+			}
+			let cx = startX + (targetX - startX) * ease;
+			let cy = startY + (targetY - startY) * ease;
+			
+			// Apply soft magnetic pull from cursor
+			if (this.isMousePresent) {
+				const dx = this.mouseX - cx;
+				const dy = this.mouseY - cy;
+				const dist = Math.hypot(dx, dy);
+				const pullRange = cs * 6; // Magnetic field radius
+				if (dist < pullRange && dist > 1) {
+					// Pull strength curve: stronger near middle, zero at exact center and edge
+					const pull = Math.pow(1 - dist / pullRange, 1.5) * cs * 0.35; 
+					cx += (dx / dist) * pull;
+					cy += (dy / dist) * pull;
 				}
 			}
-			const cx = startX + (targetX - startX) * ease;
-			const cy = startY + (targetY - startY) * ease;
-			const r = Math.max(2, cs * 0.32);
+			
+			const r = Math.max(3, cs * 0.34);
 
-			// Obstacles (Static Cyber-blocks)
-			if (e instanceof Obstacle) {
-				this.drawCyberObstacle(ctx, cx, cy, cs);
-				continue;
-			}
-
-			// Movement Trails
-			if (startX !== targetX || startY !== targetY) {
-				ctx.beginPath();
-				ctx.moveTo(startX, startY);
-				ctx.lineTo(cx, cy);
-				ctx.strokeStyle = colorWithAlpha(e instanceof Runner ? Colors.runner : Colors.chaser, 0.15);
-				ctx.lineWidth = r * 1.2;
-				ctx.lineCap = "round";
-				ctx.stroke();
-			}
-
-			if (e instanceof Runner) { this.drawElectron(ctx, cx, cy, r, Colors.runner, true); continue; }
-			if (e instanceof Chaser) { this.drawElectron(ctx, cx, cy, r, Colors.chaser, false); continue; }
-			if (e instanceof Healer) { this.drawCyberIcon(ctx, cx, cy, r * 0.8, Colors.healer, 'plus'); continue; }
-			if (e instanceof Speeder) { this.drawCyberIcon(ctx, cx, cy, r * 0.8, Colors.speeder, 'bolt'); }
+			if (e instanceof Obstacle) { this._drawObstacle(ctx, cx, cy, cs); continue; }
+			if (e instanceof Runner) { this._drawPhoton(ctx, cx, cy, r, Colors.runner); continue; }
+			if (e instanceof Chaser) { this._drawElectron(ctx, cx, cy, r, Colors.chaser); continue; }
+			if (e instanceof Healer) { this._drawHealer(ctx, cx, cy, r, Colors.healer); continue; }
+			if (e instanceof Speeder) { this._drawSpeeder(ctx, cx, cy, r, Colors.speeder); continue; }
+			if (e instanceof EnergyNode) { this._drawEnergyNode(ctx, cx, cy, r, Colors.energy, e.life / e.maxLife); }
 		}
+
+		// Layer 6 – particle sparks (top)
 		this.drawParticles(ctx);
 	}
 
-	drawQuantumGrid(ctx, cs) {
-		const time = performance.now() / 2000;
+	// ── EASING ────────────────────────────────────────────────────────────────
+	_easeInOut(t) {
+		// Strictly linear. By avoiding easing, velocity never reaches 0 at turn boundaries.
+		// This creates perfectly continuous, unbroken motion across tiles.
+		return t;
+	}
+
+	// ── STATIC PERLIN NOISE BACKGROUND ─────────────────────────────────────────────
+	// Built once when the board is resized. No per-frame computation.
+	_buildNoiseBackground() {
+		const W = this.canvas.width, H = this.canvas.height;
+		const SCALE = 8; // 1/8 resolution
+		const nw = Math.ceil(W / SCALE), nh = Math.ceil(H / SCALE);
+		this._noiseCanvas.width = nw;
+		this._noiseCanvas.height = nh;
+
+		const nc = this._noiseCtx;
+		const img = nc.createImageData(nw, nh);
+		const data = img.data;
+
+		const palette = [
+			[ 0,  1,   5],  // near-black base
+			[ 0,  5,  18],  // very dark navy
+			[ 0, 18,  48],  // deep midnight blue
+			[ 0, 38,  72],  // dark teal highlight (barely visible)
+		];
+		const lerpPal = (v) => {
+			const idx = Math.min(palette.length - 2, Math.floor(v * (palette.length - 1)));
+			const t = v * (palette.length - 1) - idx;
+			const a = palette[idx], b = palette[idx + 1];
+			return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t];
+		};
+
+		const p = this._perlin;
+		for (let y = 0; y < nh; y++) {
+			for (let x = 0; x < nw; x++) {
+				const nx = x / nw * 3;
+				const ny = y / nh * 3;
+				// Lightweight domain warp (2 octaves)
+				const warpX = p.fbm(nx + 1.7, ny + 9.2, 2);
+				const warpY = p.fbm(nx + 8.3, ny + 2.8, 2);
+				// 3-octave fBm, gamma 1.6 to keep midtones dark
+				const val = Math.pow(p.fbm(nx + warpX * 0.6, ny + warpY * 0.6, 3), 1.6);
+				const [r, g, b] = lerpPal(Math.min(1, val));
+				const i = (y * nw + x) * 4;
+				data[i] = r; data[i+1] = g; data[i+2] = b; data[i+3] = 255;
+			}
+		}
+		nc.putImageData(img, 0, 0);
+	}
+
+	// ── DRAW BACKGROUND + BOKEH ───────────────────────────────────────────────
+	_drawDeepSpace(ctx) {
+		const W = this.canvas.width, H = this.canvas.height;
 		ctx.save();
-		ctx.strokeStyle = colorWithAlpha(Colors.accent, 0.08);
-		ctx.lineWidth = 0.5;
-
-		// Subtle scanning line
-		const scanY = (performance.now() / 10) % this.canvas.height;
-		const grad = ctx.createLinearGradient(0, scanY - 50, 0, scanY + 50);
-		grad.addColorStop(0, "rgba(56, 189, 248, 0)");
-		grad.addColorStop(0.5, "rgba(56, 189, 248, 0.1)");
-		grad.addColorStop(1, "rgba(56, 189, 248, 0)");
-		ctx.fillStyle = grad;
-		ctx.fillRect(0, scanY - 50, this.canvas.width, 100);
-
-		// Grid dots
-		ctx.fillStyle = colorWithAlpha(Colors.text, 0.05);
-		for (let r = 0; r < this.board.rows; r++) {
-			for (let c = 0; c < this.board.cols; c++) {
-				if ((r + c + Math.floor(time)) % 7 === 0) {
-					ctx.beginPath();
-					ctx.arc(c * cs + cs / 2, r * cs + cs / 2, 0.7, 0, Math.PI * 2);
-					ctx.fill();
-				}
+		// Blit the pre-built noise texture (zero CPU cost)
+		ctx.imageSmoothingEnabled = true;
+		ctx.imageSmoothingQuality = 'high';
+		if (this._noiseCanvas.width > 0) {
+			ctx.drawImage(this._noiseCanvas, 0, 0, W, H);
+		}
+		
+		// Overlay subtle bokeh for extra depth on top of the noise
+		if (this._starField) {
+			const now = performance.now() / 1000;
+			ctx.globalCompositeOperation = "lighter";
+			for (const b of this._starField) {
+				const a = (0.04 + 0.07 * (0.5 + 0.5 * Math.sin(now * b.speed + b.phase))) * b.alphaMod;
+				const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+				g.addColorStop(0, b.color + a + ")");
+				g.addColorStop(1, "rgba(0,0,0,0)");
+				ctx.fillStyle = g;
+				ctx.beginPath();
+				ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+				ctx.fill();
 			}
 		}
 		ctx.restore();
 	}
 
-	drawCyberObstacle(ctx, cx, cy, cs) {
-		const s = cs * 0.85;
+	// ── LIGHTNING HELPER (Removed) ────────────────────────────────────────────
+
+	// ── DIGITAL NETWORK CONNECTIONS ───────────────────────────────────────────
+	_drawNetworkConnections(ctx, cs) {
+		ctx.save();
+		ctx.globalCompositeOperation = "lighter";
+		
+		const runners = this.elements.filter(e => e instanceof Runner);
+		const chasers = this.elements.filter(e => e instanceof Chaser);
+		const ease = this._easeInOut(this.turnProgress);
+
+		// Draw Cyan Network for Runners
+		this._drawNetLinks(ctx, runners, cs, ease, cs * 3.5, "0, 229, 255");
+		
+		// Draw Red/Orange Neuronal Network for Chasers
+		this._drawNetLinks(ctx, chasers, cs, ease, cs * 4.5, "255, 100, 40");
+
+		// Also draw connections for temporary spawn nodes (cyan)
+		const nodes = this.particles.filter(p => p.isNetworkNode);
+		for (let i = 0; i < nodes.length; i++) {
+			for (let j = i + 1; j < nodes.length; j++) {
+				const n1 = nodes[i];
+				const n2 = nodes[j];
+				const d = Math.hypot(n2.x - n1.x, n2.y - n1.y);
+				const nodeMaxDist = cs * 5.25;
+				if (d < nodeMaxDist) {
+					const alpha = Math.pow(1 - d / nodeMaxDist, 2) * 0.6 * (n1.life / n1.maxLife) * (n2.life / n2.maxLife);
+					ctx.beginPath();
+					ctx.moveTo(n1.x, n1.y);
+					ctx.lineTo(n2.x, n2.y);
+					ctx.strokeStyle = `rgba(0, 229, 255, ${alpha.toFixed(3)})`;
+					ctx.lineWidth = cs * 0.02;
+					ctx.shadowBlur = cs * 0.2;
+					ctx.shadowColor = `rgba(0, 229, 255, ${alpha.toFixed(3)})`;
+					ctx.stroke();
+				}
+			}
+		}
+
+		ctx.restore();
+	}
+
+	_drawNetLinks(ctx, arr, cs, ease, maxDist, rgbStr) {
+		for (let i = 0; i < arr.length; i++) {
+			for (let j = i + 1; j < arr.length; j++) {
+				const p1 = arr[i];
+				const p2 = arr[j];
+				
+				let x1 = (p1.prevPos ? p1.prevPos.col : p1.col) * cs + cs / 2;
+				let y1 = (p1.prevPos ? p1.prevPos.row : p1.row) * cs + cs / 2;
+				x1 += ((p1.col * cs + cs / 2) - x1) * ease;
+				y1 += ((p1.row * cs + cs / 2) - y1) * ease;
+
+				let x2 = (p2.prevPos ? p2.prevPos.col : p2.col) * cs + cs / 2;
+				let y2 = (p2.prevPos ? p2.prevPos.row : p2.row) * cs + cs / 2;
+				x2 += ((p2.col * cs + cs / 2) - x2) * ease;
+				y2 += ((p2.row * cs + cs / 2) - y2) * ease;
+
+				const d = Math.hypot(x2 - x1, y2 - y1);
+				if (d < maxDist) {
+					// More subtle alpha so network doesn't compete with particles
+					const alpha = Math.pow(1 - d / maxDist, 1.2) * 0.40; 
+					ctx.beginPath();
+					ctx.moveTo(x1, y1);
+					ctx.lineTo(x2, y2);
+					ctx.strokeStyle = `rgba(${rgbStr}, ${alpha.toFixed(3)})`;
+					ctx.lineWidth = cs * 0.04; // thinner
+					ctx.shadowBlur = cs * 0.2;
+					ctx.shadowColor = `rgba(${rgbStr}, ${(alpha * 1.2).toFixed(3)})`;
+					ctx.stroke();
+				}
+			}
+		}
+	}
+
+	// ── PHOTON (Runner) — pure intense neon cyan orb ──────────────────────────
+	// Visual inspiration: glowing nodes in the reference network images
+	_drawPhoton(ctx, cx, cy, r, _color) {
+		const T = performance.now();
+		const pulse = 0.82 + 0.18 * Math.sin(T / 160);
+		const cs = this.cellSize;
+		// Photon is a small but intense electric node (scaled down to be smaller)
+		const rp = cs * 0.18 * pulse; 
+		ctx.save();
+		ctx.globalCompositeOperation = "lighter";
+
+		// Far outer corona
+		let g = ctx.createRadialGradient(cx, cy, 0, cx, cy, cs * 1.2);
+		g.addColorStop(0, "rgba(0,229,255,0.25)");
+		g.addColorStop(0.45, "rgba(0,180,255,0.1)");
+		g.addColorStop(1, "rgba(0,0,0,0)");
+		ctx.fillStyle = g;
+		ctx.beginPath(); ctx.arc(cx, cy, cs * 1.2, 0, Math.PI * 2); ctx.fill();
+
+		// Bright mid halo
+		g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rp * 2.8);
+		g.addColorStop(0, "rgba(100,240,255,0.75)");
+		g.addColorStop(0.5, "rgba(0,200,255,0.35)");
+		g.addColorStop(1, "rgba(0,0,0,0)");
+		ctx.fillStyle = g;
+		ctx.beginPath(); ctx.arc(cx, cy, rp * 2.8, 0, Math.PI * 2); ctx.fill();
+
+		// White-hot core
+		ctx.shadowBlur = 25 * pulse;
+		ctx.shadowColor = "rgba(0,229,255,1)";
+		g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rp);
+		g.addColorStop(0, "#ffffff");
+		g.addColorStop(0.4, "rgba(180,255,255,1)");
+		g.addColorStop(1, "rgba(0,150,255,0)");
+		ctx.fillStyle = g;
+		ctx.beginPath(); ctx.arc(cx, cy, rp, 0, Math.PI * 2); ctx.fill();
+
+		ctx.restore();
+	}
+
+	// ── ELECTRON (Chaser) — small orange-white plasma fireball ────────────────
+	// Visual inspiration: the central orange nucleus in the reference image
+	_drawElectron(ctx, cx, cy, r, _color) {
+		const T = performance.now();
+		const pulse = 0.90 + 0.10 * Math.sin(T / 200);
+		const cs = this.cellSize;
+		// Scaled down core size
+		const rCore = cs * 0.20 * pulse;
+		const rFar = cs * 1.5;          // ambient heat haze
+		ctx.save();
+		ctx.globalCompositeOperation = "lighter";
+
+		// Heat haze — vast warm orange cloud
+		let g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rFar);
+		g.addColorStop(0, "rgba(255,120,10,0.40)");
+		g.addColorStop(0.3, "rgba(220,70,5,0.20)");
+		g.addColorStop(0.65, "rgba(160,30,0,0.08)");
+		g.addColorStop(1, "rgba(0,0,0,0)");
+		ctx.fillStyle = g;
+		ctx.beginPath(); ctx.arc(cx, cy, rFar, 0, Math.PI * 2); ctx.fill();
+
+		// Tight bright plasma core
+		g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rCore);
+		g.addColorStop(0, "#ffffff");
+		g.addColorStop(0.12, "rgba(255,250,200,1)");
+		g.addColorStop(0.35, "rgba(255,180,40,1)");
+		g.addColorStop(0.7, "rgba(240,70,0,0.90)");
+		g.addColorStop(1, "rgba(80,0,0,0)");
+		ctx.shadowBlur = cs * 1.0 * pulse;
+		ctx.shadowColor = "rgba(255,160,30,1)";
+		ctx.fillStyle = g;
+		ctx.beginPath(); ctx.arc(cx, cy, rCore, 0, Math.PI * 2); ctx.fill();
+
+		// White molten centre flash
+		ctx.globalCompositeOperation = "source-over";
+		g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rCore * 0.28);
+		g.addColorStop(0, "rgba(255,255,255,0.98)");
+		g.addColorStop(1, "rgba(255,255,255,0)");
+		ctx.fillStyle = g;
+		ctx.beginPath(); ctx.arc(cx, cy, rCore * 0.28, 0, Math.PI * 2); ctx.fill();
+
+		ctx.restore();
+	}
+
+	// ── HEALER — large emerald orb + flash rays ─────────────────────────────
+	_drawHealer(ctx, cx, cy, r, _color) {
+		const T = performance.now();
+		const pulse = 0.72 + 0.28 * Math.sin(T / 380);
+		const cs = this.cellSize;
+		ctx.save();
+		ctx.globalCompositeOperation = "lighter";
+
+		// Outer healing aura (scaled down)
+		let g = ctx.createRadialGradient(cx, cy, 0, cx, cy, cs * 1.2 * pulse);
+		g.addColorStop(0, "rgba(40,220,120,0.15)");
+		g.addColorStop(0.5, "rgba(20,160,80,0.05)");
+		g.addColorStop(1, "rgba(0,0,0,0)");
+		ctx.fillStyle = g;
+		ctx.beginPath(); ctx.arc(cx, cy, cs * 1.2 * pulse, 0, Math.PI * 2); ctx.fill();
+
+		// ── Radial light rays (Healer: Emerald Green) ──
+		const nRays = 8;
+		const tOff = T / 4000;
+		for (let i = 0; i < nRays; i++) {
+			const a = (i / nRays) * Math.PI * 2 + tOff;
+			const longRay = i % 2 === 0;
+			// Rays scaled down
+			const rLen = cs * (longRay ? (2.4 + 0.6 * Math.sin(T / 500 + i)) : (1.5 + 0.3 * Math.sin(T / 380 + i)));
+			const x2 = cx + Math.cos(a) * rLen;
+			const y2 = cy + Math.sin(a) * rLen;
+			const lg = ctx.createLinearGradient(cx, cy, x2, y2);
+			const alpha = ((longRay ? 0.45 : 0.25) + 0.15 * Math.sin(T / 350 + i * 1.9)) * 0.85;
+			lg.addColorStop(0, `rgba(200,255,220,${alpha})`);
+			lg.addColorStop(0.2, `rgba(60,220,120,${alpha * 0.6})`);
+			lg.addColorStop(1, "rgba(0,100,40,0)");
+			ctx.strokeStyle = lg;
+			ctx.lineWidth = longRay ? cs * 0.10 : cs * 0.05;
+			ctx.shadowBlur = cs * 0.4;
+			ctx.shadowColor = "rgba(60,220,120,0.6)";
+			ctx.beginPath();
+			ctx.moveTo(cx, cy);
+			ctx.lineTo(x2, y2);
+			ctx.stroke();
+		}
+
+		// Core emerald glow (scaled up to match electrons)
+		const rc = cs * 0.32 * pulse; // Was 0.25
+		g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rc);
+		g.addColorStop(0, "rgba(200,255,220,0.95)");
+		g.addColorStop(0.4, "rgba(60,220,120,0.80)");
+		g.addColorStop(1, "rgba(0,100,40,0)");
+		ctx.shadowBlur = cs * 0.4 * pulse;
+		ctx.shadowColor = "rgba(40,220,120,0.8)";
+		ctx.fillStyle = g;
+		ctx.beginPath(); ctx.arc(cx, cy, rc, 0, Math.PI * 2); ctx.fill();
+
+		ctx.restore();
+	}
+
+	// ── SPEEDER — large bright red electric pulse + flash rays ─────────────────
+	_drawSpeeder(ctx, cx, cy, r, _color) {
+		const T = performance.now();
+		const pulse = 0.78 + 0.22 * Math.sin(T / 220);
+		const cs = this.cellSize;
+		ctx.save();
+		ctx.globalCompositeOperation = "lighter";
+
+		// Wide red aura (scaled down)
+		let g = ctx.createRadialGradient(cx, cy, 0, cx, cy, cs * 1.2);
+		g.addColorStop(0, "rgba(255,60,60,0.15)");
+		g.addColorStop(0.5, "rgba(200,20,20,0.05)");
+		g.addColorStop(1, "rgba(0,0,0,0)");
+		ctx.fillStyle = g;
+		ctx.beginPath(); ctx.arc(cx, cy, cs * 1.2, 0, Math.PI * 2); ctx.fill();
+
+		// ── Radial light rays (Speeder: Bright Red) ──
+		const nRays = 8;
+		const tOff = T / 4000;
+		for (let i = 0; i < nRays; i++) {
+			const a = (i / nRays) * Math.PI * 2 + tOff;
+			const longRay = i % 2 === 0;
+			// Rays scaled down
+			const rLen = cs * (longRay ? (2.4 + 0.6 * Math.sin(T / 500 + i)) : (1.5 + 0.3 * Math.sin(T / 380 + i)));
+			const x2 = cx + Math.cos(a) * rLen;
+			const y2 = cy + Math.sin(a) * rLen;
+			const lg = ctx.createLinearGradient(cx, cy, x2, y2);
+			const alpha = ((longRay ? 0.45 : 0.25) + 0.15 * Math.sin(T / 350 + i * 1.9)) * 0.85;
+			lg.addColorStop(0, `rgba(255,200,200,${alpha})`);
+			lg.addColorStop(0.2, `rgba(255,40,40,${alpha * 0.6})`);
+			lg.addColorStop(1, "rgba(100,0,0,0)");
+			ctx.strokeStyle = lg;
+			ctx.lineWidth = longRay ? cs * 0.10 : cs * 0.05;
+			ctx.shadowBlur = cs * 0.4;
+			ctx.shadowColor = "rgba(255,40,40,0.6)";
+			ctx.beginPath();
+			ctx.moveTo(cx, cy);
+			ctx.lineTo(x2, y2);
+			ctx.stroke();
+		}
+
+		// Bright red-white orb (scaled up to match electrons)
+		const rc = cs * 0.32 * pulse; // Was 0.25
+		g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rc);
+		g.addColorStop(0, "rgba(255,200,200,0.95)");
+		g.addColorStop(0.4, "rgba(255,60,60,0.85)");
+		g.addColorStop(1, "rgba(200,0,0,0)");
+		ctx.shadowBlur = cs * 0.5 * pulse;
+		ctx.shadowColor = "rgba(255,50,50,0.8)";
+		ctx.fillStyle = g;
+		ctx.beginPath(); ctx.arc(cx, cy, rc, 0, Math.PI * 2); ctx.fill();
+
+		ctx.restore();
+	}
+
+	// ── OBSTACLE — dark void tile, barely visible ─────────────────────────────
+	_drawObstacle(ctx, cx, cy, cs) {
+		const s = cs * 0.78;
 		const x = cx - s / 2;
 		const y = cy - s / 2;
-		ctx.fillStyle = "#1e293b";
-		ctx.strokeStyle = "#334155";
-		ctx.lineWidth = 1;
-
-		// Beveled rect
+		ctx.save();
+		ctx.fillStyle = "rgba(8,12,28,0.9)";
+		ctx.strokeStyle = "rgba(40,60,120,0.35)";
+		ctx.lineWidth = 0.8;
 		ctx.beginPath();
-		ctx.roundRect(x, y, s, s, 4);
+		ctx.roundRect(x, y, s, s, 3);
 		ctx.fill();
 		ctx.stroke();
-
-		// Inner detail
-		ctx.strokeStyle = "rgba(255,255,255,0.05)";
-		ctx.beginPath();
-		ctx.moveTo(x + 4, y + 4);
-		ctx.lineTo(x + s - 4, y + s - 4);
-		ctx.stroke();
+		ctx.restore();
 	}
 
-	drawCyberIcon(ctx, cx, cy, r, color, type) {
-		ctx.save();
-		ctx.shadowBlur = 10;
-		ctx.shadowColor = color;
-		ctx.fillStyle = color;
+	// ── ENERGY NODE ───────────────────────────────────────────────────────────
+	_drawEnergyNode(ctx, cx, cy, r, color, lifeRatio) {
+		const t = performance.now() / 250;
+		const pulse = 1 + 0.2 * Math.sin(t);
+		const rc = r * Math.max(0.6, lifeRatio) * pulse;
 
-		if (type === 'plus') {
-			ctx.beginPath();
-			ctx.rect(cx - r, cy - r / 4, r * 2, r / 2);
-			ctx.rect(cx - r / 4, cy - r, r / 2, r * 2);
-			ctx.fill();
-		} else {
-			ctx.beginPath();
-			ctx.moveTo(cx, cy - r);
-			ctx.lineTo(cx + r, cy + r);
-			ctx.lineTo(cx - r, cy + r);
-			ctx.closePath();
-			ctx.fill();
+		ctx.save();
+		ctx.globalCompositeOperation = "lighter";
+		
+		// 1. Soft radial gradient glow (matches Electrons/Photons perfectly)
+		const glowR = rc * 2.5;
+		const gRadius = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowR);
+		gRadius.addColorStop(0, '#ffffff'); // pure white hot core
+		gRadius.addColorStop(0.2, colorWithAlpha(color, 0.9)); // intense colored inner halo
+		gRadius.addColorStop(0.5, colorWithAlpha(color, 0.4)); // fading colored plasma
+		gRadius.addColorStop(1, colorWithAlpha(color, 0)); // transparent edge
+		
+		ctx.fillStyle = gRadius;
+		ctx.beginPath();
+		ctx.arc(cx, cy, glowR, 0, Math.PI * 2);
+		ctx.fill();
+		ctx.restore();
+
+		// 2. Heavy particle emission (swirling storm effect)
+		// Emitting multiple particles per frame makes it look like a dense energy well
+		if (Math.random() < 0.9) { // 90% chance each frame
+			for (let i = 0; i < 2; i++) { // Spawn 2 at a time
+				const angle = performance.now() / 200 + Math.random() * Math.PI * 2;
+				const dist = Math.random() * (r * 3.5) + r;
+				const pX = cx + Math.cos(angle) * dist;
+				const pY = cy + Math.sin(angle) * dist;
+				
+				this.particles.push({
+					x: pX, y: pY,
+					vx: (cx - pX) * 0.08 + Math.cos(angle + Math.PI/2) * 0.4,
+					vy: (cy - pY) * 0.08 + Math.sin(angle + Math.PI/2) * 0.4,
+					life: Math.random() * 120 + 50,
+					maxLife: 200,
+					color: Math.random() < 0.25 ? '#ffffff' : color, 
+					size: Math.random() * 2 + 1,
+					isLine: false,
+					isCloud: Math.random() > 0.4 
+				});
+			}
+		}
+	}
+
+	// ── INTERACTION EFFECTS ───────────────────────────────────────────────────
+	_spawnRipple(x, y) {
+		// Energetic explosion rays
+		this.spawnExplosion(x, y, "rgba(0, 229, 255, 1)");
+
+		// Spawn geometric network nodes that connect to each other dynamically
+		for (let i = 0; i < 20; i++) {
+			const angle = Math.random() * Math.PI * 2;
+			const speed = Math.random() * 5 + 2;
+			this.particles.push({
+				x, y,
+				vx: Math.cos(angle) * speed,
+				vy: Math.sin(angle) * speed,
+				life: Math.random() * 800 + 400,
+				maxLife: 1200,
+				color: "rgba(0, 229, 255, 1)",
+				size: Math.random() * 3 + 2,
+				isNetworkNode: true
+			});
 		}
 
-		// White glow core
-		ctx.fillStyle = "white";
-		ctx.beginPath();
-		ctx.arc(cx, cy, r * 0.3, 0, Math.PI * 2);
-		ctx.fill();
-
-		ctx.restore();
+		// Displace existing sparks outwards
+		for (const p of this.particles) {
+			const dx = p.x - x;
+			const dy = p.y - y;
+			const dist = Math.hypot(dx, dy);
+			const pushRadius = this.cellSize * 6;
+			if (dist < pushRadius && dist > 1) {
+				const force = (pushRadius - dist) / pushRadius;
+				p.vx += (dx / dist) * force * 25;
+				p.vy += (dy / dist) * force * 25;
+			}
+		}
 	}
 
-	drawElectron(ctx, cx, cy, r, color, isPhoton) {
-		const time = performance.now();
-		const pulse = Math.sin(time / 250) * 0.2 + 0.8;
-
-		ctx.save();
-
-		// Glow layers
-		ctx.shadowBlur = 15 * pulse;
-		ctx.shadowColor = color;
-
-		// Main body
-		const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * pulse);
-		grad.addColorStop(0, "white");
-		grad.addColorStop(0.3, color);
-		grad.addColorStop(1, "transparent");
-
-		ctx.fillStyle = grad;
-		ctx.beginPath();
-		ctx.arc(cx, cy, r * 1.5, 0, Math.PI * 2);
-		ctx.fill();
-
-		// Orbital ring
-		ctx.rotate(time / (isPhoton ? 500 : -700));
-		ctx.strokeStyle = colorWithAlpha(color, 0.4);
-		ctx.lineWidth = 1;
-		ctx.beginPath();
-		ctx.ellipse(cx, cy, r * 1.8, r * 0.6, time / 1000, 0, Math.PI * 2);
-		ctx.stroke();
-
-		ctx.restore();
+	_spawnAbsorptionWave(x, y, color) {
+		// Small sparks instead of an expanding ring
+		this.spawnFlash(x, y, color, 3);
 	}
-	spawnFlash(x, y, color, intensityMultiplier = 1) {
-		for (let i = 0; i < 5 * intensityMultiplier; i++) {
+
+	_spawnDeathNova(x, y, color) {
+		const cs = this.cellSize;
+
+		// LAYER 1: White-hot core flash (tiny, fast, very bright)
+		for (let i = 0; i < 8; i++) {
 			const angle = Math.random() * Math.PI * 2;
-			const speed = Math.random() * 3 * intensityMultiplier + 1;
+			const speed = Math.random() * 4 + 3;
 			this.particles.push({
-				x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-				life: Math.random() * 200 + 100, maxLife: 300, color, size: Math.random() * 4 + 2
+				x, y,
+				vx: Math.cos(angle) * speed,
+				vy: Math.sin(angle) * speed,
+				life: Math.random() * 180 + 80,
+				maxLife: 260,
+				color: '#ffffff',
+				size: Math.random() * 2.5 + 1.5,
+				isLine: false,
+				isCloud: false
+			});
+		}
+
+		// LAYER 2: Mid-range colored plasma clouds (large, expand slowly)
+		for (let i = 0; i < 20; i++) {
+			const angle = Math.random() * Math.PI * 2;
+			const speed = Math.random() * 4 + 1.5;
+			const isCoreTinted = Math.random() < 0.4;
+			this.particles.push({
+				x, y,
+				vx: Math.cos(angle) * speed,
+				vy: Math.sin(angle) * speed,
+				life: Math.random() * 500 + 350,
+				maxLife: 850,
+				color: isCoreTinted ? '#ffffff' : color,
+				size: Math.random() * cs * 0.3 + cs * 0.15,
+				isLine: false,
+				isCloud: true
+			});
+		}
+
+		// LAYER 3: Outer high-energy debris shards (fast motion-blur streaks)
+		for (let i = 0; i < 16; i++) {
+			const angle = (i / 16) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+			const speed = Math.random() * 9 + 5;
+			this.particles.push({
+				x, y,
+				vx: Math.cos(angle) * speed,
+				vy: Math.sin(angle) * speed,
+				life: Math.random() * 280 + 120,
+				maxLife: 400,
+				color,
+				size: Math.random() * 2 + 1,
+				isLine: true
 			});
 		}
 	}
+
+	_updateEnergyRings(dt) {
+		const decay = dt / 480;
+		let i = this.energyRings.length;
+		while (i--) {
+			const ring = this.energyRings[i];
+			ring.life -= decay;
+			ring.r += (ring.maxR - ring.r) * (dt / 220);
+			if (ring.life <= 0) this.energyRings.splice(i, 1);
+		}
+	}
+
+	_drawEnergyRings(ctx) {
+		ctx.save();
+		ctx.globalCompositeOperation = "lighter";
+		for (const ring of this.energyRings) {
+			const alpha = ring.life * (ring.type === 'death' ? 0.9 : (ring.type === 'ripple' ? 0.4 : 0.6));
+			
+			// Handle rgb strings vs rgba strings for ripples
+			const colorStr = ring.color.includes('rgba') || ring.color.includes('#') 
+				? colorWithAlpha(ring.color, alpha) 
+				: `rgba(${ring.color}, ${alpha})`;
+
+			ctx.strokeStyle = colorStr;
+			ctx.lineWidth = ring.type === 'death' ? 2.5 : (ring.type === 'ripple' ? 3.0 : 1.5);
+			ctx.shadowBlur = ring.type === 'ripple' ? 20 : 12;
+			ctx.shadowColor = colorStr;
+			ctx.beginPath();
+			ctx.arc(ring.x, ring.y, ring.r, 0, Math.PI * 2);
+			ctx.stroke();
+		}
+		ctx.restore();
+	}
+
+	// ── PARTICLE SPARKS ───────────────────────────────────────────────────────
+	spawnFlash(x, y, color, intensityMultiplier = 1) {
+		for (let i = 0; i < 8 * intensityMultiplier; i++) {
+			const angle = Math.random() * Math.PI * 2;
+			const speed = Math.random() * 3 * intensityMultiplier + 0.5;
+			this.particles.push({
+				x, y,
+				vx: Math.cos(angle) * speed,
+				vy: Math.sin(angle) * speed,
+				life: Math.random() * 300 + 150,
+				maxLife: 450,
+				color,
+				size: Math.random() * 4 + 2,
+				isLine: false,
+				isCloud: true
+			});
+		}
+	}
+
 	spawnExplosion(x, y, color) {
+		// Medium volumetric burst for clicks/minor impacts
 		for (let i = 0; i < 25; i++) {
 			const angle = Math.random() * Math.PI * 2;
-			const speed = Math.random() * 6 + 2;
+			const speedStr = Math.pow(Math.random(), 1.5);
+			const speed = speedStr * 6 + 1.5;
+			const isCore = speedStr < 0.4;
+			
 			this.particles.push({
-				x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-				life: Math.random() * 400 + 200, maxLife: 600, color, size: Math.random() * 3 + 1
+				x, y,
+				vx: Math.cos(angle) * speed,
+				vy: Math.sin(angle) * speed,
+				life: Math.random() * 500 + 200,
+				maxLife: 700,
+				color: isCore ? "#ffffff" : color,
+				size: isCore ? (Math.random() * 2.5 + 1.5) : (Math.random() * 6 + 3),
+				isLine: false,
+				isCloud: !isCore
 			});
 		}
 	}
+
 	updateParticles(dt) {
 		let i = this.particles.length;
 		while (i--) {
@@ -715,97 +1358,54 @@ class Renderer {
 			if (p.life <= 0) { this.particles.splice(i, 1); continue; }
 			p.x += p.vx * (dt / 16);
 			p.y += p.vy * (dt / 16);
-			p.vx *= 0.92; p.vy *= 0.92;
+			p.vx *= 0.91;
+			p.vy *= 0.91;
 		}
 	}
+
 	drawParticles(ctx) {
+		ctx.save();
 		ctx.globalCompositeOperation = "lighter";
 		for (const p of this.particles) {
 			const alpha = Math.max(0, p.life / p.maxLife);
-			ctx.globalAlpha = alpha;
-			ctx.fillStyle = p.color;
-			ctx.beginPath();
-			ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
-			ctx.fill();
+			
+			if (p.isLine) {
+				// High energy ray (kept for specific directional bursts if needed later)
+				ctx.beginPath();
+				ctx.moveTo(p.x, p.y);
+				ctx.lineTo(p.x - p.vx * 3.5, p.y - p.vy * 3.5);
+				ctx.strokeStyle = colorWithAlpha(p.color, alpha);
+				ctx.lineWidth = p.size;
+				ctx.shadowBlur = p.size * 2;
+				ctx.shadowColor = p.color;
+				ctx.stroke();
+			} else if (p.isCloud) {
+				// Soft, dense volumetric explosion cloud (made much brighter and more opaque)
+				const size = p.size * (1 + (1 - alpha) * 0.5); // Slight expansion as it fades
+				const gr = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size);
+				// Increased opacity multipliers to make them pop more against the background
+				gr.addColorStop(0, colorWithAlpha(p.color, Math.min(1, alpha * 2.0))); // Strong bright center
+				gr.addColorStop(0.4, colorWithAlpha(p.color, Math.min(1, alpha * 1.2))); // Solid mid-body
+				gr.addColorStop(1, "rgba(0,0,0,0)");
+				ctx.fillStyle = gr;
+				ctx.beginPath();
+				ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+				ctx.fill();
+			} else {
+				// Standard sharp orb / network node / explosion core debris
+				const gr = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * alpha + 0.5);
+				gr.addColorStop(0, colorWithAlpha(p.color, alpha));
+				gr.addColorStop(1, "rgba(0,0,0,0)");
+				ctx.fillStyle = gr;
+				ctx.shadowBlur = p.size * 3;
+				ctx.shadowColor = p.color;
+				ctx.beginPath();
+				ctx.arc(p.x, p.y, p.size * alpha + 0.5, 0, Math.PI * 2);
+				ctx.fill();
+				ctx.shadowBlur = 0; // reset
+			}
 		}
-		ctx.globalAlpha = 1.0;
-		ctx.globalCompositeOperation = "source-over";
-	}
-	drawElectron(ctx, cx, cy, r, color) {
-		const pulse = Math.sin(performance.now() / 200) * 0.5 + 0.5;
-		ctx.shadowBlur = 15 + pulse * 20;
-		ctx.shadowColor = colorWithAlpha(Colors.text || "#ffffff", 0.6 + pulse * 0.4);
-		const grad = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, r * 0.1, cx, cy, r);
-		grad.addColorStop(0, Colors.text || "#ffffff");
-		grad.addColorStop(0.4, color);
-		grad.addColorStop(1, "rgba(0,0,0,0)");
-		ctx.beginPath();
-		ctx.arc(cx, cy, r, 0, Math.PI * 2);
-		ctx.fillStyle = grad;
-		ctx.fill();
-		ctx.shadowBlur = 0;
-		ctx.shadowColor = "transparent";
-	}
-	drawHealer(ctx, cx, cy, r, color) {
-		const pulse = Math.sin(performance.now() / 200) * 0.5 + 0.5;
-		ctx.shadowBlur = 15 + pulse * 10;
-		ctx.shadowColor = color;
-
-		// Blinking logic
-		const blink = Math.sin(performance.now() / 100) * 0.4 + 0.6;
-
-		// Diamond shape
-		ctx.beginPath();
-		ctx.moveTo(cx, cy - r * 1.2);
-		ctx.lineTo(cx + r * 1.2, cy);
-		ctx.lineTo(cx, cy + r * 1.2);
-		ctx.lineTo(cx - r * 1.2, cy);
-		ctx.closePath();
-		ctx.fillStyle = colorWithAlpha(color, blink);
-		ctx.fill();
-
-		// White cross
-		ctx.strokeStyle = "white";
-		ctx.lineWidth = r * 0.4;
-		ctx.lineCap = "round";
-		ctx.beginPath();
-		ctx.moveTo(cx - r * 0.5, cy);
-		ctx.lineTo(cx + r * 0.5, cy);
-		ctx.moveTo(cx, cy - r * 0.5);
-		ctx.lineTo(cx, cy + r * 0.5);
-		ctx.stroke();
-
-		ctx.shadowBlur = 0;
-	}
-	drawSpeeder(ctx, cx, cy, r, color) {
-		const time = performance.now() / 150;
-		ctx.shadowBlur = 15;
-		ctx.shadowColor = color;
-
-		// Triangle/Arrow shape rotating or pulsing?
-		// Let's go with a sharp triangle pointing "up" (or pulsing)
-		ctx.save();
-		ctx.translate(cx, cy);
-		ctx.rotate(time); // Spinning for "fast" feel
-		ctx.beginPath();
-		ctx.moveTo(0, -r * 1.3);
-		ctx.lineTo(r, r);
-		ctx.lineTo(-r, r);
-		ctx.closePath();
-		ctx.fillStyle = color;
-		ctx.fill();
-
-		// Inner core
-		ctx.beginPath();
-		ctx.moveTo(0, -r * 0.6);
-		ctx.lineTo(r * 0.4, r * 0.4);
-		ctx.lineTo(-r * 0.4, r * 0.4);
-		ctx.closePath();
-		ctx.fillStyle = "white";
-		ctx.fill();
-
 		ctx.restore();
-		ctx.shadowBlur = 0;
 	}
 }
 
@@ -840,7 +1440,8 @@ const overlayMsg = document.getElementById("overlay-msg");
 const renderer = new Renderer(canvas);
 let board;
 let elements;
-let logicIntervalId = null;
+let logicRunning = false;
+let logicTimer = 0;
 let animFrameId = null;
 let paused = false;
 let turn = 0;
@@ -871,9 +1472,14 @@ function initGame() {
 	turn = 0;
 	idleMoves = 0;
 	updateStats();
-	renderer.setTurnSpeed(getSpeedMs());
+	const ms = getSpeedMs();
+	renderer.setTurnSpeed(ms);
 	renderer.updateLogicState(elements, board);
+	renderer.attachMouseEvents(); // Hook gravity tracker
 	overlay.classList.add("hidden");
+	
+	logicTimer = performance.now();
+
 	if (animFrameId !== null) cancelAnimationFrame(animFrameId);
 	animLoop(performance.now());
 }
@@ -906,28 +1512,39 @@ function tick() {
 }
 
 function animLoop(time) {
+	if (logicRunning && !paused) {
+		const ms = getSpeedMs();
+		if (time - logicTimer >= ms) {
+			tick();
+			logicTimer += ms;
+			// Prevent spiral of death if tab was inactive
+			if (time - logicTimer > ms) logicTimer = time;
+		}
+	}
 	renderer.drawFrame(time);
 	animFrameId = requestAnimationFrame(animLoop);
 }
 
 function startGame() {
-	if (logicIntervalId !== null) return;
+	if (logicRunning) return;
 	updateColorsFromCSS(); // Ensure colors are fresh when starting
 	paused = false;
+	logicRunning = true;
+	logicTimer = performance.now();
 	const ms = getSpeedMs();
 	renderer.setTurnSpeed(ms);
-	logicIntervalId = setInterval(tick, ms);
 	btnStart.setAttribute("disabled", "");
 	btnPause.removeAttribute("disabled");
 }
 
 function pauseGame() {
 	paused = !paused;
+	if (!paused) logicTimer = performance.now(); // reset timer on resume to avoid jump
 	btnPause.textContent = paused ? "▶ Resume" : "⏸ Pause";
 }
 
 function stopGame() {
-	if (logicIntervalId !== null) { clearInterval(logicIntervalId); logicIntervalId = null; }
+	logicRunning = false;
 	btnStart.removeAttribute("disabled");
 	btnPause.setAttribute("disabled", "");
 	btnPause.textContent = "⏸ Pause";
@@ -960,10 +1577,18 @@ function updateStats() {
 
 // ── LISTENERS ────────────────────────────────────────────────────────────────
 
+canvas.addEventListener("click", (e) => {
+	const rect = canvas.getBoundingClientRect();
+	const scaleX = canvas.width / rect.width;
+	const scaleY = canvas.height / rect.height;
+	const x = (e.clientX - rect.left) * scaleX;
+	const y = (e.clientY - rect.top) * scaleY;
+	renderer._spawnRipple(x, y);
+});
+
 inpSpeed.addEventListener("input", () => {
 	const ms = getSpeedMs();
 	renderer.setTurnSpeed(ms);
-	if (logicIntervalId !== null) { stopGame(); startGame(); }
 });
 
 btnStart.addEventListener("click", () => { if (!board) initGame(); startGame(); });

@@ -6,22 +6,22 @@
 
 :root {
 	/* Core Palette */
-	--bg: #020617;
-	--surface-base: rgba(15, 23, 42, 0.7);
-	--surface-bright: rgba(30, 41, 59, 0.4);
-	--border: rgba(51, 65, 85, 0.5);
-	--border-bright: rgba(148, 163, 184, 0.2);
+	--bg: #010a15;
+	--surface-base: rgba(8, 20, 38, 0.8);
+	--surface-bright: rgba(16, 30, 50, 0.5);
+	--border: rgba(30, 58, 90, 0.6);
+	--border-bright: rgba(80, 140, 200, 0.25);
 
 	/* Accent Colors */
-	--accent-primary: #38bdf8;
-	/* Sky Blue */
-	--accent-secondary: #818cf8;
-	/* Indigo Blue */
-	--runner: #60a5fa;
+	--accent-primary: #00e5ff;
+	/* Cyan Glow */
+	--accent-secondary: #3b82f6;
+	/* Deep Blue */
+	--runner: #00d8ff;
 	--chaser: #f87171;
 	--healer: #4ade80;
-	--speeder: #c084fc;
-	--obstacle: #475569;
+	--speeder: #ff2a2a;
+	--obstacle: #1e293b;
 
 	/* Text Colors */
 	--text-primary: #f8fafc;
@@ -29,9 +29,9 @@
 	--text-dim: #475569;
 
 	/* FX & Glows */
-	--shadow-glow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
-	--glow-primary: 0 0 15px rgba(56, 189, 248, 0.4);
-	--glow-runner: 0 0 12px rgba(96, 165, 250, 0.3);
+	--shadow-glow: 0 8px 32px 0 rgba(0, 0, 0, 0.85);
+	--glow-primary: 0 0 15px rgba(0, 229, 255, 0.6);
+	--glow-runner: 0 0 12px rgba(0, 216, 255, 0.5);
 	--glow-chaser: 0 0 12px rgba(248, 113, 113, 0.3);
 
 	/* Transitions */
@@ -85,11 +85,11 @@ body::after {
 	pointer-events: none;
 	z-index: 9999;
 	box-shadow:
-		inset 0 0 100px rgba(56, 189, 248, 0.18),
+		inset 0 0 120px rgba(0, 229, 255, 0.12),
 		/* Stronger initial glow */
-		inset 0 0 250px rgba(2, 6, 23, 0.5);
+		inset 0 0 250px rgba(1, 10, 21, 0.7);
 	/* Deeper atmosphere */
-	border: 1px solid rgba(56, 189, 248, 0.2);
+	border: 1px solid rgba(0, 229, 255, 0.15);
 	/* More visible thin light line */
 }
 
@@ -147,6 +147,7 @@ body::after {
 	letter-spacing: 0.25em;
 	background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
 	-webkit-background-clip: text;
+	background-clip: text;
 	-webkit-text-fill-color: transparent;
 	margin-bottom: 4px;
 }
@@ -381,19 +382,18 @@ body::after {
 }
 
 canvas {
-	background: rgba(15, 23, 42, 0.6);
-	border: 1px solid var(--border);
+	background: #000000;
+	border: 1px solid rgba(56, 189, 248, 0.15);
 	border-radius: 16px;
 	box-shadow:
-		0 0 0 1px var(--border-bright),
-		0 20px 50px rgba(0, 0, 0, 0.8),
-		0 0 40px rgba(56, 189, 248, 0.15);
-	/* Envolving glow */
-	backdrop-filter: blur(8px);
-	image-rendering: pixelated;
+		0 0 0 1px rgba(56, 189, 248, 0.08),
+		0 20px 60px rgba(0, 0, 0, 0.95),
+		0 0 60px rgba(56, 189, 248, 0.18),
+		0 0 120px rgba(96, 165, 250, 0.08);
 	max-width: 95%;
 	max-height: 95%;
 	transition: var(--transition-smooth);
+	image-rendering: auto;
 }
 
 .logo h1 {
