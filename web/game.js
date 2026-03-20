@@ -223,6 +223,8 @@ function useElectronAbility(clickedRow, clickedCol, x, y) {
         if (MovUtils.isEmpty(elements, r, c)) {
             const clone = new Chaser(r, c);
             clone.life = 20;
+            clone.isPlayerClone = true;
+            clone.cloneLife = 18;
             elements.push(clone);
             spawned = true;
         }
@@ -231,20 +233,60 @@ function useElectronAbility(clickedRow, clickedCol, x, y) {
     return spawned;
 }
 
+function processTemporaryElectronClones() {
+    if (!elements || !Array.isArray(elements)) return false;
+
+    let removed = false;
+    let i = elements.length;
+    while (i--) {
+        const ent = elements[i];
+        if (!(ent instanceof Chaser) || !ent.isPlayerClone) continue;
+
+        ent.cloneLife = Math.max(0, (ent.cloneLife || 0) - 1);
+        if (ent.cloneLife <= 0) {
+            elements.splice(i, 1);
+            removed = true;
+            EventManager.emit({ type: 'death', row: ent.row, col: ent.col, color: Colors.chaser });
+        }
+    }
+
+    return removed;
+}
+
 /**
  * Override tick function to include player logic
  */
-const originalTick = window.tick;
 window.tick = function() {
-    if (paused) return;
+    if (paused || !elements || !board || !renderer) return;
 
-    // 1. Run standard simulation logic
-    if (typeof originalTick === 'function') originalTick();
+    for (const e of elements) {
+        if (e instanceof Chaser) e.setTarget(elements);
+        if (e instanceof Runner) e.setTarget(elements);
+    }
 
-	// 2. Progressive enemy generation up to configured cap
-	if (logicRunning) spawnOpposingParticles();
-    
-    // 3. Update UI
+    Game.playGame(elements, board);
+
+    const prevLen = elements.length;
+    let i = elements.length;
+    while (i--) {
+        const e = elements[i];
+        if ((e instanceof Runner || e instanceof Chaser) && e.life <= 0) {
+            elements.splice(i, 1);
+        }
+    }
+
+    const clonesExpired = processTemporaryElectronClones();
+    const erased = (elements.length < prevLen) || clonesExpired;
+
+    if (logicRunning) spawnOpposingParticles();
+
+    if (erased) idleMoves = 0;
+    else idleMoves++;
+    turn++;
+
+    board.placeElements(elements);
+    renderer.updateLogicState(elements, board);
+    if (typeof updateStats === 'function') updateStats();
     if (cntCharges) cntCharges.textContent = abilityCharges;
 };
 
