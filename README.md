@@ -1,18 +1,216 @@
-## Getting Started
+# PARTICLES
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+![Status](https://img.shields.io/badge/status-active-22c55e)
+![Platform](https://img.shields.io/badge/platform-web-0ea5e9)
+![Node](https://img.shields.io/badge/node-%3E%3D18-3c873a)
 
-## Folder Structure
+Real-time particle strategy simulation/game with a web interface and a progressive campaign mode.
 
-The workspace contains two folders by default, where:
+## English
 
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
+### Overview
 
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
+PARTICLES lets you observe and play with two core factions:
 
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
+- Photon (runners)
+- Electron (chasers)
 
-## Dependency Management
+Each faction has distinct mechanics such as combat, healing, speed boosts, energy node interactions, and obstacle pressure.
 
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+### Project Origin
+
+This project is based on the Java project **Particles** from:
+
+- https://github.com/mpjmar/Particles-java.git
+
+This repository extends that idea into a web-focused implementation with multiple gameplay modes and UI systems.
+
+### Game Modes
+
+- Simulation: autonomous mode for observing emergent behavior.
+- Playable: player-vs-system mode where you choose a side and trigger active abilities.
+- Levels: staged campaign with survival objectives, transitions, and scaling difficulty.
+
+### Highlights
+
+- Grid-based simulation engine.
+- Real-time HUD with match/resource feedback.
+- Ability charges with energy node recovery.
+- Reserve Lock system in Levels mode.
+- Per-level balancing (density, enemy life, spawn pace).
+- Local persistence for selected settings and metrics.
+
+### Screenshots
+
+![Main visual](imgs/High-energy-particles-scaled.jpg)
+![Particle field](imgs/pexels-photo-9667551.jpg)
+![Subatomic concept](imgs/Subatomic-Particles-1.webp)
+![Energy burst](imgs/blue-explosion-particle-space-000798309_prevstill.webp)
+
+### Tech Stack
+
+- HTML5
+- CSS3
+- JavaScript (runtime core)
+- TypeScript (source structure in `web/src`)
+
+### Repository Structure
+
+- `web/`: main web application.
+- `web/index.html`: mode selection entry point.
+- `web/simulation.html`: Simulation mode page.
+- `web/game_selection.html`, `web/game.html`: Playable mode pages.
+- `web/levels_selection.html`, `web/levels.html`: Levels mode pages.
+- `web/main.js`: base engine (simulation, render, loop).
+- `web/game.js`: Playable mode logic.
+- `web/levels.js`: Levels campaign logic.
+- `web/src/`: modular TypeScript source reference.
+- `imgs/`: image assets.
+
+### Local Setup
+
+Recommended: Node.js 18+
+
+1. Go to the web folder:
+
+```bash
+cd web
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Start local server:
+
+```bash
+npm run dev
+```
+
+4. Open the URL shown by the command (typically `http://localhost:3000`).
+
+### Available Scripts
+
+From `web/`:
+
+- `npm run dev`: run local static server.
+- `npm run build`: compile TypeScript.
+- `npm run watch`: compile TypeScript in watch mode.
+
+### Levels Controls
+
+- HUD buttons `[-]` / `[+]`: adjust Reserve Lock.
+- Left/Right arrow keys: adjust Reserve Lock from keyboard.
+- Click on board: trigger your faction ability.
+
+### Status
+
+Active development focused on UX clarity, high-density stability, and faction balance.
+
+## Espanol
+
+### Resumen
+
+PARTICLES es un simulador/juego de estrategia en tiempo real basado en sistemas de particulas, con interfaz web y campana por niveles.
+
+Permite observar y jugar con dos facciones principales:
+
+- Photon (runners)
+- Electron (chasers)
+
+Cada faccion tiene mecanicas propias: combate, curacion, mejoras de velocidad, nodos de energia y gestion de obstaculos.
+
+### Origen del Proyecto
+
+Este proyecto esta basado en el proyecto en Java **Particles** del repositorio:
+
+- https://github.com/mpjmar/Particles-java.git
+
+Este repositorio traslada y amplia esa base hacia una implementacion web con varios modos y sistemas de interfaz.
+
+### Modos de Juego
+
+- Simulation: modo autonomo para observar comportamiento emergente.
+- Playable: modo jugador contra sistema, eligiendo faccion y activando habilidades.
+- Levels: campana por fases con objetivos de supervivencia, transiciones y dificultad progresiva.
+
+### Caracteristicas
+
+- Motor de simulacion con tablero por celdas.
+- HUD en tiempo real para estado y recursos.
+- Sistema de cargas de habilidad y recarga por nodos de energia.
+- Sistema Reserve Lock en modo Levels.
+- Balance por nivel (densidad, vida enemiga, ritmo de aparicion).
+- Persistencia local de ajustes y metricas.
+
+### Capturas
+
+![Visual principal](imgs/High-energy-particles-scaled.jpg)
+![Campo de particulas](imgs/pexels-photo-9667551.jpg)
+![Concepto subatomico](imgs/Subatomic-Particles-1.webp)
+![Estallido de energia](imgs/blue-explosion-particle-space-000798309_prevstill.webp)
+
+### Tecnologias
+
+- HTML5
+- CSS3
+- JavaScript (runtime principal)
+- TypeScript (estructura fuente en `web/src`)
+
+### Estructura del Repositorio
+
+- `web/`: aplicacion web principal.
+- `web/index.html`: entrada y seleccion de modo.
+- `web/simulation.html`: pagina de simulacion.
+- `web/game_selection.html`, `web/game.html`: paginas del modo Playable.
+- `web/levels_selection.html`, `web/levels.html`: paginas del modo Levels.
+- `web/main.js`: motor base (simulacion, render, loop).
+- `web/game.js`: logica de Playable.
+- `web/levels.js`: logica de campana Levels.
+- `web/src/`: referencia modular en TypeScript.
+- `imgs/`: recursos visuales.
+
+### Ejecucion Local
+
+Recomendado: Node.js 18+
+
+1. Entra en la carpeta web:
+
+```bash
+cd web
+```
+
+2. Instala dependencias:
+
+```bash
+npm install
+```
+
+3. Levanta servidor local:
+
+```bash
+npm run dev
+```
+
+4. Abre en navegador la URL que muestre el comando (normalmente `http://localhost:3000`).
+
+### Scripts Disponibles
+
+Desde `web/`:
+
+- `npm run dev`: sirve la aplicacion en local.
+- `npm run build`: compila TypeScript.
+- `npm run watch`: compila TypeScript en modo observacion.
+
+### Controles en Levels
+
+- Botones HUD `[-]` / `[+]`: ajustar Reserve Lock.
+- Flechas izquierda/derecha: ajustar Reserve Lock por teclado.
+- Click en tablero: activar habilidad de faccion.
+
+### Estado
+
+Desarrollo activo con foco en claridad de UX, estabilidad en alta densidad y balance entre facciones.
+
