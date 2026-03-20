@@ -223,7 +223,9 @@
 
 		.mode-card {
 			width: 280px;
+			height: 340px;
 			padding: 40px 20px;
+			box-sizing: border-box;
 			background: rgba(30, 41, 59, 0.4);
 			border: 2px solid rgba(56, 189, 248, 0.2);
 			border-radius: 20px;
@@ -234,6 +236,7 @@
 			display: flex;
 			flex-direction: column;
 			align-items: center;
+			justify-content: flex-start;
 		}
 
 		.mode-card:hover {
@@ -248,7 +251,7 @@
 			color: #fff;
 			font-size: 1.5rem;
 			margin: 20px 0 10px;
-			min-height: 3.2rem;
+			min-height: 3.4rem;
 			display: flex;
 			align-items: center;
 			justify-content: center;
@@ -259,8 +262,13 @@
 			color: #94a3b8;
 			font-size: 0.9rem;
 			line-height: 1.5;
-			min-height: 4.2rem;
+			min-height: 4.5rem;
 			text-align: center;
+			display: -webkit-box;
+			line-clamp: 3;
+			-webkit-line-clamp: 3;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
 		}
 
 		.mode-icon {
@@ -320,6 +328,7 @@
 			.mode-card {
 				width: min(100%, 420px);
 				padding: 24px 16px;
+				height: auto;
 			}
 
 			.mode-mini-help {
@@ -392,7 +401,7 @@
 
 			<div class="mode-option-wrap">
 				<a href="levels_selection.html" class="mode-card">
-					<div class="mode-icon" style="color: #22d3ee; text-shadow: 0 0 20px #22d3ee;">🛸</div>
+					<div class="mode-icon" style="color: #22d3ee; text-shadow: 0 0 20px #22d3ee; margin-top: 2px;">🛸</div>
 					<h2>CORE ASCENSION</h2>
 					<p>Progress through staged challenges with scaling intensity and survival objectives.</p>
 				</a>
