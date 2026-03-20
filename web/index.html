@@ -8,13 +8,18 @@
 	<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
 	<link rel="stylesheet" href="style.css" />
 	<style>
+		html,
+		body {
+			overflow-x: hidden;
+		}
+
 		body {
 			display: flex;
 			align-items: center;
 			justify-content: center;
 			height: 100vh;
 			margin: 0;
-			overflow: hidden;
+			overflow-y: auto;
 			background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
 		}
 
@@ -201,6 +206,11 @@
 		}
 
 		@media (max-width: 980px) {
+			html,
+			body {
+				overflow-y: auto;
+			}
+
 			body {
 				height: auto;
 				min-height: 100vh;
@@ -249,30 +259,30 @@
 
 		<div class="mode-options">
 			<a href="simulation.html" class="mode-card">
-				<div class="mode-icon" style="color: #38bdf8; text-shadow: 0 0 20px #38bdf8;">⚛</div>
+				<div class="mode-icon" style="color: #38bdf8; text-shadow: 0 0 20px #38bdf8; font-size: 3.6rem;">⚛</div>
 				<h2>SIMULATION</h2>
 				<p>Observe emergent behaviors and complex evolution in autonomous mode.</p>
 			</a>
 			
 			<a href="game_selection.html" class="mode-card">
-				<div class="mode-icon" style="color: #fb923c; text-shadow: 0 0 20px #fb923c;">🎮</div>
-				<h2>PLAYABLE</h2>
+				<div class="mode-icon" style="color: #fb923c; text-shadow: 0 0 20px #fb923c;">⚡</div>
+				<h2>PULSE CLASH</h2>
 				<p>Take control. Choose your side and dominate the grid using special abilities.</p>
 			</a>
 
 			<a href="levels_selection.html" class="mode-card">
 				<div class="mode-icon" style="color: #22d3ee; text-shadow: 0 0 20px #22d3ee;">🛸</div>
-				<h2>LEVELS</h2>
+				<h2>CORE ASCENSION</h2>
 				<p>Progress through staged challenges with scaling intensity and survival objectives.</p>
 			</a>
 		</div>
 
 		<button id="toggle-levels-guide" class="mode-help-toggle" type="button" aria-expanded="false" aria-controls="levels-guide">
-			HOW TO PLAY LEVELS
+			HOW TO PLAY CORE ASCENSION
 		</button>
 
 		<section id="levels-guide" class="mode-help" aria-label="Levels Instructions">
-			<h3>LEVELS QUICK GUIDE</h3>
+			<h3>CORE ASCENSION QUICK GUIDE</h3>
 			<div class="guide-columns">
 				<div>
 					<h4>ENGLISH</h4>
@@ -344,7 +354,7 @@
 			guideToggle.addEventListener('click', () => {
 				const visible = levelsGuide.classList.toggle('visible');
 				guideToggle.setAttribute('aria-expanded', visible ? 'true' : 'false');
-				guideToggle.textContent = visible ? 'HIDE LEVELS GUIDE' : 'HOW TO PLAY LEVELS';
+				guideToggle.textContent = visible ? 'HIDE CORE ASCENSION GUIDE' : 'HOW TO PLAY CORE ASCENSION';
 			});
 		}
 	</script>

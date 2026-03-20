@@ -28,15 +28,15 @@ This repository extends that idea into a web-focused implementation with multipl
 ### Game Modes
 
 - Simulation: autonomous mode for observing emergent behavior.
-- Playable: player-vs-system mode where you choose a side and trigger active abilities.
-- Levels: staged campaign with survival objectives, transitions, and scaling difficulty.
+- Pulse Clash: player-vs-system mode where you choose a side and trigger active abilities.
+- Core Ascension: staged campaign with survival objectives, transitions, and scaling difficulty.
 
 ### Highlights
 
 - Grid-based simulation engine.
 - Real-time HUD with match/resource feedback.
 - Ability charges with energy node recovery.
-- Reserve Lock system in Levels mode.
+- Reserve Lock system in Core Ascension mode.
 - Per-level balancing (density, enemy life, spawn pace).
 - Local persistence for selected settings and metrics.
 
@@ -52,11 +52,11 @@ This repository extends that idea into a web-focused implementation with multipl
 - `web/`: main web application.
 - `web/index.html`: mode selection entry point.
 - `web/simulation.html`: Simulation mode page.
-- `web/game_selection.html`, `web/game.html`: Playable mode pages.
-- `web/levels_selection.html`, `web/levels.html`: Levels mode pages.
+- `web/game_selection.html`, `web/game.html`: Pulse Clash mode pages.
+- `web/levels_selection.html`, `web/levels.html`: Core Ascension mode pages.
 - `web/main.js`: base engine (simulation, render, loop).
-- `web/game.js`: Playable mode logic.
-- `web/levels.js`: Levels campaign logic.
+- `web/game.js`: Pulse Clash mode logic.
+- `web/levels.js`: Core Ascension campaign logic.
 - `web/src/`: modular TypeScript source reference.
 - `imgs/`: image assets.
 
@@ -106,7 +106,7 @@ This repository includes an automated workflow at `.github/workflows/deploy-page
 https://<your-username>.github.io/<your-repo>/
 ```
 
-### Levels Controls
+### Core Ascension Controls
 
 - HUD buttons `[-]` / `[+]`: adjust Reserve Lock.
 - Left/Right arrow keys: adjust Reserve Lock from keyboard.
@@ -140,15 +140,15 @@ Este repositorio traslada y amplia esa base hacia una implementacion web con var
 ### Modos de Juego
 
 - Simulation: modo autonomo para observar comportamiento emergente.
-- Playable: modo jugador contra sistema, eligiendo faccion y activando habilidades.
-- Levels: campana por fases con objetivos de supervivencia, transiciones y dificultad progresiva.
+- Pulse Clash: modo jugador contra sistema, eligiendo faccion y activando habilidades.
+- Core Ascension: campana por fases con objetivos de supervivencia, transiciones y dificultad progresiva.
 
 ### Caracteristicas
 
 - Motor de simulacion con tablero por celdas.
 - HUD en tiempo real para estado y recursos.
 - Sistema de cargas de habilidad y recarga por nodos de energia.
-- Sistema Reserve Lock en modo Levels.
+- Sistema Reserve Lock en modo Core Ascension.
 - Balance por nivel (densidad, vida enemiga, ritmo de aparicion).
 - Persistencia local de ajustes y metricas.
 
@@ -164,11 +164,11 @@ Este repositorio traslada y amplia esa base hacia una implementacion web con var
 - `web/`: aplicacion web principal.
 - `web/index.html`: entrada y seleccion de modo.
 - `web/simulation.html`: pagina de simulacion.
-- `web/game_selection.html`, `web/game.html`: paginas del modo Playable.
-- `web/levels_selection.html`, `web/levels.html`: paginas del modo Levels.
+- `web/game_selection.html`, `web/game.html`: paginas del modo Pulse Clash.
+- `web/levels_selection.html`, `web/levels.html`: paginas del modo Core Ascension.
 - `web/main.js`: motor base (simulacion, render, loop).
-- `web/game.js`: logica de Playable.
-- `web/levels.js`: logica de campana Levels.
+- `web/game.js`: logica de Pulse Clash.
+- `web/levels.js`: logica de campana Core Ascension.
 - `web/src/`: referencia modular en TypeScript.
 - `imgs/`: recursos visuales.
 
@@ -218,7 +218,7 @@ Este repositorio incluye un workflow automatico en `.github/workflows/deploy-pag
 https://<tu-usuario>.github.io/<tu-repo>/
 ```
 
-### Controles en Levels
+### Controles en Core Ascension
 
 - Botones HUD `[-]` / `[+]`: ajustar Reserve Lock.
 - Flechas izquierda/derecha: ajustar Reserve Lock por teclado.
