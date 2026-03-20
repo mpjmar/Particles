@@ -1712,13 +1712,26 @@ function getCols() {
 	if (!Number.isFinite(cols)) return 60;
 	return Math.max(10, Math.min(100, cols));
 }
+
+function readCountInput(inputEl, fallback, min, max) {
+	if (!inputEl) return fallback;
+	const raw = parseInt(inputEl.value, 10);
+	if (!Number.isFinite(raw)) {
+		inputEl.value = String(fallback);
+		return fallback;
+	}
+	const clamped = Math.max(min, Math.min(max, raw));
+	if (clamped !== raw) inputEl.value = String(clamped);
+	return clamped;
+}
+
 function getCounts() {
 	return {
-		runners: inpRun ? parseInt(inpRun.value, 10) : 20,
-		chasers: inpCha ? parseInt(inpCha.value, 10) : 20,
-		obstacles: inpObs ? parseInt(inpObs.value, 10) : 25,
-		healers: inpHea ? parseInt(inpHea.value, 10) : 5,
-		speeders: inpSpe ? parseInt(inpSpe.value, 10) : 5
+		runners: readCountInput(inpRun, 20, 1, 100),
+		chasers: readCountInput(inpCha, 20, 1, 100),
+		obstacles: readCountInput(inpObs, 50, 0, 200),
+		healers: readCountInput(inpHea, 5, 0, 50),
+		speeders: readCountInput(inpSpe, 5, 0, 50)
 	};
 }
 function getSpeedMs() { return inpSpeed ? Math.round(1000 / parseInt(inpSpeed.value, 10)) : 500; }

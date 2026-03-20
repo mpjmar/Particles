@@ -102,7 +102,8 @@ updateAbilityHud();
  * Handle Mission Start
  */
 function onMissionBeginClick() {
-    if (!board) initGame();
+    if (typeof resetGame === 'function') resetGame();
+    else initGame();
     startGame();
     if (overlay) overlay.classList.add('hidden');
 }
