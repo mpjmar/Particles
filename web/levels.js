@@ -9,6 +9,7 @@ const params = new URLSearchParams(window.location.search);
 const playerRole = params.get('role') || 'photon';
 let abilityCharges = 5;
 const MAX_ABILITY_CHARGES = 5;
+const LEVELS_GUIDED_TUTORIAL_KEY = 'particles.levels.guidedTutorial.v1';
 
 const LEVELS = [
     {
@@ -389,15 +390,170 @@ function restartCampaignFromOverlay(e) {
 }
 
 function openLevelsTutorial() {
-    if (btnBegin) btnBegin.textContent = 'BEGIN CAMPAIGN';
-    if (btnOverlayReset) btnOverlayReset.style.display = '';
-    if (overlayMsg) overlayMsg.textContent = 'CORE ASCENSION TUTORIAL';
-    const overlaySub = document.getElementById('overlay-sub');
-    if (overlaySub) {
-        overlaySub.textContent = 'Photon click = area explosion (kills nearby Electrons). Electron click = spawn Electron clusters (to hunt Photons). Max charges = 5 for both sides. Recharge by clicking Energy Nodes. Complete the Objective counter and manage Reserve Lock to survive each level.';
+    startLevelsGuidedTutorial(true);
+}
+
+function ensureGuidedTutorialStyles() {
+    if (document.getElementById('guided-tutorial-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'guided-tutorial-styles';
+    style.textContent = `
+        .guided-focus {
+            outline: 3px solid #22d3ee !important;
+            outline-offset: 4px;
+            border-radius: 10px;
+            box-shadow: 0 0 0 6px rgba(34, 211, 238, 0.18);
+            position: relative;
+            z-index: 2500 !important;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+let levelsTutorialState = null;
+
+function startLevelsGuidedTutorial(force = false) {
+    if (!force && localStorage.getItem(LEVELS_GUIDED_TUTORIAL_KEY) === 'done') return;
+    if (levelsTutorialState && levelsTutorialState.active) return;
+
+    ensureGuidedTutorialStyles();
+
+    const roleHint = playerRole === 'photon'
+        ? 'Photon click = area explosion that removes nearby Electrons.'
+        : 'Electron click = spawn Electron clusters to hunt Photons.';
+
+    const steps = [
+        {
+            element: cntObjective,
+            title: 'Step 1/3 - Level Objective',
+            text: 'Complete the Objective counter to clear the level and unlock the next stage.'
+        },
+        {
+            element: cntCharges,
+            title: 'Step 2/3 - Charges and Reserve Lock',
+            text: 'You have max 5 charges. Recharge via Energy Nodes. Keep Reserve Lock low enough to allow spending.'
+        },
+        {
+            element: canvas,
+            title: 'Step 3/3 - Click Ability',
+            text: `${roleHint} Use charges where pressure is highest.`
+        }
+    ];
+
+    const panel = document.createElement('div');
+    panel.style.position = 'fixed';
+    panel.style.left = '16px';
+    panel.style.bottom = '16px';
+    panel.style.zIndex = '2600';
+    panel.style.maxWidth = '360px';
+    panel.style.background = 'rgba(2, 6, 23, 0.92)';
+    panel.style.border = '1px solid rgba(34, 211, 238, 0.5)';
+    panel.style.borderRadius = '14px';
+    panel.style.padding = '12px 12px 10px';
+    panel.style.boxShadow = '0 10px 28px rgba(2, 132, 199, 0.28)';
+    panel.style.backdropFilter = 'blur(8px)';
+    panel.style.fontFamily = 'Inter, sans-serif';
+    panel.style.color = '#e2e8f0';
+
+    const titleEl = document.createElement('div');
+    titleEl.style.fontFamily = 'Orbitron, sans-serif';
+    titleEl.style.fontSize = '0.72rem';
+    titleEl.style.letterSpacing = '0.08em';
+    titleEl.style.color = '#22d3ee';
+    titleEl.style.marginBottom = '8px';
+
+    const textEl = document.createElement('div');
+    textEl.style.fontSize = '0.8rem';
+    textEl.style.lineHeight = '1.45';
+    textEl.style.marginBottom = '10px';
+
+    const actions = document.createElement('div');
+    actions.style.display = 'flex';
+    actions.style.gap = '8px';
+    actions.style.justifyContent = 'flex-end';
+
+    const skipBtn = document.createElement('button');
+    skipBtn.type = 'button';
+    skipBtn.textContent = 'Skip';
+    skipBtn.style.padding = '6px 10px';
+    skipBtn.style.borderRadius = '8px';
+    skipBtn.style.border = '1px solid rgba(148, 163, 184, 0.35)';
+    skipBtn.style.background = 'rgba(15, 23, 42, 0.8)';
+    skipBtn.style.color = '#cbd5e1';
+    skipBtn.style.cursor = 'pointer';
+
+    const nextBtn = document.createElement('button');
+    nextBtn.type = 'button';
+    nextBtn.textContent = 'Next';
+    nextBtn.style.padding = '6px 10px';
+    nextBtn.style.borderRadius = '8px';
+    nextBtn.style.border = '1px solid rgba(56, 189, 248, 0.6)';
+    nextBtn.style.background = 'rgba(2, 132, 199, 0.24)';
+    nextBtn.style.color = '#e2e8f0';
+    nextBtn.style.cursor = 'pointer';
+
+    actions.appendChild(skipBtn);
+    actions.appendChild(nextBtn);
+    panel.appendChild(titleEl);
+    panel.appendChild(textEl);
+    panel.appendChild(actions);
+    document.body.appendChild(panel);
+
+    levelsTutorialState = {
+        active: true,
+        panel,
+        titleEl,
+        textEl,
+        nextBtn,
+        steps,
+        current: 0,
+        highlighted: null
+    };
+
+    function clearHighlight() {
+        if (levelsTutorialState && levelsTutorialState.highlighted) {
+            levelsTutorialState.highlighted.classList.remove('guided-focus');
+            levelsTutorialState.highlighted = null;
+        }
     }
-    if (overlayIcon) overlayIcon.textContent = '📘';
-    if (overlay) overlay.classList.remove('hidden');
+
+    function finishTutorial() {
+        clearHighlight();
+        localStorage.setItem(LEVELS_GUIDED_TUTORIAL_KEY, 'done');
+        if (levelsTutorialState && levelsTutorialState.panel.parentNode) {
+            levelsTutorialState.panel.parentNode.removeChild(levelsTutorialState.panel);
+        }
+        levelsTutorialState = null;
+    }
+
+    function renderStep() {
+        if (!levelsTutorialState) return;
+        clearHighlight();
+
+        const step = levelsTutorialState.steps[levelsTutorialState.current];
+        levelsTutorialState.titleEl.textContent = step.title;
+        levelsTutorialState.textEl.textContent = step.text;
+        levelsTutorialState.nextBtn.textContent = levelsTutorialState.current >= levelsTutorialState.steps.length - 1 ? 'Finish' : 'Next';
+
+        if (step.element) {
+            step.element.classList.add('guided-focus');
+            levelsTutorialState.highlighted = step.element;
+            step.element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+        }
+    }
+
+    skipBtn.addEventListener('click', finishTutorial);
+    nextBtn.addEventListener('click', () => {
+        if (!levelsTutorialState) return;
+        if (levelsTutorialState.current >= levelsTutorialState.steps.length - 1) {
+            finishTutorial();
+            return;
+        }
+        levelsTutorialState.current += 1;
+        renderStep();
+    });
+
+    renderStep();
 }
 
 if (btnBegin) btnBegin.addEventListener('click', restartCampaignFromOverlay);
@@ -417,6 +573,7 @@ if (btnTutorialControl) btnTutorialControl.addEventListener('click', openLevelsT
 reserveDownBtn.addEventListener('click', onReserveDownClick);
 reserveUpBtn.addEventListener('click', onReserveUpClick);
 window.addEventListener('keydown', onReserveHotkey);
+setTimeout(() => startLevelsGuidedTutorial(false), 700);
 
 function showChargeFeedback(row, col, text = '+1 CHARGE') {
     if (!canvas || !renderer || !board) return;

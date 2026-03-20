@@ -16,6 +16,7 @@ const originalResetGame = window.resetGame;
 const originalShowWinner = window.showWinner;
 const PLAYABLE_PANEL_SETTINGS_KEY = "particles.playable.panel.v1";
 const PLAYABLE_METRICS_KEY = "particles.playable.metrics.v1";
+const PLAYABLE_GUIDED_TUTORIAL_KEY = "particles.playable.guidedTutorial.v1";
 
 // UI Elements specific to game.html
 const cntCharges = document.getElementById('cnt-charges');
@@ -286,20 +287,175 @@ if (btnBegin) {
     btnBegin.addEventListener('click', onMissionBeginClick);
 }
 
-function openPlayableTutorial() {
-    const overlayEl = document.getElementById('overlay');
-    const overlayMsgEl = document.getElementById('overlay-msg');
-    const overlaySubEl = document.getElementById('overlay-sub');
-    if (!overlayEl || !overlayMsgEl || !overlaySubEl) return;
+function ensureGuidedTutorialStyles() {
+    if (document.getElementById('guided-tutorial-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'guided-tutorial-styles';
+    style.textContent = `
+        .guided-focus {
+            outline: 3px solid #22d3ee !important;
+            outline-offset: 4px;
+            border-radius: 10px;
+            box-shadow: 0 0 0 6px rgba(34, 211, 238, 0.18);
+            position: relative;
+            z-index: 2500 !important;
+        }
+    `;
+    document.head.appendChild(style);
+}
 
-    if (overlayIcon) overlayIcon.textContent = '📘';
-    overlayMsgEl.textContent = 'PULSE CLASH TUTORIAL';
-    overlaySubEl.textContent = 'Photon click = explosion to remove nearby Electrons. Electron click = clone burst to pressure Photons. Max charges = 5 for both sides. Click Energy Nodes to recharge. Win by eliminating the opposing faction.';
-    if (btnBegin) btnBegin.textContent = 'BEGIN MISSION';
-    overlayEl.classList.remove('hidden');
+let playableTutorialState = null;
+
+function startPlayableGuidedTutorial(force = false) {
+    if (!force && localStorage.getItem(PLAYABLE_GUIDED_TUTORIAL_KEY) === 'done') return;
+    if (playableTutorialState && playableTutorialState.active) return;
+
+    ensureGuidedTutorialStyles();
+
+    const roleHint = playerRole === 'photon'
+        ? 'As Photon, each click creates an area explosion that removes nearby Electrons.'
+        : 'As Electron, each click creates clone clusters to pressure Photons.';
+
+    const steps = [
+        {
+            element: document.getElementById('btn-start'),
+            title: 'Step 1/3 - Start Mission',
+            text: 'Press START MISSION to begin the match simulation.'
+        },
+        {
+            element: document.getElementById('cnt-charges'),
+            title: 'Step 2/3 - Charges and Nodes',
+            text: 'You can store up to 5 ability charges. Recharge by clicking Energy Nodes.'
+        },
+        {
+            element: document.getElementById('board-canvas'),
+            title: 'Step 3/3 - Click Ability',
+            text: `${roleHint} Use clicks where pressure is highest.`
+        }
+    ];
+
+    const panel = document.createElement('div');
+    panel.style.position = 'fixed';
+    panel.style.left = '16px';
+    panel.style.bottom = '16px';
+    panel.style.zIndex = '2600';
+    panel.style.maxWidth = '340px';
+    panel.style.background = 'rgba(2, 6, 23, 0.92)';
+    panel.style.border = '1px solid rgba(34, 211, 238, 0.5)';
+    panel.style.borderRadius = '14px';
+    panel.style.padding = '12px 12px 10px';
+    panel.style.boxShadow = '0 10px 28px rgba(2, 132, 199, 0.28)';
+    panel.style.backdropFilter = 'blur(8px)';
+    panel.style.fontFamily = 'Inter, sans-serif';
+    panel.style.color = '#e2e8f0';
+
+    const titleEl = document.createElement('div');
+    titleEl.style.fontFamily = 'Orbitron, sans-serif';
+    titleEl.style.fontSize = '0.72rem';
+    titleEl.style.letterSpacing = '0.08em';
+    titleEl.style.color = '#22d3ee';
+    titleEl.style.marginBottom = '8px';
+
+    const textEl = document.createElement('div');
+    textEl.style.fontSize = '0.8rem';
+    textEl.style.lineHeight = '1.45';
+    textEl.style.marginBottom = '10px';
+
+    const actions = document.createElement('div');
+    actions.style.display = 'flex';
+    actions.style.gap = '8px';
+    actions.style.justifyContent = 'flex-end';
+
+    const skipBtn = document.createElement('button');
+    skipBtn.type = 'button';
+    skipBtn.textContent = 'Skip';
+    skipBtn.style.padding = '6px 10px';
+    skipBtn.style.borderRadius = '8px';
+    skipBtn.style.border = '1px solid rgba(148, 163, 184, 0.35)';
+    skipBtn.style.background = 'rgba(15, 23, 42, 0.8)';
+    skipBtn.style.color = '#cbd5e1';
+    skipBtn.style.cursor = 'pointer';
+
+    const nextBtn = document.createElement('button');
+    nextBtn.type = 'button';
+    nextBtn.textContent = 'Next';
+    nextBtn.style.padding = '6px 10px';
+    nextBtn.style.borderRadius = '8px';
+    nextBtn.style.border = '1px solid rgba(56, 189, 248, 0.6)';
+    nextBtn.style.background = 'rgba(2, 132, 199, 0.24)';
+    nextBtn.style.color = '#e2e8f0';
+    nextBtn.style.cursor = 'pointer';
+
+    actions.appendChild(skipBtn);
+    actions.appendChild(nextBtn);
+    panel.appendChild(titleEl);
+    panel.appendChild(textEl);
+    panel.appendChild(actions);
+    document.body.appendChild(panel);
+
+    playableTutorialState = {
+        active: true,
+        panel,
+        titleEl,
+        textEl,
+        nextBtn,
+        steps,
+        current: 0,
+        highlighted: null
+    };
+
+    function clearHighlight() {
+        if (playableTutorialState && playableTutorialState.highlighted) {
+            playableTutorialState.highlighted.classList.remove('guided-focus');
+            playableTutorialState.highlighted = null;
+        }
+    }
+
+    function finishTutorial() {
+        clearHighlight();
+        localStorage.setItem(PLAYABLE_GUIDED_TUTORIAL_KEY, 'done');
+        if (playableTutorialState && playableTutorialState.panel.parentNode) {
+            playableTutorialState.panel.parentNode.removeChild(playableTutorialState.panel);
+        }
+        playableTutorialState = null;
+    }
+
+    function renderStep() {
+        if (!playableTutorialState) return;
+        clearHighlight();
+
+        const step = playableTutorialState.steps[playableTutorialState.current];
+        playableTutorialState.titleEl.textContent = step.title;
+        playableTutorialState.textEl.textContent = step.text;
+        playableTutorialState.nextBtn.textContent = playableTutorialState.current >= playableTutorialState.steps.length - 1 ? 'Finish' : 'Next';
+
+        if (step.element) {
+            step.element.classList.add('guided-focus');
+            playableTutorialState.highlighted = step.element;
+            step.element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+        }
+    }
+
+    skipBtn.addEventListener('click', finishTutorial);
+    nextBtn.addEventListener('click', () => {
+        if (!playableTutorialState) return;
+        if (playableTutorialState.current >= playableTutorialState.steps.length - 1) {
+            finishTutorial();
+            return;
+        }
+        playableTutorialState.current += 1;
+        renderStep();
+    });
+
+    renderStep();
+}
+
+function openPlayableTutorial() {
+    startPlayableGuidedTutorial(true);
 }
 
 if (btnTutorial) btnTutorial.addEventListener('click', openPlayableTutorial);
+setTimeout(() => startPlayableGuidedTutorial(false), 650);
 
 function showChargeFeedback(row, col, text = '+1 CHARGE') {
     if (!canvas || !renderer || !board) return;
