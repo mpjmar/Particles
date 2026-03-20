@@ -209,6 +209,18 @@
 			margin: 0 0 5px;
 		}
 
+		.mode-mini-help ul {
+			margin: 0 0 8px;
+			padding-left: 18px;
+			color: #cbd5e1;
+			font-size: 0.74rem;
+			line-height: 1.42;
+		}
+
+		.mode-mini-help li {
+			margin-bottom: 4px;
+		}
+
 		.mode-card {
 			width: 280px;
 			padding: 40px 20px;
@@ -236,12 +248,19 @@
 			color: #fff;
 			font-size: 1.5rem;
 			margin: 20px 0 10px;
+			min-height: 3.2rem;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			text-align: center;
 		}
 
 		.mode-card p {
 			color: #94a3b8;
 			font-size: 0.9rem;
 			line-height: 1.5;
+			min-height: 4.2rem;
+			text-align: center;
 		}
 
 		.mode-icon {
@@ -326,8 +345,20 @@
 				<button class="mode-mini-help-toggle" type="button" aria-expanded="false" aria-controls="guide-simulation">HOW TO PLAY THIS MODE</button>
 				<section id="guide-simulation" class="mode-mini-help" aria-label="Simulation guide">
 					<h4>SIMULATION GUIDE</h4>
-					<p><strong>EN:</strong> Watch-only mode. Set rows, cols, speed and densities, then press Start. No ability clicks here.</p>
-					<p><strong>ES:</strong> Modo de observacion. Ajusta filas, columnas, velocidad y densidades, luego pulsa Start. Aqui no hay habilidades por clic.</p>
+					<p><strong>EN:</strong></p>
+					<ul>
+						<li>Watch-only mode.</li>
+						<li>Set rows, cols, speed and densities.</li>
+						<li>Press Start to run simulation.</li>
+						<li>No ability clicks in this mode.</li>
+					</ul>
+					<p><strong>ES:</strong></p>
+					<ul>
+						<li>Modo de observacion.</li>
+						<li>Ajusta filas, columnas, velocidad y densidades.</li>
+						<li>Pulsa Start para ejecutar simulacion.</li>
+						<li>No hay habilidades por clic en este modo.</li>
+					</ul>
 				</section>
 			</div>
 
@@ -340,8 +371,22 @@
 				<button class="mode-mini-help-toggle" type="button" aria-expanded="false" aria-controls="guide-pulse">HOW TO PLAY THIS MODE</button>
 				<section id="guide-pulse" class="mode-mini-help" aria-label="Pulse Clash guide">
 					<h4>PULSE CLASH GUIDE</h4>
-					<p><strong>EN:</strong> Configurable PvE mode. Photon click = explosion; Electron click = clone burst. Max charges: 5. Click Energy Nodes to recharge.</p>
-					<p><strong>ES:</strong> Modo PvE configurable. Clic con Photon = explosion; con Electron = rafaga de clones. Maximo 5 cargas. Clica Nodos de Energia para recargar.</p>
+					<p><strong>EN:</strong></p>
+					<ul>
+						<li>Configurable PvE mode.</li>
+						<li>Photon click = area explosion.</li>
+						<li>Electron click = clone burst.</li>
+						<li>Max charges = 5.</li>
+						<li>Click Energy Nodes to recharge.</li>
+					</ul>
+					<p><strong>ES:</strong></p>
+					<ul>
+						<li>Modo PvE configurable.</li>
+						<li>Clic con Photon = explosion en area.</li>
+						<li>Clic con Electron = rafaga de clones.</li>
+						<li>Maximo de cargas = 5.</li>
+						<li>Clica Nodos de Energia para recargar.</li>
+					</ul>
 				</section>
 			</div>
 
@@ -354,8 +399,24 @@
 				<button class="mode-mini-help-toggle" type="button" aria-expanded="false" aria-controls="guide-core">HOW TO PLAY THIS MODE</button>
 				<section id="guide-core" class="mode-mini-help" aria-label="Core Ascension guide">
 					<h4>CORE ASCENSION GUIDE</h4>
-					<p><strong>EN:</strong> Level-based campaign. Photon click = area explosion; Electron click = Electron clusters. Max charges: 5. Recharge from Energy Nodes and manage Reserve Lock.</p>
-					<p><strong>ES:</strong> Campana por niveles. Clic con Photon = explosion en area; con Electron = clusters de Electrones. Maximo 5 cargas. Recarga en Nodos de Energia y controla Reserve Lock.</p>
+					<p><strong>EN:</strong></p>
+					<ul>
+						<li>Level-based campaign mode.</li>
+						<li>Photon click = area explosion (kills nearby Electrons).</li>
+						<li>Electron click = spawn Electron clusters (to hunt Photons).</li>
+						<li>Max charges = 5 for both sides.</li>
+						<li>Recharge from Energy Nodes.</li>
+						<li>Manage Reserve Lock to keep emergency charges.</li>
+					</ul>
+					<p><strong>ES:</strong></p>
+					<ul>
+						<li>Modo campana por niveles.</li>
+						<li>Clic con Photon = explosion en area (elimina Electrones cercanos).</li>
+						<li>Clic con Electron = crea clusters de Electrones (para cazar Photons).</li>
+						<li>Maximo de cargas = 5 para ambos bandos.</li>
+						<li>Recarga en Nodos de Energia.</li>
+						<li>Controla Reserve Lock para mantener cargas de emergencia.</li>
+					</ul>
 				</section>
 			</div>
 		</div>
