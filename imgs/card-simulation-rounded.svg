@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 420" role="img" aria-label="Simulation card rounded">
+  <defs>
+    <clipPath id="roundClip">
+      <rect x="4" y="4" width="312" height="412" rx="24" ry="24" />
+    </clipPath>
+  </defs>
+
+  <rect x="2" y="2" width="316" height="416" rx="26" ry="26" fill="#0f172a" stroke="rgba(56, 189, 248, 0.45)" stroke-width="2" />
+  <image href="simulation.png" x="4" y="4" width="312" height="412" preserveAspectRatio="xMidYMid slice" clip-path="url(#roundClip)" />
+</svg>
