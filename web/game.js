@@ -70,6 +70,53 @@ abilityHudStatus.style.marginTop = '4px';
 abilityHudStatus.style.color = '#94a3b8';
 abilityHudStatus.style.minHeight = '1.1em';
 
+function applyAbilityHudLayout() {
+    const isLandscapeMobile = window.matchMedia('(max-width: 900px) and (orientation: landscape)').matches;
+    const isMobile = window.matchMedia('(max-width: 900px)').matches;
+
+    if (isLandscapeMobile) {
+        abilityHud.style.top = '8px';
+        abilityHud.style.right = '8px';
+        abilityHud.style.bottom = 'auto';
+        abilityHud.style.padding = '6px 8px';
+        abilityHud.style.fontSize = '0.62rem';
+        abilityHud.style.minWidth = '120px';
+        abilityHud.style.maxWidth = '44vw';
+        abilityHud.style.opacity = '0.78';
+        abilityHudTitle.style.marginBottom = '2px';
+        abilityHudCharges.style.fontSize = '0.76rem';
+        abilityHudStatus.style.display = 'none';
+        return;
+    }
+
+    if (isMobile) {
+        abilityHud.style.top = 'auto';
+        abilityHud.style.right = '10px';
+        abilityHud.style.bottom = '10px';
+        abilityHud.style.padding = '8px 10px';
+        abilityHud.style.fontSize = '0.68rem';
+        abilityHud.style.minWidth = '136px';
+        abilityHud.style.maxWidth = '56vw';
+        abilityHud.style.opacity = '0.86';
+        abilityHudTitle.style.marginBottom = '3px';
+        abilityHudCharges.style.fontSize = '0.82rem';
+        abilityHudStatus.style.display = 'block';
+        return;
+    }
+
+    abilityHud.style.top = 'auto';
+    abilityHud.style.right = '16px';
+    abilityHud.style.bottom = '16px';
+    abilityHud.style.padding = '10px 14px';
+    abilityHud.style.fontSize = '0.74rem';
+    abilityHud.style.minWidth = '160px';
+    abilityHud.style.maxWidth = 'none';
+    abilityHud.style.opacity = '1';
+    abilityHudTitle.style.marginBottom = '4px';
+    abilityHudCharges.style.fontSize = '0.92rem';
+    abilityHudStatus.style.display = 'block';
+}
+
 abilityHud.appendChild(abilityHudTitle);
 abilityHud.appendChild(abilityHudCharges);
 abilityHud.appendChild(abilityHudStatus);
@@ -78,6 +125,9 @@ if (boardWrap) {
     if (getComputedStyle(boardWrap).position === 'static') boardWrap.style.position = 'relative';
     boardWrap.appendChild(abilityHud);
 }
+
+applyAbilityHudLayout();
+window.addEventListener('resize', applyAbilityHudLayout);
 
 // Initialize UI context
 if (gameTitle) gameTitle.textContent = playerRole.toUpperCase() + " PILOT";

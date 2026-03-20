@@ -8,6 +8,32 @@
 	<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
 	<link rel="stylesheet" href="style.css" />
 	<style>
+		.top-bar {
+			left: 0 !important;
+			right: 0 !important;
+			width: 100% !important;
+			height: auto;
+			padding: 8px 12px;
+			background: rgba(2, 6, 23, 0.8);
+			backdrop-filter: blur(10px);
+		}
+
+		.top-bar-branding {
+			flex-direction: column;
+			gap: 2px;
+		}
+
+		.top-bar h1 {
+			margin: 0;
+			font-size: 1.15rem;
+			letter-spacing: 0.22em;
+		}
+
+		.selection-container {
+			width: min(100%, 980px);
+			margin: 0 auto;
+		}
+
 		body {
 			display: flex;
 			align-items: center;
