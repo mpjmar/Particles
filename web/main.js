@@ -1629,6 +1629,7 @@ let cntLogic = document.getElementById("cnt-logic");
 let cntProfile = document.getElementById("cnt-profile");
 const overlay = document.getElementById("overlay");
 const overlayMsg = document.getElementById("overlay-msg");
+const CORE_PANEL_SETTINGS_KEY = "particles.core.panel.v1";
 
 let logicMsLast = 0;
 let logicMsAvg = 0;
@@ -1695,11 +1696,65 @@ function setRenderProfile(mode) {
 	currentRenderProfile = mode === 'performance' ? 'performance' : 'balanced';
 	if (renderer) renderer.setRenderProfile(currentRenderProfile);
 	if (cntProfile) cntProfile.textContent = `Profile: ${currentRenderProfile.toUpperCase()}`;
+	saveCorePanelSettings();
 }
 
 function toggleRenderProfile() {
 	setRenderProfile(currentRenderProfile === 'balanced' ? 'performance' : 'balanced');
 	updateStats(true);
+}
+
+function saveCorePanelSettings() {
+	try {
+		const payload = {
+			rows: inpRows ? inpRows.value : undefined,
+			cols: inpCols ? inpCols.value : undefined,
+			speed: inpSpeed ? inpSpeed.value : undefined,
+			quality: inpQuality ? inpQuality.value : undefined,
+			run: inpRun ? inpRun.value : undefined,
+			cha: inpCha ? inpCha.value : undefined,
+			obs: inpObs ? inpObs.value : undefined,
+			hea: inpHea ? inpHea.value : undefined,
+			spe: inpSpe ? inpSpe.value : undefined,
+			profile: currentRenderProfile
+		};
+		localStorage.setItem(CORE_PANEL_SETTINGS_KEY, JSON.stringify(payload));
+	} catch (_) {
+		// Ignore storage failures (private mode, disabled storage, etc.)
+	}
+}
+
+function loadCorePanelSettings() {
+	try {
+		const raw = localStorage.getItem(CORE_PANEL_SETTINGS_KEY);
+		if (!raw) return;
+		const payload = JSON.parse(raw);
+		if (!payload || typeof payload !== "object") return;
+
+		if (inpRows && payload.rows != null) inpRows.value = String(payload.rows);
+		if (inpCols && payload.cols != null) inpCols.value = String(payload.cols);
+		if (inpSpeed && payload.speed != null) inpSpeed.value = String(payload.speed);
+		if (inpQuality && payload.quality != null) inpQuality.value = String(payload.quality);
+		if (inpRun && payload.run != null) inpRun.value = String(payload.run);
+		if (inpCha && payload.cha != null) inpCha.value = String(payload.cha);
+		if (inpObs && payload.obs != null) inpObs.value = String(payload.obs);
+		if (inpHea && payload.hea != null) inpHea.value = String(payload.hea);
+		if (inpSpe && payload.spe != null) inpSpe.value = String(payload.spe);
+		if (payload.profile === 'performance' || payload.profile === 'balanced') {
+			currentRenderProfile = payload.profile;
+		}
+	} catch (_) {
+		// Ignore malformed storage payload
+	}
+}
+
+function attachCoreSettingsPersistence() {
+	const controls = [inpRows, inpCols, inpSpeed, inpQuality, inpRun, inpCha, inpObs, inpHea, inpSpe];
+	for (const el of controls) {
+		if (!el) continue;
+		el.addEventListener("change", saveCorePanelSettings);
+		el.addEventListener("blur", saveCorePanelSettings);
+	}
 }
 
 function getRows() {
@@ -1909,6 +1964,7 @@ if (inpQuality) {
 	inpQuality.addEventListener("change", () => {
 		if (renderer) renderer.setFxQuality(getFxQuality());
 		updateStats(true);
+		saveCorePanelSettings();
 	});
 }
 
@@ -1952,6 +2008,9 @@ window.addEventListener("keydown", (e) => {
 	e.preventDefault();
 	toggleRenderProfile();
 });
+
+loadCorePanelSettings();
+attachCoreSettingsPersistence();
 
 // Initialization - Don't auto-init if in game mode
 if (!window.location.href.includes('game.html')) {

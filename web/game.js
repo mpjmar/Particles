@@ -13,6 +13,9 @@ const originalStartGame = window.startGame;
 const originalPauseGame = window.pauseGame;
 const originalStopGame = window.stopGame;
 const originalResetGame = window.resetGame;
+const originalShowWinner = window.showWinner;
+const PLAYABLE_PANEL_SETTINGS_KEY = "particles.playable.panel.v1";
+const PLAYABLE_METRICS_KEY = "particles.playable.metrics.v1";
 
 // UI Elements specific to game.html
 const cntCharges = document.getElementById('cnt-charges');
@@ -25,6 +28,16 @@ const boardWrap = document.querySelector('.board-wrap');
 let enemySpawnCooldown = 0;
 let playableModeDisposed = false;
 let hudStatusTimeoutId = null;
+let matchActive = false;
+let matchStartMs = 0;
+
+const topBarInfo = document.querySelector('.top-bar-info');
+const playableMetricsBadge = document.createElement('span');
+playableMetricsBadge.id = 'cnt-playable-metrics';
+playableMetricsBadge.className = 'logo-sub';
+playableMetricsBadge.style.marginLeft = '10px';
+playableMetricsBadge.textContent = 'WR: -- | AVG: --s';
+if (topBarInfo) topBarInfo.appendChild(playableMetricsBadge);
 
 const abilityHud = document.createElement('div');
 abilityHud.setAttribute('id', 'playable-ability-hud');
@@ -70,6 +83,105 @@ if (boardWrap) {
 if (gameTitle) gameTitle.textContent = playerRole.toUpperCase() + " PILOT";
 if (cntCharges) cntCharges.textContent = abilityCharges;
 if (overlayIcon) overlayIcon.textContent = playerRole === 'photon' ? '🔵' : '🟠';
+
+function getDefaultMetrics() {
+    return {
+        photon: { games: 0, wins: 0, totalDurationMs: 0 },
+        electron: { games: 0, wins: 0, totalDurationMs: 0 },
+        draws: 0
+    };
+}
+
+function loadPlayableMetrics() {
+    try {
+        const raw = localStorage.getItem(PLAYABLE_METRICS_KEY);
+        if (!raw) return getDefaultMetrics();
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') return getDefaultMetrics();
+        return {
+            photon: {
+                games: Number(parsed.photon?.games || 0),
+                wins: Number(parsed.photon?.wins || 0),
+                totalDurationMs: Number(parsed.photon?.totalDurationMs || 0)
+            },
+            electron: {
+                games: Number(parsed.electron?.games || 0),
+                wins: Number(parsed.electron?.wins || 0),
+                totalDurationMs: Number(parsed.electron?.totalDurationMs || 0)
+            },
+            draws: Number(parsed.draws || 0)
+        };
+    } catch (_) {
+        return getDefaultMetrics();
+    }
+}
+
+function savePlayableMetrics(metrics) {
+    try {
+        localStorage.setItem(PLAYABLE_METRICS_KEY, JSON.stringify(metrics));
+    } catch (_) {
+        // Ignore storage failures
+    }
+}
+
+function updatePlayableMetricsBadge() {
+    const metrics = loadPlayableMetrics();
+    const roleMetrics = metrics[playerRole] || { games: 0, wins: 0, totalDurationMs: 0 };
+    const wr = roleMetrics.games > 0 ? Math.round((roleMetrics.wins / roleMetrics.games) * 100) : 0;
+    const avgSeconds = roleMetrics.games > 0 ? (roleMetrics.totalDurationMs / roleMetrics.games / 1000).toFixed(1) : '--';
+    playableMetricsBadge.textContent = `WR ${playerRole.toUpperCase()}: ${wr}% | AVG: ${avgSeconds}s`;
+}
+
+function recordPlayableMatch(runners, chasers) {
+    if (!matchActive) return;
+    matchActive = false;
+
+    const metrics = loadPlayableMetrics();
+    const roleMetrics = metrics[playerRole] || { games: 0, wins: 0, totalDurationMs: 0 };
+    const durationMs = Math.max(0, performance.now() - matchStartMs);
+
+    roleMetrics.games += 1;
+    roleMetrics.totalDurationMs += durationMs;
+
+    if (runners === 0 && chasers === 0) {
+        metrics.draws += 1;
+    } else {
+        const winnerRole = chasers === 0 ? 'photon' : (runners === 0 ? 'electron' : 'draw');
+        if (winnerRole === playerRole) roleMetrics.wins += 1;
+    }
+
+    metrics[playerRole] = roleMetrics;
+    savePlayableMetrics(metrics);
+    updatePlayableMetricsBadge();
+}
+
+function savePlayablePanelSettings() {
+    try {
+        const payload = {
+            enemyCap: inpEnemyCap ? inpEnemyCap.value : undefined,
+            spawnPace: inpSpawnPace ? inpSpawnPace.value : undefined
+        };
+        localStorage.setItem(PLAYABLE_PANEL_SETTINGS_KEY, JSON.stringify(payload));
+    } catch (_) {
+        // Ignore storage failures
+    }
+}
+
+function loadPlayablePanelSettings() {
+    try {
+        const raw = localStorage.getItem(PLAYABLE_PANEL_SETTINGS_KEY);
+        if (!raw) return;
+        const payload = JSON.parse(raw);
+        if (!payload || typeof payload !== 'object') return;
+        if (inpEnemyCap && payload.enemyCap != null) inpEnemyCap.value = String(payload.enemyCap);
+        if (inpSpawnPace && payload.spawnPace != null) inpSpawnPace.value = String(payload.spawnPace);
+    } catch (_) {
+        // Ignore malformed payload
+    }
+}
+
+loadPlayablePanelSettings();
+updatePlayableMetricsBadge();
 
 function setHudStatus(text, color = '#94a3b8', ttl = 1200) {
     abilityHudStatus.textContent = text;
@@ -208,6 +320,7 @@ function onSpawnPaceChange() {
     const pace = getSpawnPace();
     const label = pace === 'aggressive' ? 'Aggressive spawn pace' : (pace === 'slow' ? 'Slow spawn pace' : 'Normal spawn pace');
     setHudStatus(label, '#38bdf8', 900);
+	savePlayablePanelSettings();
 }
 
 function spawnOpposingParticles() {
@@ -501,6 +614,8 @@ if (canvas) {
 if (inpEnemyCap) {
     inpEnemyCap.addEventListener('change', normalizeEnemyCapInput);
     inpEnemyCap.addEventListener('blur', normalizeEnemyCapInput);
+    inpEnemyCap.addEventListener('change', savePlayablePanelSettings);
+    inpEnemyCap.addEventListener('blur', savePlayablePanelSettings);
 }
 
 if (inpSpawnPace) {
@@ -516,6 +631,8 @@ function disposePlayableMode() {
     if (inpEnemyCap) {
         inpEnemyCap.removeEventListener('change', normalizeEnemyCapInput);
         inpEnemyCap.removeEventListener('blur', normalizeEnemyCapInput);
+        inpEnemyCap.removeEventListener('change', savePlayablePanelSettings);
+        inpEnemyCap.removeEventListener('blur', savePlayablePanelSettings);
     }
     if (inpSpawnPace) inpSpawnPace.removeEventListener('change', onSpawnPaceChange);
     if (hudStatusTimeoutId !== null) {
@@ -523,12 +640,14 @@ function disposePlayableMode() {
         hudStatusTimeoutId = null;
     }
     if (abilityHud.parentNode) abilityHud.parentNode.removeChild(abilityHud);
+    if (playableMetricsBadge.parentNode) playableMetricsBadge.parentNode.removeChild(playableMetricsBadge);
     if (typeof originalTick === 'function') window.tick = originalTick;
     if (typeof originalInit === 'function') window.initGame = originalInit;
     if (typeof originalStartGame === 'function') window.startGame = originalStartGame;
     if (typeof originalPauseGame === 'function') window.pauseGame = originalPauseGame;
     if (typeof originalStopGame === 'function') window.stopGame = originalStopGame;
     if (typeof originalResetGame === 'function') window.resetGame = originalResetGame;
+    if (typeof originalShowWinner === 'function') window.showWinner = originalShowWinner;
 }
 
 window.addEventListener('pagehide', disposePlayableMode, { once: true });
@@ -546,10 +665,16 @@ window.initGame = function() {
     if (inpSpawnPace && !inpSpawnPace.value) inpSpawnPace.value = 'normal';
     setHudStatus('Mission initialized', '#38bdf8', 700);
     syncPlayableBoardState();
+    savePlayablePanelSettings();
 };
 
 window.startGame = function() {
+    const wasRunning = !!logicRunning;
     if (typeof originalStartGame === 'function') originalStartGame();
+    if (!wasRunning && logicRunning) {
+        matchStartMs = performance.now();
+        matchActive = true;
+    }
     updateAbilityHud();
 };
 
@@ -565,9 +690,15 @@ window.stopGame = function() {
 
 window.resetGame = function() {
     if (typeof originalResetGame === 'function') originalResetGame();
+    matchActive = false;
     abilityCharges = MAX_ABILITY_CHARGES;
     enemySpawnCooldown = 0;
     updateAbilityHud();
+};
+
+window.showWinner = function(runners, chasers) {
+	if (typeof originalShowWinner === 'function') originalShowWinner(runners, chasers);
+	recordPlayableMatch(runners, chasers);
 };
 
 // Delayed init to ensure board is sized
