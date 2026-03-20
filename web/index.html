@@ -110,6 +110,38 @@
 			margin: 0 0 4px;
 		}
 
+		.mode-help .guide-columns {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 16px;
+		}
+
+		.mode-help h4 {
+			font-family: 'Orbitron', sans-serif;
+			font-size: 0.74rem;
+			letter-spacing: 0.08em;
+			color: #bae6fd;
+			margin: 6px 0 8px;
+		}
+
+		.mode-help ul {
+			margin: 0;
+			padding-left: 18px;
+			color: #cbd5e1;
+			font-size: 0.79rem;
+			line-height: 1.48;
+		}
+
+		.mode-help li {
+			margin-bottom: 5px;
+		}
+
+		@media (max-width: 900px) {
+			.mode-help .guide-columns {
+				grid-template-columns: 1fr;
+			}
+		}
+
 		.mode-help .hint {
 			color: #94a3b8;
 			font-size: 0.76rem;
@@ -202,10 +234,35 @@
 
 		<section id="levels-guide" class="mode-help" aria-label="Levels Instructions">
 			<h3>LEVELS QUICK GUIDE</h3>
-			<p>Click energy nodes to recharge your ability. Click the board to trigger your ability.</p>
-			<p><strong>Charges</strong>: total stored charges. <strong>Spendable</strong>: charges available right now.</p>
-			<p><strong>Reserve Lock</strong>: minimum charges kept in reserve. If charges are at or below this value, ability use is blocked.</p>
-			<p class="hint">Tip: adjust Reserve Lock with [-] and [+] in the HUD, or keyboard [ and ] during Levels mode.</p>
+			<div class="guide-columns">
+				<div>
+					<h4>ENGLISH</h4>
+					<ul>
+						<li><strong>Goal:</strong> survive until each level objective is completed. Objectives increase every level.</li>
+						<li><strong>Ability usage:</strong> click on the board to trigger your side ability (Photon shockwave or Electron clone burst).</li>
+						<li><strong>Energy Nodes:</strong> click a node to recover charges. The pink text shows how many charges were gained.</li>
+						<li><strong>Charges:</strong> total charges currently stored.</li>
+						<li><strong>Spendable:</strong> charges available now after applying Reserve Lock.</li>
+						<li><strong>Reserve Lock:</strong> minimum charges kept in reserve. If charges are at or below this threshold, ability use is blocked.</li>
+						<li><strong>Quick controls:</strong> adjust Reserve Lock with HUD buttons [-]/[+] or keyboard [ and ].</li>
+						<li><strong>Level flow:</strong> each level pauses on completion and opens a transition overlay before the next stage starts.</li>
+					</ul>
+				</div>
+				<div>
+					<h4>ESPANOL</h4>
+					<ul>
+						<li><strong>Objetivo:</strong> sobrevivir hasta completar el objetivo de cada nivel. Los objetivos suben en cada fase.</li>
+						<li><strong>Uso de habilidad:</strong> haz clic en el tablero para activar la habilidad de tu bando (onda Photon o clones Electron).</li>
+						<li><strong>Nodos de energia:</strong> haz clic en un nodo para recuperar cargas. El texto rosa indica cuantas cargas has ganado.</li>
+						<li><strong>Charges:</strong> total de cargas que tienes almacenadas.</li>
+						<li><strong>Spendable:</strong> cargas disponibles para gastar en ese momento, tras aplicar Reserve Lock.</li>
+						<li><strong>Reserve Lock:</strong> minimo de cargas que se guarda en reserva. Si estas en ese minimo o por debajo, no se puede usar la habilidad.</li>
+						<li><strong>Controles rapidos:</strong> ajusta Reserve Lock con los botones [-]/[+] del HUD o con las teclas [ y ].</li>
+						<li><strong>Flujo por niveles:</strong> al completar un nivel, la partida se pausa y aparece una ventana antes de empezar el siguiente.</li>
+					</ul>
+				</div>
+			</div>
+			<p class="hint">Tip/Consejo: start with Reserve Lock at 1-2 to keep emergency charges available.</p>
 		</section>
 	</div>
 

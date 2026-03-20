@@ -137,7 +137,7 @@
 		<div class="controls">
 			<button id="btn-start" class="btn-primary">START MISSION</button>
 			<button id="btn-reset">NEW MATCH</button>
-			<button id="btn-pause">ABORT</button>
+			<button id="btn-pause">PAUSE</button>
             <a href="index.html" style="text-decoration:none;"><button id="btn-home" style="width:100%">EXIT TO MENU</button></a>
 		</div>
 	</aside>
@@ -157,11 +157,11 @@
 
 		<canvas id="board-canvas"></canvas>
 
-		<!-- Game Over / Start Overlay -->
-		<div id="overlay" class="overlay">
+		<!-- Match Result Overlay -->
+		<div id="overlay" class="overlay hidden">
 			<div class="overlay-card">
 				<div class="overlay-icon" id="overlay-icon">🎮</div>
-				<p class="overlay-result" id="overlay-msg">READY?</p>
+				<p class="overlay-result" id="overlay-msg">MISSION REPORT</p>
 				<p id="overlay-sub" style="color: var(--text-dim); margin-bottom: 20px; font-size: 0.8rem;">Photon: click to detonate an area • Electron: click to replicate allies • Click Energy Nodes to recharge Charges</p>
 				<button id="btn-begin" class="btn-primary">BEGIN MISSION</button>
 				<button id="btn-overlay-reset" style="width:100%; margin-top:10px;">PLAY AGAIN</button>
