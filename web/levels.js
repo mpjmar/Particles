@@ -74,6 +74,7 @@ let btnBegin = document.getElementById('btn-begin');
 let btnOverlayReset = document.getElementById('btn-overlay-reset');
 let btnPauseControl = document.getElementById('btn-pause');
 let btnResetControl = document.getElementById('btn-reset');
+let btnTutorialControl = document.getElementById('btn-tutorial');
 const overlayIcon = document.getElementById('overlay-icon');
 const boardWrap = document.querySelector('.board-wrap');
 const sidebar = document.querySelector('.sidebar');
@@ -387,6 +388,18 @@ function restartCampaignFromOverlay(e) {
     if (overlay) overlay.classList.add('hidden');
 }
 
+function openLevelsTutorial() {
+    if (btnBegin) btnBegin.textContent = 'BEGIN CAMPAIGN';
+    if (btnOverlayReset) btnOverlayReset.style.display = '';
+    if (overlayMsg) overlayMsg.textContent = 'CORE ASCENSION TUTORIAL';
+    const overlaySub = document.getElementById('overlay-sub');
+    if (overlaySub) {
+        overlaySub.textContent = 'Photon click = area explosion (kills nearby Electrons). Electron click = spawn Electron clusters (to hunt Photons). Max charges = 5 for both sides. Recharge by clicking Energy Nodes. Complete the Objective counter and manage Reserve Lock to survive each level.';
+    }
+    if (overlayIcon) overlayIcon.textContent = '📘';
+    if (overlay) overlay.classList.remove('hidden');
+}
+
 if (btnBegin) btnBegin.addEventListener('click', restartCampaignFromOverlay);
 if (btnOverlayReset) btnOverlayReset.addEventListener('click', restartCampaignFromOverlay);
 
@@ -394,11 +407,13 @@ btnBegin = stripElementListenersByClone(btnBegin);
 btnOverlayReset = stripElementListenersByClone(btnOverlayReset);
 btnPauseControl = stripElementListenersByClone(btnPauseControl);
 btnResetControl = stripElementListenersByClone(btnResetControl);
+btnTutorialControl = stripElementListenersByClone(btnTutorialControl);
 
 if (btnBegin) btnBegin.addEventListener('click', restartCampaignFromOverlay);
 if (btnOverlayReset) btnOverlayReset.addEventListener('click', restartCampaignFromOverlay);
 if (btnPauseControl) btnPauseControl.addEventListener('click', onPauseCampaignClick);
 if (btnResetControl) btnResetControl.addEventListener('click', restartCampaignFromOverlay);
+if (btnTutorialControl) btnTutorialControl.addEventListener('click', openLevelsTutorial);
 reserveDownBtn.addEventListener('click', onReserveDownClick);
 reserveUpBtn.addEventListener('click', onReserveUpClick);
 window.addEventListener('keydown', onReserveHotkey);
@@ -962,6 +977,7 @@ function disposeLevelsMode() {
     if (btnOverlayReset) btnOverlayReset.removeEventListener('click', restartCampaignFromOverlay);
     if (btnPauseControl) btnPauseControl.removeEventListener('click', onPauseCampaignClick);
     if (btnResetControl) btnResetControl.removeEventListener('click', restartCampaignFromOverlay);
+    if (btnTutorialControl) btnTutorialControl.removeEventListener('click', openLevelsTutorial);
     reserveDownBtn.removeEventListener('click', onReserveDownClick);
     reserveUpBtn.removeEventListener('click', onReserveUpClick);
     window.removeEventListener('keydown', onReserveHotkey);

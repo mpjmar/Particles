@@ -21,6 +21,7 @@ const PLAYABLE_METRICS_KEY = "particles.playable.metrics.v1";
 const cntCharges = document.getElementById('cnt-charges');
 const gameTitle = document.getElementById('game-title');
 const btnBegin = document.getElementById('btn-begin');
+const btnTutorial = document.getElementById('btn-tutorial');
 const overlayIcon = document.getElementById('overlay-icon');
 const inpEnemyCap = document.getElementById('inp-enemy-cap');
 const inpSpawnPace = document.getElementById('inp-spawn-pace');
@@ -284,6 +285,21 @@ function onMissionBeginClick() {
 if (btnBegin) {
     btnBegin.addEventListener('click', onMissionBeginClick);
 }
+
+function openPlayableTutorial() {
+    const overlayEl = document.getElementById('overlay');
+    const overlayMsgEl = document.getElementById('overlay-msg');
+    const overlaySubEl = document.getElementById('overlay-sub');
+    if (!overlayEl || !overlayMsgEl || !overlaySubEl) return;
+
+    if (overlayIcon) overlayIcon.textContent = '📘';
+    overlayMsgEl.textContent = 'PULSE CLASH TUTORIAL';
+    overlaySubEl.textContent = 'Photon click = explosion to remove nearby Electrons. Electron click = clone burst to pressure Photons. Max charges = 5 for both sides. Click Energy Nodes to recharge. Win by eliminating the opposing faction.';
+    if (btnBegin) btnBegin.textContent = 'BEGIN MISSION';
+    overlayEl.classList.remove('hidden');
+}
+
+if (btnTutorial) btnTutorial.addEventListener('click', openPlayableTutorial);
 
 function showChargeFeedback(row, col, text = '+1 CHARGE') {
     if (!canvas || !renderer || !board) return;
@@ -688,6 +704,7 @@ function disposePlayableMode() {
     playableModeDisposed = true;
 
     if (btnBegin) btnBegin.removeEventListener('click', onMissionBeginClick);
+    if (btnTutorial) btnTutorial.removeEventListener('click', openPlayableTutorial);
     if (canvas) canvas.removeEventListener('mousedown', onCanvasMouseDown);
     if (inpEnemyCap) {
         inpEnemyCap.removeEventListener('change', normalizeEnemyCapInput);

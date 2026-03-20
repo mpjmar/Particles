@@ -41,9 +41,9 @@ This repository extends that idea into a web-focused implementation with multipl
 
 ### Game Modes 🎮
 
-- <img src="imgs/atom-logo.svg" alt="atom" width="20" /> Simulation: autonomous mode for observing emergent behavior.
-- ⚡ Pulse Clash: player-vs-system mode where you choose a side and trigger active abilities.
-- 🛸 Core Ascension: staged campaign with survival objectives, transitions, and scaling difficulty.
+- <img src="imgs/atom-logo.svg" alt="atom" width="20" /> Simulation: autonomous mode (watch-only, no manual actions).
+- ⚡ Pulse Clash: configurable player-vs-system mode (board size, speed, density and spawn settings).
+- 🛸 Core Ascension: level-based campaign with objectives, transitions and increasing difficulty.
 
 ### Mode Matrix 🧭
 
@@ -52,6 +52,38 @@ This repository extends that idea into a web-focused implementation with multipl
 | <img src="imgs/atom-logo.svg" alt="atom" width="20" /> Simulation | Autonomous | None | Visual observation and tuning |
 | ⚡ Pulse Clash | Player vs System | Tap/Click + Ability | Fast tactical matches |
 | 🛸 Core Ascension | Progressive campaign | Tap/Click + Reserve Lock | Long-run progression |
+
+### How To Play (Quick Start) 🕹️
+
+1. Open the mode you want from the main menu.
+2. Press `BEGIN`/`START` to launch the match.
+3. Watch your faction counters and `Ability Charges`.
+4. Click on Energy Nodes to recover charges.
+5. Use your ability only when it creates value (avoid wasting charges).
+
+Pulse Clash:
+1. Pick side: Photon or Electron.
+2. Click board to use ability:
+3. Photon: area shockwave (clear nearby enemies).
+4. Electron: clone burst (create pressure with extra allies).
+5. Win by eliminating the opposing faction.
+
+Core Ascension:
+1. Complete each level objective to advance.
+2. Click ability depends on your side:
+3. Photon click = area explosion that removes nearby Electrons.
+4. Electron click = spawn Electron clusters to pressure Photons.
+5. Max ability charges = 5 in both sides.
+6. Recover charges by clicking Energy Nodes.
+7. Keep an eye on `Reserve Lock` to avoid running out of emergency charges.
+8. Adjust Reserve Lock with HUD `[-]/[+]` or arrow keys.
+9. Spend charges when objective pressure is high.
+10. Survive transitions and scale into the next stage.
+
+Simulation:
+1. No manual control required.
+2. Tune settings (density, speed, quality).
+3. Observe interactions and balance behavior.
 
 ### Visual Preview 🖼️
 
@@ -145,16 +177,25 @@ https://<your-username>.github.io/<your-repo>/
 
 ### Core Ascension Controls 🎛️
 
+- Goal: complete each level objective to continue.
+- Click board with Photon: create an area explosion (kills nearby Electrons).
+- Click board with Electron: spawn Electron clusters (to hunt Photons).
+- Ability charges are capped at 5 for both sides.
+- Click Energy Nodes: recover ability charges.
+- HUD `[-]/[+]`: adjust Reserve Lock.
+- Arrow keys Left/Right: adjust Reserve Lock quickly.
+- Charges at/below Reserve Lock: ability use is blocked.
+
 
 ### Status 📡
 
 Active development focused on UX clarity, high-density stability, and faction balance.
 
-<p align="center"><strong></strong> 🇬🇧</p>
+<p align="center"><strong>ENGLISH VERSION</strong> 🇬🇧</p>
 
 <hr>
 
-<p align="center"><strong></strong> 🇪🇸</p>
+<p align="center"><strong>VERSION EN ESPANOL</strong> 🇪🇸</p>
 
 
 
@@ -183,9 +224,9 @@ Este repositorio traslada y amplia esa base hacia una implementacion web con var
 
 ### Modos de Juego 🎮
 
-- <img src="imgs/atom-logo.svg" alt="atomo" width="20" /> Simulation: modo autonomo para observar comportamiento emergente.
-- ⚡ Pulse Clash: modo jugador contra sistema, eligiendo faccion y activando habilidades.
-- 🛸 Core Ascension: campaña por fases con objetivos de supervivencia, transiciones y dificultad progresiva.
+- <img src="imgs/atom-logo.svg" alt="atomo" width="20" /> Simulation: modo autonomo (solo observacion, sin acciones manuales).
+- ⚡ Pulse Clash: modo jugador contra sistema configurable (tamano del tablero, velocidad, densidad y aparicion).
+- 🛸 Core Ascension: campana por niveles con objetivos, transiciones y dificultad creciente.
 
 ### Matriz de Modos 🧭
 
@@ -194,6 +235,38 @@ Este repositorio traslada y amplia esa base hacia una implementacion web con var
 | <img src="imgs/atom-logo.svg" alt="atomo" width="20" /> Simulation | Autonomo | Ninguna | Observacion visual y ajustes |
 | ⚡ Pulse Clash | Jugador vs Sistema | Tap/Click + habilidad | Partidas tacticas rapidas |
 | 🛸 Core Ascension | Campaña progresiva | Tap/Click + Reserve Lock | Progreso por fases |
+
+### Como Jugar (Guia Rapida) 🕹️
+
+1. Entra al modo que quieras desde el menu principal.
+2. Pulsa `BEGIN`/`START` para iniciar la partida.
+3. Vigila los contadores de faccion y las `Ability Charges`.
+4. Haz clic en Nodos de Energia para recuperar cargas.
+5. Usa la habilidad cuando realmente aporte valor (evita gastarla sin necesidad).
+
+Pulse Clash:
+1. Elige bando: Photon o Electron.
+2. Haz clic en el tablero para activar habilidad:
+3. Photon: onda de area (limpia enemigos cercanos).
+4. Electron: rafaga de clones (genera presion con aliados extra).
+5. Ganas al eliminar la faccion rival.
+
+Core Ascension:
+1. Completa el objetivo de cada nivel para avanzar.
+2. El clic depende de la faccion que juegas:
+3. Photon: el clic provoca una explosion en area que elimina Electrones cercanos.
+4. Electron: el clic crea clusters de Electrones para perseguir Photons.
+5. En ambos casos el maximo es 5 cargas.
+6. Recupera cargas haciendo clic en los Nodos de Energia.
+7. Controla `Reserve Lock` para no quedarte sin cargas de emergencia.
+8. Ajusta Reserve Lock con `[-]/[+]` del HUD o flechas del teclado.
+9. Gasta cargas cuando haya presion alta sobre el objetivo.
+10. Sobrevive a las transiciones y escala al siguiente nivel.
+
+Simulation:
+1. No requiere control manual.
+2. Ajusta parametros (densidad, velocidad, calidad).
+3. Observa interacciones y comportamiento emergente.
 
 ### Vista Previa 🖼️
 

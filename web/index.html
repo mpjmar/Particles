@@ -278,40 +278,40 @@
 		</div>
 
 		<button id="toggle-levels-guide" class="mode-help-toggle" type="button" aria-expanded="false" aria-controls="levels-guide">
-			HOW TO PLAY CORE ASCENSION
+			HOW TO PLAY (ALL MODES)
 		</button>
 
-		<section id="levels-guide" class="mode-help" aria-label="Levels Instructions">
-			<h3>CORE ASCENSION QUICK GUIDE</h3>
+		<section id="levels-guide" class="mode-help" aria-label="Game Instructions">
+			<h3>PARTICLES QUICK GUIDE</h3>
 			<div class="guide-columns">
 				<div>
 					<h4>ENGLISH</h4>
 					<ul>
-						<li><strong>Goal:</strong> survive until each level objective is completed. Objectives increase every level.</li>
-						<li><strong>Ability usage:</strong> click on the board to trigger your side ability (Photon shockwave or Electron clone burst).</li>
-						<li><strong>Energy Nodes:</strong> click a node to recover charges. The pink text shows how many charges were gained.</li>
-						<li><strong>Charges:</strong> total charges currently stored.</li>
-						<li><strong>Spendable:</strong> charges available now after applying Reserve Lock.</li>
-						<li><strong>Reserve Lock:</strong> minimum charges kept in reserve. If charges are at or below this threshold, ability use is blocked.</li>
-						<li><strong>Quick controls:</strong> adjust Reserve Lock with HUD buttons [-]/[+] or with Left/Right arrow keys.</li>
-						<li><strong>Level flow:</strong> each level pauses on completion and opens a transition overlay before the next stage starts.</li>
+						<li><strong>Simulation:</strong> watch-only mode. No manual clicks required.</li>
+						<li><strong>Pulse Clash:</strong> configurable PvE mode (board, speed, density, spawn tuning).</li>
+						<li><strong>Core Ascension:</strong> level-based campaign with escalating objectives.</li>
+						<li><strong>Core click abilities:</strong> Photon click = explosion (kills nearby Electrons), Electron click = spawn Electron clusters (to hunt Photons).</li>
+						<li><strong>Charges:</strong> both sides have max 5 charges. Recover by clicking Energy Nodes.</li>
+						<li><strong>Reserve Lock:</strong> protects emergency charges. At/below lock, ability is blocked.</li>
+						<li><strong>Quick controls:</strong> adjust Reserve Lock with HUD [-]/[+] or Left/Right arrows.</li>
+						<li><strong>Tip:</strong> start with Reserve Lock at 1-2 for safer ability usage.</li>
 					</ul>
 				</div>
 				<div>
 					<h4>ESPANOL</h4>
 					<ul>
-						<li><strong>Objetivo:</strong> sobrevivir hasta completar el objetivo de cada nivel. Los objetivos suben en cada fase.</li>
-						<li><strong>Uso de habilidad:</strong> haz clic en el tablero para activar la habilidad de tu bando (onda Photon o clones Electron).</li>
-						<li><strong>Nodos de energia:</strong> haz clic en un nodo para recuperar cargas. El texto rosa indica cuantas cargas has ganado.</li>
-						<li><strong>Charges:</strong> total de cargas que tienes almacenadas.</li>
-						<li><strong>Spendable:</strong> cargas disponibles para gastar en ese momento, tras aplicar Reserve Lock.</li>
-						<li><strong>Reserve Lock:</strong> minimo de cargas que se guarda en reserva. Si estas en ese minimo o por debajo, no se puede usar la habilidad.</li>
-						<li><strong>Controles rapidos:</strong> ajusta Reserve Lock con los botones [-]/[+] del HUD o con las flechas Izquierda/Derecha.</li>
-						<li><strong>Flujo por niveles:</strong> al completar un nivel, la partida se pausa y aparece una ventana antes de empezar el siguiente.</li>
+						<li><strong>Simulation:</strong> modo de observacion. No requiere clic manual.</li>
+						<li><strong>Pulse Clash:</strong> modo PvE configurable (tablero, velocidad, densidad y aparicion).</li>
+						<li><strong>Core Ascension:</strong> campana por niveles con objetivos cada vez mas exigentes.</li>
+						<li><strong>Habilidad por clic en Core:</strong> Photon = explosion en area (elimina Electrones cercanos), Electron = crea clusters de Electrones (para cazar Photons).</li>
+						<li><strong>Cargas:</strong> ambos bandos tienen maximo 5. Se recargan clicando Nodos de Energia.</li>
+						<li><strong>Reserve Lock:</strong> guarda cargas de emergencia. En ese minimo o por debajo, la habilidad se bloquea.</li>
+						<li><strong>Controles rapidos:</strong> ajusta Reserve Lock con HUD [-]/[+] o flechas Izquierda/Derecha.</li>
+						<li><strong>Consejo:</strong> empieza con Reserve Lock en 1-2 para usar habilidades con mas seguridad.</li>
 					</ul>
 				</div>
 			</div>
-			<p class="hint">Tip/Consejo: start with Reserve Lock at 1-2 to keep emergency charges available.</p>
+			<p class="hint">Need a quick rule? Prioritize Energy Nodes, then spend charges where pressure is highest.</p>
 		</section>
 	</div>
 
@@ -354,7 +354,7 @@
 			guideToggle.addEventListener('click', () => {
 				const visible = levelsGuide.classList.toggle('visible');
 				guideToggle.setAttribute('aria-expanded', visible ? 'true' : 'false');
-				guideToggle.textContent = visible ? 'HIDE CORE ASCENSION GUIDE' : 'HOW TO PLAY CORE ASCENSION';
+				guideToggle.textContent = visible ? 'HIDE GAME GUIDE' : 'HOW TO PLAY (ALL MODES)';
 			});
 		}
 	</script>
