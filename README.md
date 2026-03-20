@@ -99,6 +99,20 @@ From `web/`:
 - `npm run build`: compile TypeScript.
 - `npm run watch`: compile TypeScript in watch mode.
 
+### Deploy on GitHub Pages
+
+This repository includes an automated workflow at `.github/workflows/deploy-pages.yml`.
+
+1. Push your project to GitHub (default branch: `main`).
+2. Open repository `Settings` > `Pages`.
+3. In `Build and deployment`, set `Source` to `GitHub Actions`.
+4. Push to `main` (or run the workflow manually from `Actions`).
+5. When the workflow finishes, your site will be available at:
+
+```text
+https://<your-username>.github.io/<your-repo>/
+```
+
 ### Levels Controls
 
 - HUD buttons `[-]` / `[+]`: adjust Reserve Lock.
@@ -203,6 +217,20 @@ Desde `web/`:
 - `npm run dev`: sirve la aplicacion en local.
 - `npm run build`: compila TypeScript.
 - `npm run watch`: compila TypeScript en modo observacion.
+
+### Despliegue en GitHub Pages
+
+Este repositorio incluye un workflow automatico en `.github/workflows/deploy-pages.yml`.
+
+1. Sube el proyecto a GitHub (rama por defecto: `main`).
+2. Abre `Settings` > `Pages` del repositorio.
+3. En `Build and deployment`, selecciona `Source: GitHub Actions`.
+4. Haz push a `main` (o ejecuta el workflow manualmente desde `Actions`).
+5. Cuando termine el workflow, la web quedara publicada en:
+
+```text
+https://<tu-usuario>.github.io/<tu-repo>/
+```
 
 ### Controles en Levels
 
