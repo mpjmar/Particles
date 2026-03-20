@@ -1,12 +1,16 @@
-<p align="center">⚛︎</p>
+<h1 align="center">⚛︎</h1>
 
 <h1 align="center">P A R T I C L E S</h1>
 
-<p align="center"><sub>SIMULATION PROTOCOL</sub></p>
+<p align="center">
+	<img alt="Simulation Protocol" src="https://img.shields.io/badge/SIMULATION-PROTOCOL-3b82f6?style=for-the-badge&labelColor=010a15" />
+</p>
 
-![Status](https://img.shields.io/badge/status-active-22c55e)
-![Platform](https://img.shields.io/badge/platform-web-0ea5e9)
-![Node](https://img.shields.io/badge/node-%3E%3D18-3c873a)
+<p align="center">
+	<img alt="Status" src="https://img.shields.io/badge/status-active-22c55e?style=for-the-badge" />
+	<img alt="Platform" src="https://img.shields.io/badge/platform-web-0ea5e9?style=for-the-badge" />
+	<img alt="Node" src="https://img.shields.io/badge/node-%3E%3D18-3c873a?style=for-the-badge" />
+</p>
 
 Real-time particle strategy simulation/game with a web interface and a progressive campaign mode.
 
@@ -110,15 +114,13 @@ https://<your-username>.github.io/<your-repo>/
 
 ### Core Ascension Controls
 
-- HUD buttons `[-]` / `[+]`: adjust Reserve Lock.
-- Left/Right arrow keys: adjust Reserve Lock from keyboard.
-- Click on board: trigger your faction ability.
 
 ### Status
 
 Active development focused on UX clarity, high-density stability, and faction balance.
+---
 
-## ----------------------------------------------------------------------------------------------------------------
+
 
 ### Resumen
 
