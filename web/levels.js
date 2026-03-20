@@ -41,18 +41,18 @@ const LEVELS = [
     {
         name: 'Pressure Node',
         targetTurns: 250,
-        enemyCap: 150,
+        enemyCap: 145,
         enemyLifeMin: 14,
-        enemyLifeMax: 27,
+        enemyLifeMax: 26,
         pace: 'aggressive',
         counts: { runners: 42, chasers: 48, obstacles: 58, healers: 4, speeders: 8 }
     },
     {
         name: 'Omega Core',
         targetTurns: 300,
-        enemyCap: 190,
-        enemyLifeMin: 17,
-        enemyLifeMax: 33,
+        enemyCap: 170,
+        enemyLifeMin: 16,
+        enemyLifeMax: 30,
         pace: 'aggressive',
         counts: { runners: 50, chasers: 62, obstacles: 70, healers: 4, speeders: 10 }
     }
@@ -295,10 +295,20 @@ function onReserveUpClick(e) {
 
 function onReserveHotkey(e) {
     if (!e || e.altKey || e.ctrlKey || e.metaKey) return;
-    if (e.key === '[') {
+
+    const targetTag = e.target && e.target.tagName ? e.target.tagName.toUpperCase() : '';
+    if (targetTag === 'INPUT' || targetTag === 'TEXTAREA' || targetTag === 'SELECT' || (e.target && e.target.isContentEditable)) {
+        return;
+    }
+
+    const code = typeof e.code === 'string' ? e.code : '';
+    const decrease = code === 'ArrowLeft';
+    const increase = code === 'ArrowRight';
+
+    if (decrease) {
         e.preventDefault();
         setReserveCharges(reserveCharges - 1);
-    } else if (e.key === ']') {
+    } else if (increase) {
         e.preventDefault();
         setReserveCharges(reserveCharges + 1);
     }
@@ -591,7 +601,7 @@ function getPaceConfig(pace) {
         return { chanceScale: 0.8, chanceBias: -0.05, cooldownBias: 1, burstBias: -1 };
     }
     if (pace === 'aggressive') {
-        return { chanceScale: 1.35, chanceBias: 0.12, cooldownBias: -1, burstBias: 1 };
+        return { chanceScale: 1.25, chanceBias: 0.09, cooldownBias: 0, burstBias: 1 };
     }
     return { chanceScale: 1, chanceBias: 0, cooldownBias: 0, burstBias: 0 };
 }
