@@ -1,4 +1,6 @@
-<h1 align="center">⚛︎</h1>
+<p align="center">
+	<img src="imgs/atom-logo.svg" alt="Atom logo" width="132" />
+</p>
 
 <h1 align="center">P A R T I C L E S</h1>
 
@@ -118,7 +120,12 @@ https://<your-username>.github.io/<your-repo>/
 ### Status
 
 Active development focused on UX clarity, high-density stability, and faction balance.
----
+
+<p align="center"><strong>ENGLISH VERSION ENDS HERE</strong></p>
+
+<hr>
+
+<p align="center"><strong>VERSION EN ESPANOL</strong></p>
 
 
 
