@@ -37,7 +37,7 @@ This repository extends that idea into a web-focused implementation with multipl
 
 ### Game Modes 🎮
 
-- ⚛︎ Simulation: autonomous mode for observing emergent behavior.
+- <img src="imgs/atom-logo.svg" alt="atom" width="20" /> Simulation: autonomous mode for observing emergent behavior.
 - ⚡ Pulse Clash: player-vs-system mode where you choose a side and trigger active abilities.
 - 🛸 Core Ascension: staged campaign with survival objectives, transitions, and scaling difficulty.
 
@@ -45,7 +45,7 @@ This repository extends that idea into a web-focused implementation with multipl
 
 | Mode | Style | Input | Best For |
 |---|---|---|---|
-| ⚛︎ Simulation | Autonomous | None | Visual observation and tuning |
+| <img src="imgs/atom-logo.svg" alt="atom" width="20" /> Simulation | Autonomous | None | Visual observation and tuning |
 | ⚡ Pulse Clash | Player vs System | Tap/Click + Ability | Fast tactical matches |
 | 🛸 Core Ascension | Progressive campaign | Tap/Click + Reserve Lock | Long-run progression |
 
@@ -140,11 +140,11 @@ https://<your-username>.github.io/<your-repo>/
 
 Active development focused on UX clarity, high-density stability, and faction balance.
 
-<p align="center"><strong>ENGLISH VERSION</strong> 🇬🇧</p>
+<p align="center"><strong></strong> 🇬🇧</p>
 
 <hr>
 
-<p align="center"><strong>VERSION EN ESPAÑOL</strong> 🇪🇸</p>
+<p align="center"><strong></strong> 🇪🇸</p>
 
 
 
@@ -169,7 +169,7 @@ Este repositorio traslada y amplia esa base hacia una implementacion web con var
 
 ### Modos de Juego 🎮
 
-- ⚛︎ Simulation: modo autonomo para observar comportamiento emergente.
+- <img src="imgs/atom-logo.svg" alt="atomo" width="20" /> Simulation: modo autonomo para observar comportamiento emergente.
 - ⚡ Pulse Clash: modo jugador contra sistema, eligiendo faccion y activando habilidades.
 - 🛸 Core Ascension: campana por fases con objetivos de supervivencia, transiciones y dificultad progresiva.
 
@@ -177,7 +177,7 @@ Este repositorio traslada y amplia esa base hacia una implementacion web con var
 
 | Modo | Estilo | Entrada | Ideal Para |
 |---|---|---|---|
-| ⚛︎ Simulation | Autonomo | Ninguna | Observacion visual y ajustes |
+| <img src="imgs/atom-logo.svg" alt="atomo" width="20" /> Simulation | Autonomo | Ninguna | Observacion visual y ajustes |
 | ⚡ Pulse Clash | Jugador vs Sistema | Tap/Click + habilidad | Partidas tacticas rapidas |
 | 🛸 Core Ascension | Campana progresiva | Tap/Click + Reserve Lock | Progreso por fases |
 

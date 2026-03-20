@@ -129,9 +129,20 @@ if (boardWrap) {
 applyAbilityHudLayout();
 window.addEventListener('resize', applyAbilityHudLayout);
 
+function updateChargesCounter() {
+    if (!cntCharges) return;
+    cntCharges.textContent = String(abilityCharges);
+    const hasCharges = abilityCharges > 0;
+    cntCharges.style.color = hasCharges ? '#d946ef' : '#f97316';
+    cntCharges.style.textShadow = hasCharges
+        ? '0 0 10px rgba(217,70,239,0.8), 0 0 18px rgba(217,70,239,0.35)'
+        : '0 0 10px rgba(249,115,22,0.7), 0 0 18px rgba(249,115,22,0.3)';
+    cntCharges.style.fontWeight = '900';
+}
+
 // Initialize UI context
 if (gameTitle) gameTitle.textContent = playerRole.toUpperCase() + " PILOT";
-if (cntCharges) cntCharges.textContent = abilityCharges;
+updateChargesCounter();
 if (overlayIcon) overlayIcon.textContent = playerRole === 'photon' ? '🔵' : '🟠';
 
 function getDefaultMetrics() {
@@ -310,7 +321,7 @@ function showChargeFeedback(row, col, text = '+1 CHARGE') {
 }
 
 function syncPlayableBoardState() {
-    if (cntCharges) cntCharges.textContent = abilityCharges;
+    updateChargesCounter();
     if (!board || !elements) return;
     board.placeElements(elements);
     if (renderer) renderer.updateLogicState(elements, board);
@@ -607,7 +618,7 @@ window.tick = function() {
     board.placeElements(elements);
     renderer.updateLogicState(elements, board);
     if (typeof updateStats === 'function') updateStats();
-    if (cntCharges) cntCharges.textContent = abilityCharges;
+    updateChargesCounter();
     updateAbilityHud();
     if (typeof window.__recordLogicFrame === 'function') {
         window.__recordLogicFrame(performance.now() - tickStartMs);
@@ -743,6 +754,7 @@ window.resetGame = function() {
     matchActive = false;
     abilityCharges = MAX_ABILITY_CHARGES;
     enemySpawnCooldown = 0;
+    updateChargesCounter();
     updateAbilityHud();
 };
 
