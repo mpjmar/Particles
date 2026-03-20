@@ -42,6 +42,7 @@ This repository extends that idea into a web-focused implementation with multipl
 ### Highlights
 
 - Grid-based simulation engine.
+- Responsive UI for desktop and mobile (portrait and landscape).
 - Real-time HUD with match/resource feedback.
 - Ability charges with energy node recovery.
 - Reserve Lock system in Core Ascension mode.
@@ -121,11 +122,11 @@ https://<your-username>.github.io/<your-repo>/
 
 Active development focused on UX clarity, high-density stability, and faction balance.
 
-<p align="center"><strong>ENGLISH VERSION ENDS HERE</strong></p>
+<p align="center"><strong></strong></p>
 
 <hr>
 
-<p align="center"><strong>VERSION EN ESPANOL</strong></p>
+<p align="center"><strong></strong></p>
 
 
 
@@ -157,6 +158,7 @@ Este repositorio traslada y amplia esa base hacia una implementacion web con var
 ### Caracteristicas
 
 - Motor de simulacion con tablero por celdas.
+- Interfaz responsive para escritorio y movil (vertical y horizontal).
 - HUD en tiempo real para estado y recursos.
 - Sistema de cargas de habilidad y recarga por nodos de energia.
 - Sistema Reserve Lock en modo Core Ascension.
