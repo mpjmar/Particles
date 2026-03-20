@@ -12,7 +12,8 @@ const MAX_ABILITY_CHARGES = 5;
 
 const LEVELS = [
     {
-        targetTurns: 16,
+        name: 'Boot Sector',
+        targetTurns: 28,
         enemyCap: 45,
         enemyLifeMin: 10,
         enemyLifeMax: 18,
@@ -20,7 +21,8 @@ const LEVELS = [
         counts: { runners: 18, chasers: 18, obstacles: 36, healers: 6, speeders: 5 }
     },
     {
-        targetTurns: 20,
+        name: 'Ion Drift',
+        targetTurns: 34,
         enemyCap: 60,
         enemyLifeMin: 12,
         enemyLifeMax: 22,
@@ -28,7 +30,8 @@ const LEVELS = [
         counts: { runners: 20, chasers: 24, obstacles: 44, healers: 5, speeders: 6 }
     },
     {
-        targetTurns: 24,
+        name: 'Flux Corridor',
+        targetTurns: 40,
         enemyCap: 78,
         enemyLifeMin: 13,
         enemyLifeMax: 24,
@@ -36,7 +39,8 @@ const LEVELS = [
         counts: { runners: 22, chasers: 30, obstacles: 52, healers: 5, speeders: 7 }
     },
     {
-        targetTurns: 28,
+        name: 'Pressure Node',
+        targetTurns: 48,
         enemyCap: 96,
         enemyLifeMin: 14,
         enemyLifeMax: 26,
@@ -44,7 +48,8 @@ const LEVELS = [
         counts: { runners: 24, chasers: 36, obstacles: 60, healers: 4, speeders: 8 }
     },
     {
-        targetTurns: 34,
+        name: 'Omega Core',
+        targetTurns: 56,
         enemyCap: 120,
         enemyLifeMin: 15,
         enemyLifeMax: 30,
@@ -88,6 +93,8 @@ let levelsDisposed = false;
 let hudStatusTimeoutId = null;
 let currentLevel = 0;
 let levelTurnStart = 0;
+let pendingLevelAdvance = false;
+let pendingLevelIndex = -1;
 const canvasInputEvent = 'click';
 
 function setInputValue(input, value) {
@@ -161,6 +168,11 @@ function getLevelConfig() {
     return LEVELS[Math.max(0, Math.min(LEVELS.length - 1, currentLevel))];
 }
 
+function getLevelName(index) {
+    const safeIndex = Math.max(0, Math.min(LEVELS.length - 1, index));
+    return LEVELS[safeIndex].name || `Level ${safeIndex + 1}`;
+}
+
 function getAllyCtor() {
     return playerRole === 'photon' ? Runner : Chaser;
 }
@@ -183,7 +195,10 @@ function onStartCampaignClick(e) {
     }
 
     if (!board && typeof window.initGame === 'function') window.initGame();
+    if (paused && typeof window.pauseGame === 'function') window.pauseGame();
     if (typeof window.startGame === 'function') window.startGame();
+    pendingLevelAdvance = false;
+    pendingLevelIndex = -1;
     if (overlay) overlay.classList.add('hidden');
 }
 
@@ -232,6 +247,29 @@ function restartCampaignFromOverlay(e) {
     if (e) {
         e.preventDefault();
         e.stopPropagation();
+    }
+
+    if (pendingLevelAdvance) {
+        if (pendingLevelIndex < 0 || pendingLevelIndex >= LEVELS.length) return;
+
+        currentLevel = pendingLevelIndex;
+        pendingLevelAdvance = false;
+        pendingLevelIndex = -1;
+
+        applyLevelDensityToInputs(getLevelConfig());
+        reinforceLevelDensity(getLevelConfig());
+        levelTurnStart = turn;
+        enemySpawnCooldown = 0;
+        if (currentLevel > 0) {
+            abilityCharges = Math.min(MAX_ABILITY_CHARGES, abilityCharges + 1);
+        }
+
+        if (paused && typeof window.pauseGame === 'function') window.pauseGame();
+        if (!logicRunning && typeof window.startGame === 'function') window.startGame();
+        setHudStatus(`${getLevelName(currentLevel)} engaged`, '#38bdf8', 1000);
+        syncLevelsBoardState(true);
+        if (overlay) overlay.classList.add('hidden');
+        return;
     }
 
     if (typeof window.resetGame === 'function') window.resetGame();
@@ -539,9 +577,29 @@ function processTemporaryElectronClones() {
 }
 
 function showOverlayMessage(mainText, subText) {
+    if (btnBegin) btnBegin.textContent = 'BEGIN CAMPAIGN';
+    if (btnOverlayReset) btnOverlayReset.style.display = '';
     if (overlayMsg) overlayMsg.textContent = mainText;
     const overlaySub = document.getElementById('overlay-sub');
     if (overlaySub) overlaySub.textContent = subText;
+    if (overlay) overlay.classList.remove('hidden');
+}
+
+function showLevelTransitionOverlay(nextLevelIndex) {
+    const nextName = getLevelName(nextLevelIndex);
+    if (btnBegin) btnBegin.textContent = `BEGIN ${nextName.toUpperCase()}`;
+    if (btnOverlayReset) btnOverlayReset.style.display = 'none';
+    if (overlayMsg) {
+        overlayMsg.textContent = nextLevelIndex === 0
+            ? `▶ LEVEL 1: ${nextName.toUpperCase()}`
+            : `✅ LEVEL ${nextLevelIndex + 1} UNLOCKED`;
+    }
+    const overlaySub = document.getElementById('overlay-sub');
+    if (overlaySub) {
+        overlaySub.textContent = nextLevelIndex === 0
+            ? `Stage: ${nextName}. Press BEGIN to start the campaign.`
+            : `Next Stage: ${nextName}. Press BEGIN to continue.`;
+    }
     if (overlay) overlay.classList.remove('hidden');
 }
 
@@ -564,15 +622,12 @@ function checkLevelState() {
         return;
     }
 
-    currentLevel++;
-    applyLevelDensityToInputs(getLevelConfig());
-    reinforceLevelDensity(getLevelConfig());
-
-    levelTurnStart = turn;
+    pendingLevelAdvance = true;
+    pendingLevelIndex = currentLevel + 1;
     enemySpawnCooldown = 0;
-    abilityCharges = Math.min(MAX_ABILITY_CHARGES, abilityCharges + 1);
-    setHudStatus(`Level ${currentLevel + 1} unlocked`, '#22d3ee', 1200);
-    syncLevelsBoardState(true);
+    if (!paused && typeof window.pauseGame === 'function') window.pauseGame();
+    setHudStatus(`${getLevelName(pendingLevelIndex)} unlocked`, '#22d3ee', 1200);
+    showLevelTransitionOverlay(pendingLevelIndex);
 }
 
 window.tick = function() {
@@ -708,6 +763,8 @@ window.addEventListener('beforeunload', disposeLevelsMode, { once: true });
 
 window.initGame = function() {
     currentLevel = 0;
+    pendingLevelAdvance = false;
+    pendingLevelIndex = -1;
     applyLevelDensityToInputs(getLevelConfig());
     if (typeof originalInit === 'function') originalInit();
 
@@ -717,6 +774,11 @@ window.initGame = function() {
 
     setHudStatus('Level 1 initialized', '#38bdf8', 800);
     syncLevelsBoardState(true);
+
+    pendingLevelAdvance = true;
+    pendingLevelIndex = 0;
+    if (logicRunning && typeof originalStopGame === 'function') originalStopGame();
+    showLevelTransitionOverlay(0);
 };
 
 window.startGame = function() {
@@ -736,6 +798,8 @@ window.stopGame = function() {
 
 window.resetGame = function() {
     currentLevel = 0;
+    pendingLevelAdvance = false;
+    pendingLevelIndex = -1;
     applyLevelDensityToInputs(getLevelConfig());
     if (typeof originalResetGame === 'function') originalResetGame();
     else if (typeof originalInit === 'function') originalInit();
