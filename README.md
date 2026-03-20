@@ -18,6 +18,10 @@
 
 Real-time particle strategy simulation/game with a web interface and a progressive campaign mode.
 
+<p align="center">
+	<img src="imgs/game.png" alt="Gameplay screenshot" width="88%" />
+</p>
+
 ### Overview 🔭
 
 PARTICLES lets you observe and play with two core factions:
@@ -53,13 +57,13 @@ This repository extends that idea into a web-focused implementation with multipl
 
 <p align="center">
 	<a href="https://mpjmar.github.io/Particles/simulation.html">
-		<img src="imgs/card-simulation.svg" alt="Simulation mode card" width="31%" />
+		<img src="imgs/simulation.png" alt="Simulation mode card" width="31%" />
 	</a>
 	<a href="https://mpjmar.github.io/Particles/game_selection.html">
-		<img src="imgs/card-pulse-clash.svg" alt="Pulse Clash mode card" width="31%" />
+		<img src="imgs/pulse%20clash.png" alt="Pulse Clash mode card" width="31%" />
 	</a>
 	<a href="https://mpjmar.github.io/Particles/levels_selection.html">
-		<img src="imgs/card-core-ascension.svg" alt="Core Ascension mode card" width="31%" />
+		<img src="imgs/core%20ascension.png" alt="Core Ascension mode card" width="31%" />
 	</a>
 </p>
 
@@ -158,6 +162,10 @@ Active development focused on UX clarity, high-density stability, and faction ba
 
 PARTICLES es un simulador/juego de estrategia en tiempo real basado en sistemas de particulas, con interfaz web y campana por niveles.
 
+<p align="center">
+	<img src="imgs/game.png" alt="Captura de juego" width="88%" />
+</p>
+
 Permite observar y jugar con dos facciones principales:
 
 - 🔵 Photon (runners)
@@ -191,13 +199,13 @@ Este repositorio traslada y amplia esa base hacia una implementacion web con var
 
 <p align="center">
 	<a href="https://mpjmar.github.io/Particles/simulation.html">
-		<img src="imgs/card-simulation.svg" alt="Tarjeta modo simulacion" width="31%" />
+		<img src="imgs/simulation.png" alt="Tarjeta modo simulacion" width="31%" />
 	</a>
 	<a href="https://mpjmar.github.io/Particles/game_selection.html">
-		<img src="imgs/card-pulse-clash.svg" alt="Tarjeta modo pulse clash" width="31%" />
+		<img src="imgs/pulse%20clash.png" alt="Tarjeta modo pulse clash" width="31%" />
 	</a>
 	<a href="https://mpjmar.github.io/Particles/levels_selection.html">
-		<img src="imgs/card-core-ascension.svg" alt="Tarjeta modo core ascension" width="31%" />
+		<img src="imgs/core%20ascension.png" alt="Tarjeta modo core ascension" width="31%" />
 	</a>
 </p>
 
