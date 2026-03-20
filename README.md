@@ -37,7 +37,7 @@ This repository extends that idea into a web-focused implementation with multipl
 
 ### Game Modes 🎮
 
-- ⚛️ Simulation: autonomous mode for observing emergent behavior.
+- ⚛︎ Simulation: autonomous mode for observing emergent behavior.
 - ⚡ Pulse Clash: player-vs-system mode where you choose a side and trigger active abilities.
 - 🛸 Core Ascension: staged campaign with survival objectives, transitions, and scaling difficulty.
 
@@ -45,16 +45,16 @@ This repository extends that idea into a web-focused implementation with multipl
 
 | Mode | Style | Input | Best For |
 |---|---|---|---|
-| ⚛️ Simulation | Autonomous | None | Visual observation and tuning |
+| ⚛︎ Simulation | Autonomous | None | Visual observation and tuning |
 | ⚡ Pulse Clash | Player vs System | Tap/Click + Ability | Fast tactical matches |
 | 🛸 Core Ascension | Progressive campaign | Tap/Click + Reserve Lock | Long-run progression |
 
 ### Visual Preview 🖼️
 
 <p align="center">
-	<img src="imgs/blue-particles-flowing-motion-background_1017-33663.avif" alt="Particles preview 1" width="31%" />
-	<img src="imgs/fondo-luces-bokeh-abstractas_1409-1235.avif" alt="Particles preview 2" width="31%" />
-	<img src="imgs/atomic-science-technology-background-vector-border-blue-neon-style-with-blank-space_53876-125999.avif" alt="Particles preview 3" width="31%" />
+	<img src="imgs/preview-simulation.svg" alt="Particles preview simulation" width="31%" />
+	<img src="imgs/preview-pulse-clash.svg" alt="Particles preview pulse clash" width="31%" />
+	<img src="imgs/preview-core-ascension.svg" alt="Particles preview core ascension" width="31%" />
 </p>
 
 ### Highlights ✨
@@ -169,7 +169,7 @@ Este repositorio traslada y amplia esa base hacia una implementacion web con var
 
 ### Modos de Juego 🎮
 
-- ⚛️ Simulation: modo autonomo para observar comportamiento emergente.
+- ⚛︎ Simulation: modo autonomo para observar comportamiento emergente.
 - ⚡ Pulse Clash: modo jugador contra sistema, eligiendo faccion y activando habilidades.
 - 🛸 Core Ascension: campana por fases con objetivos de supervivencia, transiciones y dificultad progresiva.
 
@@ -177,16 +177,16 @@ Este repositorio traslada y amplia esa base hacia una implementacion web con var
 
 | Modo | Estilo | Entrada | Ideal Para |
 |---|---|---|---|
-| ⚛️ Simulation | Autonomo | Ninguna | Observacion visual y ajustes |
+| ⚛︎ Simulation | Autonomo | Ninguna | Observacion visual y ajustes |
 | ⚡ Pulse Clash | Jugador vs Sistema | Tap/Click + habilidad | Partidas tacticas rapidas |
 | 🛸 Core Ascension | Campana progresiva | Tap/Click + Reserve Lock | Progreso por fases |
 
 ### Vista Previa 🖼️
 
 <p align="center">
-	<img src="imgs/3d-abstract-digital-technology-blue-particles-network-blue-background_737078-1346.avif" alt="Vista previa 1" width="31%" />
-	<img src="imgs/blue-particles-flowing-motion-background_1017-33663.avif" alt="Vista previa 2" width="31%" />
-	<img src="imgs/fondo-luces-bokeh-abstractas_1409-1235.avif" alt="Vista previa 3" width="31%" />
+	<img src="imgs/preview-simulation.svg" alt="Vista previa simulacion" width="31%" />
+	<img src="imgs/preview-pulse-clash.svg" alt="Vista previa pulse clash" width="31%" />
+	<img src="imgs/preview-core-ascension.svg" alt="Vista previa core ascension" width="31%" />
 </p>
 
 ### Caracteristicas ✨

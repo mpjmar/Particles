@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" role="img" aria-label="Core Ascension preview">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#042018"/>
+      <stop offset="100%" stop-color="#0f3b2d"/>
+    </linearGradient>
+    <radialGradient id="core" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#86efac"/>
+      <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="700" fill="url(#bg)"/>
+  <circle cx="600" cy="350" r="230" fill="url(#core)"/>
+  <g fill="none" stroke="#4ade80" stroke-opacity="0.35">
+    <circle cx="600" cy="350" r="90" stroke-width="3"/>
+    <circle cx="600" cy="350" r="150" stroke-width="2"/>
+    <circle cx="600" cy="350" r="210" stroke-width="2"/>
+  </g>
+  <text x="60" y="90" fill="#ecfeff" font-family="Orbitron, Arial, sans-serif" font-size="46" letter-spacing="3">CORE ASCENSION</text>
+  <text x="62" y="128" fill="#99f6e4" font-family="Inter, Arial, sans-serif" font-size="24">Progressive campaign and survival objectives</text>
+</svg>
