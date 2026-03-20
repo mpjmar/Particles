@@ -671,7 +671,7 @@ canvas {
 	}
 }
 
-@media (max-width: 900px) {
+@media (max-width: 900px), (max-height: 700px) {
 	html,
 	body {
 		height: auto;
@@ -691,16 +691,15 @@ canvas {
 	}
 
 	.top-bar {
-		position: sticky;
-		top: 0;
-		left: 0;
-		right: 0;
+		position: static;
 		height: auto;
-		padding: 10px 12px;
-		background: rgba(2, 6, 23, 0.9);
+		padding: 8px 10px;
+		margin-bottom: 8px;
+		background: rgba(2, 6, 23, 0.88);
 		backdrop-filter: blur(8px);
-		border-bottom: 1px solid var(--border);
-		z-index: 120;
+		border: 1px solid var(--border);
+		border-radius: 10px;
+		z-index: 20;
 	}
 
 	.top-bar-branding {
@@ -768,10 +767,12 @@ canvas {
 	}
 
 	.board-wrap {
-		padding: 12px 8px 14px;
+		padding: 8px 8px 14px;
 		min-height: 52vh;
 		width: 100%;
-		justify-content: center;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
 		align-items: center;
 	}
 
