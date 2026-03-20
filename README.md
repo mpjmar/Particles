@@ -16,16 +16,16 @@
 
 Real-time particle strategy simulation/game with a web interface and a progressive campaign mode.
 
-### Overview
+### Overview 🔭
 
 PARTICLES lets you observe and play with two core factions:
 
-- Photon (runners)
-- Electron (chasers)
+- 🔵 Photon (runners)
+- 🟠 Electron (chasers)
 
 Each faction has distinct mechanics such as combat, healing, speed boosts, energy node interactions, and obstacle pressure.
 
-### Project Origin
+### Project Origin 🧬
 
 This project is based on the Java project **Particles** from:
 
@@ -33,30 +33,30 @@ This project is based on the Java project **Particles** from:
 
 This repository extends that idea into a web-focused implementation with multiple gameplay modes and UI systems.
 
-### Game Modes
+### Game Modes 🎮
 
-- Simulation: autonomous mode for observing emergent behavior.
-- Pulse Clash: player-vs-system mode where you choose a side and trigger active abilities.
-- Core Ascension: staged campaign with survival objectives, transitions, and scaling difficulty.
+- ⚛️ Simulation: autonomous mode for observing emergent behavior.
+- ⚡ Pulse Clash: player-vs-system mode where you choose a side and trigger active abilities.
+- 🛸 Core Ascension: staged campaign with survival objectives, transitions, and scaling difficulty.
 
-### Highlights
+### Highlights ✨
 
-- Grid-based simulation engine.
-- Responsive UI for desktop and mobile (portrait and landscape).
-- Real-time HUD with match/resource feedback.
-- Ability charges with energy node recovery.
-- Reserve Lock system in Core Ascension mode.
-- Per-level balancing (density, enemy life, spawn pace).
-- Local persistence for selected settings and metrics.
+- 🧠 Grid-based simulation engine.
+- 📱 Responsive UI for desktop and mobile (portrait and landscape).
+- 📊 Real-time HUD with match/resource feedback.
+- 🔋 Ability charges with energy node recovery.
+- 🔐 Reserve Lock system in Core Ascension mode.
+- 🎯 Per-level balancing (density, enemy life, spawn pace).
+- 💾 Local persistence for selected settings and metrics.
 
-### Tech Stack
+### Tech Stack 🛠️
 
 - HTML5
 - CSS3
 - JavaScript (runtime core)
 - TypeScript (source structure in `web/src`)
 
-### Repository Structure
+### Repository Structure 🗂️
 
 - `web/`: main web application.
 - `web/index.html`: mode selection entry point.
@@ -69,7 +69,7 @@ This repository extends that idea into a web-focused implementation with multipl
 - `web/src/`: modular TypeScript source reference.
 - `imgs/`: image assets.
 
-### Local Setup
+### Local Setup 🚀
 
 Recommended: Node.js 18+
 
@@ -93,7 +93,7 @@ npm run dev
 
 4. Open the URL shown by the command (typically `http://localhost:3000`).
 
-### Available Scripts
+### Available Scripts 📜
 
 From `web/`:
 
@@ -101,7 +101,7 @@ From `web/`:
 - `npm run build`: compile TypeScript.
 - `npm run watch`: compile TypeScript in watch mode.
 
-### Deploy on GitHub Pages
+### Deploy on GitHub Pages 🌐
 
 This repository includes an automated workflow at `.github/workflows/deploy-pages.yml`.
 
@@ -115,33 +115,33 @@ This repository includes an automated workflow at `.github/workflows/deploy-page
 https://<your-username>.github.io/<your-repo>/
 ```
 
-### Core Ascension Controls
+### Core Ascension Controls 🎛️
 
 
-### Status
+### Status 📡
 
 Active development focused on UX clarity, high-density stability, and faction balance.
 
-<p align="center"><strong></strong></p>
+<p align="center"><strong>ENGLISH VERSION</strong> 🇬🇧</p>
 
 <hr>
 
-<p align="center"><strong></strong></p>
+<p align="center"><strong>VERSION EN ESPAÑOL</strong> 🇪🇸</p>
 
 
 
-### Resumen
+### Resumen 🔭
 
 PARTICLES es un simulador/juego de estrategia en tiempo real basado en sistemas de particulas, con interfaz web y campana por niveles.
 
 Permite observar y jugar con dos facciones principales:
 
-- Photon (runners)
-- Electron (chasers)
+- 🔵 Photon (runners)
+- 🟠 Electron (chasers)
 
 Cada faccion tiene mecanicas propias: combate, curacion, mejoras de velocidad, nodos de energia y gestion de obstaculos.
 
-### Origen del Proyecto
+### Origen del Proyecto 🧬
 
 Este proyecto esta basado en el proyecto en Java **Particles** del repositorio:
 
@@ -149,30 +149,30 @@ Este proyecto esta basado en el proyecto en Java **Particles** del repositorio:
 
 Este repositorio traslada y amplia esa base hacia una implementacion web con varios modos y sistemas de interfaz.
 
-### Modos de Juego
+### Modos de Juego 🎮
 
-- Simulation: modo autonomo para observar comportamiento emergente.
-- Pulse Clash: modo jugador contra sistema, eligiendo faccion y activando habilidades.
-- Core Ascension: campana por fases con objetivos de supervivencia, transiciones y dificultad progresiva.
+- ⚛️ Simulation: modo autonomo para observar comportamiento emergente.
+- ⚡ Pulse Clash: modo jugador contra sistema, eligiendo faccion y activando habilidades.
+- 🛸 Core Ascension: campana por fases con objetivos de supervivencia, transiciones y dificultad progresiva.
 
-### Caracteristicas
+### Caracteristicas ✨
 
-- Motor de simulacion con tablero por celdas.
-- Interfaz responsive para escritorio y movil (vertical y horizontal).
-- HUD en tiempo real para estado y recursos.
-- Sistema de cargas de habilidad y recarga por nodos de energia.
-- Sistema Reserve Lock en modo Core Ascension.
-- Balance por nivel (densidad, vida enemiga, ritmo de aparicion).
-- Persistencia local de ajustes y metricas.
+- 🧠 Motor de simulacion con tablero por celdas.
+- 📱 Interfaz responsive para escritorio y movil (vertical y horizontal).
+- 📊 HUD en tiempo real para estado y recursos.
+- 🔋 Sistema de cargas de habilidad y recarga por nodos de energia.
+- 🔐 Sistema Reserve Lock en modo Core Ascension.
+- 🎯 Balance por nivel (densidad, vida enemiga, ritmo de aparicion).
+- 💾 Persistencia local de ajustes y metricas.
 
-### Tecnologias
+### Tecnologias 🛠️
 
 - HTML5
 - CSS3
 - JavaScript (runtime principal)
 - TypeScript (estructura fuente en `web/src`)
 
-### Estructura del Repositorio
+### Estructura del Repositorio 🗂️
 
 - `web/`: aplicacion web principal.
 - `web/index.html`: entrada y seleccion de modo.
@@ -185,7 +185,7 @@ Este repositorio traslada y amplia esa base hacia una implementacion web con var
 - `web/src/`: referencia modular en TypeScript.
 - `imgs/`: recursos visuales.
 
-### Ejecucion Local
+### Ejecucion Local 🚀
 
 Recomendado: Node.js 18+
 
@@ -209,7 +209,7 @@ npm run dev
 
 4. Abre en navegador la URL que muestre el comando (normalmente `http://localhost:3000`).
 
-### Scripts Disponibles
+### Scripts Disponibles 📜
 
 Desde `web/`:
 
@@ -217,7 +217,7 @@ Desde `web/`:
 - `npm run build`: compila TypeScript.
 - `npm run watch`: compila TypeScript en modo observacion.
 
-### Despliegue en GitHub Pages
+### Despliegue en GitHub Pages 🌐
 
 Este repositorio incluye un workflow automatico en `.github/workflows/deploy-pages.yml`.
 
@@ -231,13 +231,13 @@ Este repositorio incluye un workflow automatico en `.github/workflows/deploy-pag
 https://<tu-usuario>.github.io/<tu-repo>/
 ```
 
-### Controles en Core Ascension
+### Controles en Core Ascension 🎛️
 
 - Botones HUD `[-]` / `[+]`: ajustar Reserve Lock.
 - Flechas izquierda/derecha: ajustar Reserve Lock por teclado.
 - Click en tablero: activar habilidad de faccion.
 
-### Estado
+### Estado 📡
 
 Desarrollo activo con foco en claridad de UX, estabilidad en alta densidad y balance entre facciones.
 
