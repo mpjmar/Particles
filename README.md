@@ -12,6 +12,8 @@
 	<img alt="Status" src="https://img.shields.io/badge/status-active-22c55e?style=for-the-badge" />
 	<img alt="Platform" src="https://img.shields.io/badge/platform-web-0ea5e9?style=for-the-badge" />
 	<img alt="Node" src="https://img.shields.io/badge/node-%3E%3D18-3c873a?style=for-the-badge" />
+	<img alt="Mobile Ready" src="https://img.shields.io/badge/mobile-ready-06b6d4?style=for-the-badge" />
+	<img alt="GitHub Pages" src="https://img.shields.io/badge/deploy-github_pages-1d4ed8?style=for-the-badge" />
 </p>
 
 Real-time particle strategy simulation/game with a web interface and a progressive campaign mode.
@@ -38,6 +40,22 @@ This repository extends that idea into a web-focused implementation with multipl
 - ⚛️ Simulation: autonomous mode for observing emergent behavior.
 - ⚡ Pulse Clash: player-vs-system mode where you choose a side and trigger active abilities.
 - 🛸 Core Ascension: staged campaign with survival objectives, transitions, and scaling difficulty.
+
+### Mode Matrix 🧭
+
+| Mode | Style | Input | Best For |
+|---|---|---|---|
+| ⚛️ Simulation | Autonomous | None | Visual observation and tuning |
+| ⚡ Pulse Clash | Player vs System | Tap/Click + Ability | Fast tactical matches |
+| 🛸 Core Ascension | Progressive campaign | Tap/Click + Reserve Lock | Long-run progression |
+
+### Visual Preview 🖼️
+
+<p align="center">
+	<img src="imgs/blue-particles-flowing-motion-background_1017-33663.avif" alt="Particles preview 1" width="31%" />
+	<img src="imgs/fondo-luces-bokeh-abstractas_1409-1235.avif" alt="Particles preview 2" width="31%" />
+	<img src="imgs/atomic-science-technology-background-vector-border-blue-neon-style-with-blank-space_53876-125999.avif" alt="Particles preview 3" width="31%" />
+</p>
 
 ### Highlights ✨
 
@@ -154,6 +172,22 @@ Este repositorio traslada y amplia esa base hacia una implementacion web con var
 - ⚛️ Simulation: modo autonomo para observar comportamiento emergente.
 - ⚡ Pulse Clash: modo jugador contra sistema, eligiendo faccion y activando habilidades.
 - 🛸 Core Ascension: campana por fases con objetivos de supervivencia, transiciones y dificultad progresiva.
+
+### Matriz de Modos 🧭
+
+| Modo | Estilo | Entrada | Ideal Para |
+|---|---|---|---|
+| ⚛️ Simulation | Autonomo | Ninguna | Observacion visual y ajustes |
+| ⚡ Pulse Clash | Jugador vs Sistema | Tap/Click + habilidad | Partidas tacticas rapidas |
+| 🛸 Core Ascension | Campana progresiva | Tap/Click + Reserve Lock | Progreso por fases |
+
+### Vista Previa 🖼️
+
+<p align="center">
+	<img src="imgs/3d-abstract-digital-technology-blue-particles-network-blue-background_737078-1346.avif" alt="Vista previa 1" width="31%" />
+	<img src="imgs/blue-particles-flowing-motion-background_1017-33663.avif" alt="Vista previa 2" width="31%" />
+	<img src="imgs/fondo-luces-bokeh-abstractas_1409-1235.avif" alt="Vista previa 3" width="31%" />
+</p>
 
 ### Caracteristicas ✨
 
