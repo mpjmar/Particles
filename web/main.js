@@ -39,8 +39,12 @@ class ListUtils {
 
 class EventManager {
 	static events = [];
+	static maxEvents = 1000;
 	static emit(event) {
 		this.events.push(event);
+		if (this.events.length > this.maxEvents) {
+			this.events.splice(0, this.events.length - this.maxEvents);
+		}
 	}
 	static consumeAll() {
 		const evts = [...this.events];
@@ -105,20 +109,24 @@ class Runner extends Role {
 	}
 	getTarget() { return this._energyTarget || this._enemyTarget; }
 	isTargetingEnergy() { return this._energyTarget !== null; }
-	setTarget(elements) {
-		let minEnemyDist = 5;
+	setTarget(elements, chasers = null, energyNodes = null) {
+		let minEnemyDist = 7;
 		let minEnergyDist = 8;
 		this._enemyTarget = null;
 		this._energyTarget = null;
-
-		for (const e of elements) {
+		const enemySource = chasers || elements;
+		for (const e of enemySource) {
 			if (e instanceof Chaser) {
 				const dist = Position.calcDistance(this.pos, e.pos);
 				if (dist < minEnemyDist) {
 					minEnemyDist = dist;
 					this._enemyTarget = e;
 				}
-			} else if (e instanceof EnergyNode) {
+			}
+		}
+		const energySource = energyNodes || elements;
+		for (const e of energySource) {
+			if (e instanceof EnergyNode) {
 				const dist = Position.calcDistance(this.pos, e.pos);
 				if (dist < minEnergyDist) {
 					minEnergyDist = dist;
@@ -148,20 +156,24 @@ class Chaser extends Role {
 	get speedTurns() { return this._speedTurns; }
 	set speedTurns(v) { this._speedTurns = v; }
 	getTarget() { return this._energyTarget || this._enemyTarget; }
-	setTarget(elements) {
-		let minEnemyDist = Number.MAX_SAFE_INTEGER;
+	setTarget(elements, runners = null, energyNodes = null) {
+		let minEnemyDist = 9;
 		let minEnergyDist = 8;
 		this._enemyTarget = null;
 		this._energyTarget = null;
-
-		for (const e of elements) {
+		const enemySource = runners || elements;
+		for (const e of enemySource) {
 			if (e instanceof Runner) {
 				const dist = Position.calcDistance(this.pos, e.pos);
 				if (dist < minEnemyDist) {
 					minEnemyDist = dist;
 					this._enemyTarget = e;
 				}
-			} else if (e instanceof EnergyNode) {
+			}
+		}
+		const energySource = energyNodes || elements;
+		for (const e of energySource) {
+			if (e instanceof EnergyNode) {
 				const dist = Position.calcDistance(this.pos, e.pos);
 				if (dist < minEnergyDist) {
 					minEnergyDist = dist;
@@ -248,8 +260,19 @@ class Board {
 // ── STRATEGIES & UTILS ────────────────────────────────────────────────────────
 
 class MovUtils {
+	static toKey(row, col) {
+		return `${row},${col}`;
+	}
+	static buildOccupancy(gameElements) {
+		const occupied = new Set();
+		for (const e of gameElements) occupied.add(this.toKey(e.row, e.col));
+		return occupied;
+	}
 	static isEmpty(gameElements, row, col) {
 		return !gameElements.some(e => e.row === row && e.col === col);
+	}
+	static isEmptyFast(occupied, row, col) {
+		return !occupied.has(this.toKey(row, col));
 	}
 	static isObstacle(gameElements, row, col) {
 		return gameElements.some(e => e instanceof Obstacle && e.row === row && e.col === col);
@@ -286,7 +309,7 @@ class MovUtils {
 }
 
 class ChaserStrategy {
-	static calcBestPos(elements, board, c) {
+	static calcBestPos(elements, board, c, occupied = null) {
 		let bestPos = null;
 		let availPos = MovUtils.generatePos(c.row, c.col);
 		const target = c.getTarget();
@@ -308,15 +331,20 @@ class ChaserStrategy {
 				if (!p1Prev && p2Prev) return -1;
 				return Math.random() - 0.5;
 			});
+			if (occupied) occupied.delete(MovUtils.toKey(c.row, c.col));
 			for (const p of availPos) {
-				if (MovUtils.isEmpty(elements, p.row, p.col)) { bestPos = p; break; }
+				if (occupied ? MovUtils.isEmptyFast(occupied, p.row, p.col) : MovUtils.isEmpty(elements, p.row, p.col)) {
+					bestPos = p;
+					break;
+				}
 			}
+			if (occupied) occupied.add(MovUtils.toKey(c.row, c.col));
 			if (bestPos === null) bestPos = c.pos;
 		} else {
 			let candidate;
 			do {
 				candidate = MovUtils.randomPos(c.pos);
-			} while (!MovUtils.isValid(elements, board, candidate) || !MovUtils.isEmpty(elements, candidate.row, candidate.col));
+			} while (!MovUtils.isValid(elements, board, candidate) || !(occupied ? MovUtils.isEmptyFast(occupied, candidate.row, candidate.col) : MovUtils.isEmpty(elements, candidate.row, candidate.col)));
 			bestPos = candidate;
 		}
 		return bestPos;
@@ -324,7 +352,7 @@ class ChaserStrategy {
 }
 
 class RunnerStrategy {
-	static calcBestPos(elements, board, r) {
+	static calcBestPos(elements, board, r, occupied = null) {
 		let bestPos = null;
 		let availPos = MovUtils.generatePos(r.row, r.col);
 		const target = r.getTarget();
@@ -347,15 +375,20 @@ class RunnerStrategy {
 				if (!p1Prev && p2Prev) return -1;
 				return Math.random() - 0.5;
 			});
+			if (occupied) occupied.delete(MovUtils.toKey(r.row, r.col));
 			for (const p of availPos) {
-				if (MovUtils.isEmpty(elements, p.row, p.col)) { bestPos = p; break; }
+				if (occupied ? MovUtils.isEmptyFast(occupied, p.row, p.col) : MovUtils.isEmpty(elements, p.row, p.col)) {
+					bestPos = p;
+					break;
+				}
 			}
+			if (occupied) occupied.add(MovUtils.toKey(r.row, r.col));
 			if (bestPos === null) bestPos = r.pos;
 		} else {
 			let candidate;
 			do {
 				candidate = MovUtils.randomPos(r.pos);
-			} while (!MovUtils.isValid(elements, board, candidate) || !MovUtils.isEmpty(elements, candidate.row, candidate.col));
+			} while (!MovUtils.isValid(elements, board, candidate) || !(occupied ? MovUtils.isEmptyFast(occupied, candidate.row, candidate.col) : MovUtils.isEmpty(elements, candidate.row, candidate.col)));
 			bestPos = candidate;
 		}
 		return bestPos;
@@ -364,15 +397,22 @@ class RunnerStrategy {
 
 class Movements {
 	static move(elements, board) {
+		const occupied = MovUtils.buildOccupancy(elements);
 		for (const e of elements) {
 			if (e instanceof Runner) {
-				const best = RunnerStrategy.calcBestPos(elements, board, e);
+				const oldKey = MovUtils.toKey(e.row, e.col);
+				const best = RunnerStrategy.calcBestPos(elements, board, e, occupied);
 				e.setPos(best.row, best.col);
+				occupied.delete(oldKey);
+				occupied.add(MovUtils.toKey(e.row, e.col));
 			} else if (e instanceof Chaser) {
 				const steps = e.speedTurns > 0 ? 2 : 1;
 				for (let i = 0; i < steps; i++) {
-					const best = ChaserStrategy.calcBestPos(elements, board, e);
+					const oldKey = MovUtils.toKey(e.row, e.col);
+					const best = ChaserStrategy.calcBestPos(elements, board, e, occupied);
 					e.setPos(best.row, best.col);
+					occupied.delete(oldKey);
+					occupied.add(MovUtils.toKey(e.row, e.col));
 					e.decrementSpeedTurn();
 				}
 			}
@@ -431,7 +471,7 @@ class Speed {
 			if (e instanceof Speeder) {
 				for (const other of elements) {
 					if (other instanceof Chaser && MovUtils.isNeighbour(e.pos, other.pos)) {
-						other.speedTurns = 5;
+						other.speedTurns = 2;
 						e.speed = 0;
 					}
 				}
@@ -447,43 +487,52 @@ class Speed {
 
 class EnergyManager {
 	static processNodes(elements, board) {
-		// 1. Decay life, remove dead nodes
+		const actors = [];
+		const nodes = [];
+
+		// 1. Decay node life and collect active actors/nodes in one sweep
 		let i = elements.length;
 		while (i--) {
 			const e = elements[i];
 			if (e instanceof EnergyNode) {
 				e.life--;
-				if (e.life <= 0) elements.splice(i, 1);
+				if (e.life <= 0) {
+					elements.splice(i, 1);
+					continue;
+				}
+				nodes.push(e);
+				continue;
 			}
+			if (e instanceof Runner || e instanceof Chaser) actors.push(e);
 		}
 
 		// 2. Consume nodes if a Runner or Chaser is nearby
-		i = elements.length;
-		while (i--) {
-			const e = elements[i];
-			if (e instanceof EnergyNode) {
-				for (const actor of elements) {
-					// We say distance <= 1 allows consumption 
-					if ((actor instanceof Runner || actor instanceof Chaser) &&
-						(actor.row === e.row && actor.col === e.col || MovUtils.isNeighbour(e.pos, actor.pos))) {
-						const value = Math.max(1, e.energyValue || 1);
+		let consumedNodes = 0;
+		for (const node of nodes) {
+			let consumed = false;
+			for (const actor of actors) {
+				if (actor.row === node.row && actor.col === node.col || MovUtils.isNeighbour(node.pos, actor.pos)) {
+					const value = Math.max(1, node.energyValue || 1);
 
-						if (actor instanceof Runner) actor.sumLife(generateRandom(10, 20) * value);
-						if (actor instanceof Chaser) actor.speedTurns += (value + 2);
+					if (actor instanceof Runner) actor.sumLife(generateRandom(10, 20) * value);
+					if (actor instanceof Chaser) actor.speedTurns += (value + 2);
 
-						// trigger a visual explosion for node consumption
-						EventManager.emit({ type: "fight", row: e.row, col: e.col, color: Colors.energy });
-						elements.splice(i, 1);
-						break;
+					EventManager.emit({ type: "fight", row: node.row, col: node.col, color: Colors.energy });
+					const idx = elements.indexOf(node);
+					if (idx !== -1) {
+						elements.splice(idx, 1);
+						consumedNodes++;
 					}
+					consumed = true;
+					break;
 				}
 			}
+			if (consumed) continue;
 		}
 
 		// 3. Random spawn
-		const nodes = elements.filter(e => e instanceof EnergyNode);
-		// Increased limit to 6 and probability to 15% per turn
-		if (nodes.length < 6 && Math.random() < 0.15) {
+		const remainingNodes = nodes.length - consumedNodes;
+		if (remainingNodes < 6 && Math.random() < 0.15) {
 			let row = generateRandom(0, board.rows);
 			let col = generateRandom(0, board.cols);
 			if (MovUtils.isEmpty(elements, row, col)) {
@@ -651,14 +700,32 @@ class Renderer {
 		this.shake = 0;
 		this._mouseEventsAttached = false;
 		this.fxQuality = 'high';
+		this.renderProfile = 'balanced';
+		this.drawNetwork = true;
 		this.fxMultiplier = 1;
 		this.maxParticles = 250;
+		this.fps = 0;
+		this._fpsAccumMs = 0;
+		this._fpsFrames = 0;
+	}
+
+	_refreshFxBudget() {
+		const baseMultiplier = this.fxQuality === 'low' ? 0.45 : 1;
+		const baseMaxParticles = this.fxQuality === 'low' ? 130 : 250;
+		const profileFactor = this.renderProfile === 'performance' ? 0.72 : 1;
+		this.fxMultiplier = baseMultiplier * profileFactor;
+		this.maxParticles = Math.max(90, Math.round(baseMaxParticles * profileFactor));
 	}
 
 	setFxQuality(mode) {
 		this.fxQuality = mode === 'low' ? 'low' : 'high';
-		this.fxMultiplier = this.fxQuality === 'low' ? 0.45 : 1;
-		this.maxParticles = this.fxQuality === 'low' ? 130 : 250;
+		this._refreshFxBudget();
+	}
+
+	setRenderProfile(mode) {
+		this.renderProfile = mode === 'performance' ? 'performance' : 'balanced';
+		this.drawNetwork = this.renderProfile !== 'performance';
+		this._refreshFxBudget();
 	}
 
 	attachMouseEvents() {
@@ -757,6 +824,13 @@ class Renderer {
 	drawFrame(timeMs, ms) {
 		const dt = Math.min(32, timeMs - this.lastTime);
 		this.lastTime = timeMs;
+		this._fpsAccumMs += dt;
+		this._fpsFrames++;
+		if (this._fpsAccumMs >= 300) {
+			this.fps = Math.round((this._fpsFrames * 1000) / this._fpsAccumMs);
+			this._fpsAccumMs = 0;
+			this._fpsFrames = 0;
+		}
 
 		this._updateDeformationWaves(dt);
 
@@ -785,7 +859,7 @@ class Renderer {
 		this._drawDeepSpace(ctx);
 
 		// Layer 3.5 - Network connections between particles
-		if (this.fxQuality !== 'low') this._drawNetworkConnections(ctx, cs);
+		if (this.drawNetwork && this.fxQuality !== 'low') this._drawNetworkConnections(ctx, cs);
 
 		// Layer 4 – energy rings (interaction shockwaves)
 		this._drawEnergyRings(ctx);
@@ -965,6 +1039,8 @@ class Renderer {
 
 		// Also draw connections for temporary spawn nodes (cyan)
 		const nodes = this.particles.filter(p => p.isNetworkNode);
+		const maxNodeLinks = this.fxQuality === 'low' ? 80 : 180;
+		let drawnNodeLinks = 0;
 		for (let i = 0; i < nodes.length; i++) {
 			for (let j = i + 1; j < nodes.length; j++) {
 				const n1 = nodes[i];
@@ -981,41 +1057,56 @@ class Renderer {
 					ctx.shadowBlur = cs * 0.2;
 					ctx.shadowColor = `rgba(0, 229, 255, ${alpha.toFixed(3)})`;
 					ctx.stroke();
+					drawnNodeLinks++;
+					if (drawnNodeLinks >= maxNodeLinks) break;
 				}
 			}
+			if (drawnNodeLinks >= maxNodeLinks) break;
 		}
 
 		ctx.restore();
 	}
 
 	_drawNetLinks(ctx, arr, cs, ease, maxDist, rgbStr) {
-		for (let i = 0; i < arr.length; i++) {
-			for (let j = i + 1; j < arr.length; j++) {
-				const p1 = arr[i];
-				const p2 = arr[j];
+		if (!arr || arr.length < 2) return;
 
-				let x1 = (p1.prevPos ? p1.prevPos.col : p1.col) * cs + cs / 2;
-				let y1 = (p1.prevPos ? p1.prevPos.row : p1.row) * cs + cs / 2;
-				x1 += ((p1.col * cs + cs / 2) - x1) * ease;
-				y1 += ((p1.row * cs + cs / 2) - y1) * ease;
+		const points = arr.map((p) => {
+			let x = (p.prevPos ? p.prevPos.col : p.col) * cs + cs / 2;
+			let y = (p.prevPos ? p.prevPos.row : p.row) * cs + cs / 2;
+			x += ((p.col * cs + cs / 2) - x) * ease;
+			y += ((p.row * cs + cs / 2) - y) * ease;
+			return { x, y };
+		});
 
-				let x2 = (p2.prevPos ? p2.prevPos.col : p2.col) * cs + cs / 2;
-				let y2 = (p2.prevPos ? p2.prevPos.row : p2.row) * cs + cs / 2;
-				x2 += ((p2.col * cs + cs / 2) - x2) * ease;
-				y2 += ((p2.row * cs + cs / 2) - y2) * ease;
+		points.sort((a, b) => a.x - b.x);
 
-				const d = Math.hypot(x2 - x1, y2 - y1);
-				if (d < maxDist) {
+		const maxDistSq = maxDist * maxDist;
+		const maxLinks = this.fxQuality === 'low' ? 140 : 320;
+		let drawnLinks = 0;
+
+		for (let i = 0; i < points.length; i++) {
+			const p1 = points[i];
+			for (let j = i + 1; j < points.length; j++) {
+				const p2 = points[j];
+				const dx = p2.x - p1.x;
+				if (dx > maxDist) break;
+
+				const dy = p2.y - p1.y;
+				const dSq = dx * dx + dy * dy;
+				if (dSq < maxDistSq) {
+					const d = Math.sqrt(dSq);
 					// More subtle alpha so network doesn't compete with particles
 					const alpha = Math.pow(1 - d / maxDist, 1.2) * 0.40;
 					ctx.beginPath();
-					ctx.moveTo(x1, y1);
-					ctx.lineTo(x2, y2);
+					ctx.moveTo(p1.x, p1.y);
+					ctx.lineTo(p2.x, p2.y);
 					ctx.strokeStyle = `rgba(${rgbStr}, ${alpha.toFixed(3)})`;
-					ctx.lineWidth = cs * 0.04; // thinner
+					ctx.lineWidth = cs * 0.04;
 					ctx.shadowBlur = cs * 0.2;
 					ctx.shadowColor = `rgba(${rgbStr}, ${(alpha * 1.2).toFixed(3)})`;
 					ctx.stroke();
+					drawnLinks++;
+					if (drawnLinks >= maxLinks) return;
 				}
 			}
 		}
@@ -1533,8 +1624,62 @@ const lblSpe = document.getElementById("lbl-spe");
 const cntRunners = document.getElementById("cnt-runners");
 const cntChasers = document.getElementById("cnt-chasers");
 const cntTurn = document.getElementById("cnt-turn");
+let cntFps = document.getElementById("cnt-fps");
+let cntLogic = document.getElementById("cnt-logic");
+let cntProfile = document.getElementById("cnt-profile");
 const overlay = document.getElementById("overlay");
 const overlayMsg = document.getElementById("overlay-msg");
+
+let logicMsLast = 0;
+let logicMsAvg = 0;
+let currentRenderProfile = 'balanced';
+let lastStatsUiUpdateMs = 0;
+const STATS_UPDATE_INTERVAL_MS = 120;
+
+function recordLogicFrame(ms) {
+	logicMsLast = ms;
+	if (logicMsAvg <= 0) logicMsAvg = ms;
+	else logicMsAvg = logicMsAvg * 0.85 + ms * 0.15;
+}
+
+window.__recordLogicFrame = recordLogicFrame;
+
+if (!cntFps) {
+	const topBarInfo = document.querySelector(".top-bar-info");
+	if (topBarInfo) {
+		cntFps = document.createElement("span");
+		cntFps.id = "cnt-fps";
+		cntFps.className = "logo-sub";
+		cntFps.style.marginLeft = "10px";
+		cntFps.textContent = "FPS: --";
+		topBarInfo.appendChild(cntFps);
+	}
+}
+
+if (!cntLogic) {
+	const topBarInfo = document.querySelector(".top-bar-info");
+	if (topBarInfo) {
+		cntLogic = document.createElement("span");
+		cntLogic.id = "cnt-logic";
+		cntLogic.className = "logo-sub";
+		cntLogic.style.marginLeft = "10px";
+		cntLogic.textContent = "Logic: -- ms";
+		topBarInfo.appendChild(cntLogic);
+	}
+}
+
+if (!cntProfile) {
+	const topBarInfo = document.querySelector(".top-bar-info");
+	if (topBarInfo) {
+		cntProfile = document.createElement("span");
+		cntProfile.id = "cnt-profile";
+		cntProfile.className = "logo-sub";
+		cntProfile.style.marginLeft = "10px";
+		cntProfile.style.cursor = "pointer";
+		cntProfile.textContent = "Profile: BALANCED";
+		topBarInfo.appendChild(cntProfile);
+	}
+}
 
 const renderer = canvas ? new Renderer(canvas) : null;
 let board;
@@ -1545,6 +1690,17 @@ let animFrameId = null;
 let paused = false;
 let turn = 0;
 let idleMoves = 0;
+
+function setRenderProfile(mode) {
+	currentRenderProfile = mode === 'performance' ? 'performance' : 'balanced';
+	if (renderer) renderer.setRenderProfile(currentRenderProfile);
+	if (cntProfile) cntProfile.textContent = `Profile: ${currentRenderProfile.toUpperCase()}`;
+}
+
+function toggleRenderProfile() {
+	setRenderProfile(currentRenderProfile === 'balanced' ? 'performance' : 'balanced');
+	updateStats(true);
+}
 
 function getRows() {
 	const rows = inpRows ? parseInt(inpRows.value, 10) : 30;
@@ -1593,9 +1749,10 @@ function initGame() {
 	board.placeElements(elements);
 	renderer.resize(rows, cols);
 	renderer.setFxQuality(getFxQuality());
+	renderer.setRenderProfile(currentRenderProfile);
 	turn = 0;
 	idleMoves = 0;
-	if (typeof updateStats === 'function') updateStats();
+	if (typeof updateStats === 'function') updateStats(true);
 	const ms = getSpeedMs();
 	renderer.setTurnSpeed(ms);
 	renderer.updateLogicState(elements, board);
@@ -1608,10 +1765,19 @@ function initGame() {
 }
 
 function tick() {
+	const tickStartMs = performance.now();
 	if (paused) return;
+	const runners = [];
+	const chasers = [];
+	const energyNodes = [];
 	for (const e of elements) {
-		if (e instanceof Chaser) e.setTarget(elements);
-		if (e instanceof Runner) e.setTarget(elements);
+		if (e instanceof Runner) runners.push(e);
+		else if (e instanceof Chaser) chasers.push(e);
+		else if (e instanceof EnergyNode) energyNodes.push(e);
+	}
+	for (const e of elements) {
+		if (e instanceof Chaser) e.setTarget(elements, runners, energyNodes);
+		if (e instanceof Runner) e.setTarget(elements, chasers, energyNodes);
 	}
 	Game.playGame(elements, board);
 	const prevLen = elements.length;
@@ -1621,16 +1787,19 @@ function tick() {
 		if ((e instanceof Runner || e instanceof Chaser) && e.life <= 0) elements.splice(i, 1);
 	}
 	const erased = elements.length < prevLen;
-	const runners = ListUtils.countCharacters(elements, "Runner");
-	const chasers = ListUtils.countCharacters(elements, "Chaser");
+	const runnersCount = ListUtils.countCharacters(elements, "Runner");
+	const chasersCount = ListUtils.countCharacters(elements, "Chaser");
 	board.placeElements(elements);
 	renderer.updateLogicState(elements, board);
 	if (erased) idleMoves = 0; else idleMoves++;
 	turn++;
 	updateStats();
-	if (runners === 0 || chasers === 0 || idleMoves >= 50) {
+	if (runnersCount === 0 || chasersCount === 0 || idleMoves >= 50) {
 		stopGame();
-		showWinner(runners, chasers);
+		showWinner(runnersCount, chasersCount);
+	}
+	if (typeof window.__recordLogicFrame === 'function') {
+		window.__recordLogicFrame(performance.now() - tickStartMs);
 	}
 }
 
@@ -1699,13 +1868,19 @@ function showWinner(runners, chasers) {
 	overlay.classList.remove("hidden");
 }
 
-function updateStats() {
+function updateStats(force = false) {
     if (!cntRunners || !cntChasers || !cntTurn) return;
+	const now = performance.now();
+	if (!force && now - lastStatsUiUpdateMs < STATS_UPDATE_INTERVAL_MS) return;
+	lastStatsUiUpdateMs = now;
 	const runners = ListUtils.countCharacters(elements ?? [], "Runner");
 	const chasers = ListUtils.countCharacters(elements ?? [], "Chaser");
 	cntRunners.textContent = String(runners);
 	cntChasers.textContent = String(chasers);
 	cntTurn.textContent = String(turn);
+	if (cntFps && renderer) cntFps.textContent = `FPS: ${renderer.fps || 0}`;
+	if (cntLogic) cntLogic.textContent = `Logic: ${logicMsAvg.toFixed(1)} ms`;
+	if (cntProfile) cntProfile.textContent = `Profile: ${currentRenderProfile.toUpperCase()}`;
 }
 
 // ── LISTENERS ────────────────────────────────────────────────────────────────
@@ -1720,8 +1895,11 @@ if (inpSpeed) {
 if (inpQuality) {
 	inpQuality.addEventListener("change", () => {
 		if (renderer) renderer.setFxQuality(getFxQuality());
+		updateStats(true);
 	});
 }
+
+if (cntProfile) cntProfile.addEventListener("click", toggleRenderProfile);
 
 if (inpRows) {
 	inpRows.addEventListener("change", handleBoardResizeControlChange);
@@ -1739,17 +1917,27 @@ if (btnReset) btnReset.addEventListener("click", resetGame);
 const overlayBtn = document.getElementById("btn-overlay-reset");
 if (overlayBtn) overlayBtn.addEventListener("click", resetGame);
 
+let resizeDebounceTimer = null;
 window.addEventListener("resize", () => {
-	if (board && renderer) {
-		updateColorsFromCSS();
-		renderer.resize(board.rows, board.cols);
-		renderer.updateLogicState(elements, board);
-	}
+	if (resizeDebounceTimer !== null) clearTimeout(resizeDebounceTimer);
+	resizeDebounceTimer = setTimeout(() => {
+		if (board && renderer) {
+			updateColorsFromCSS();
+			renderer.resize(board.rows, board.cols);
+			renderer.updateLogicState(elements, board);
+		}
+	}, 200);
 });
 
 window.addEventListener("focus", () => {
 	updateColorsFromCSS();
 	if (board && renderer) renderer.updateLogicState(elements, board);
+});
+
+window.addEventListener("keydown", (e) => {
+	if (!e.shiftKey || e.key.toLowerCase() !== 'p') return;
+	e.preventDefault();
+	toggleRenderProfile();
 });
 
 // Initialization - Don't auto-init if in game mode

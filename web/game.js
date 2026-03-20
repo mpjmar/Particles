@@ -7,6 +7,12 @@ const params = new URLSearchParams(window.location.search);
 const playerRole = params.get('role') || 'photon'; // 'photon' or 'electron'
 let abilityCharges = 5;
 const MAX_ABILITY_CHARGES = 5;
+const originalTick = window.tick;
+const originalInit = window.initGame;
+const originalStartGame = window.startGame;
+const originalPauseGame = window.pauseGame;
+const originalStopGame = window.stopGame;
+const originalResetGame = window.resetGame;
 
 // UI Elements specific to game.html
 const cntCharges = document.getElementById('cnt-charges');
@@ -14,22 +20,94 @@ const gameTitle = document.getElementById('game-title');
 const btnBegin = document.getElementById('btn-begin');
 const overlayIcon = document.getElementById('overlay-icon');
 const inpEnemyCap = document.getElementById('inp-enemy-cap');
+const boardWrap = document.querySelector('.board-wrap');
 let enemySpawnCooldown = 0;
+let playableModeDisposed = false;
+let hudStatusTimeoutId = null;
+
+const abilityHud = document.createElement('div');
+abilityHud.setAttribute('id', 'playable-ability-hud');
+abilityHud.style.position = 'absolute';
+abilityHud.style.right = '16px';
+abilityHud.style.bottom = '16px';
+abilityHud.style.padding = '10px 14px';
+abilityHud.style.borderRadius = '14px';
+abilityHud.style.background = 'rgba(2, 6, 23, 0.72)';
+abilityHud.style.border = '1px solid rgba(148, 163, 184, 0.35)';
+abilityHud.style.backdropFilter = 'blur(6px)';
+abilityHud.style.fontFamily = 'Orbitron, sans-serif';
+abilityHud.style.color = '#e2e8f0';
+abilityHud.style.letterSpacing = '0.06em';
+abilityHud.style.fontSize = '0.74rem';
+abilityHud.style.zIndex = '40';
+abilityHud.style.minWidth = '160px';
+abilityHud.style.pointerEvents = 'none';
+
+const abilityHudTitle = document.createElement('div');
+abilityHudTitle.style.fontWeight = '700';
+abilityHudTitle.style.marginBottom = '4px';
+
+const abilityHudCharges = document.createElement('div');
+abilityHudCharges.style.fontWeight = '900';
+abilityHudCharges.style.fontSize = '0.92rem';
+
+const abilityHudStatus = document.createElement('div');
+abilityHudStatus.style.marginTop = '4px';
+abilityHudStatus.style.color = '#94a3b8';
+abilityHudStatus.style.minHeight = '1.1em';
+
+abilityHud.appendChild(abilityHudTitle);
+abilityHud.appendChild(abilityHudCharges);
+abilityHud.appendChild(abilityHudStatus);
+
+if (boardWrap) {
+    if (getComputedStyle(boardWrap).position === 'static') boardWrap.style.position = 'relative';
+    boardWrap.appendChild(abilityHud);
+}
 
 // Initialize UI context
 if (gameTitle) gameTitle.textContent = playerRole.toUpperCase() + " PILOT";
 if (cntCharges) cntCharges.textContent = abilityCharges;
 if (overlayIcon) overlayIcon.textContent = playerRole === 'photon' ? '🔵' : '🟠';
 
+function setHudStatus(text, color = '#94a3b8', ttl = 1200) {
+    abilityHudStatus.textContent = text;
+    abilityHudStatus.style.color = color;
+
+    if (hudStatusTimeoutId !== null) clearTimeout(hudStatusTimeoutId);
+    hudStatusTimeoutId = setTimeout(() => {
+        abilityHudStatus.textContent = '';
+        abilityHudStatus.style.color = '#94a3b8';
+    }, ttl);
+}
+
+function updateAbilityHud() {
+    const roleLabel = playerRole === 'photon' ? 'Shockwave' : 'Clone Swarm';
+    abilityHudTitle.textContent = `${roleLabel}`;
+    abilityHudCharges.textContent = `Charges ${abilityCharges}/${MAX_ABILITY_CHARGES}`;
+
+    if (!logicRunning) {
+        abilityHudStatus.textContent = 'Mission idle';
+    } else if (paused) {
+        abilityHudStatus.textContent = 'Simulation paused';
+    } else if (abilityCharges <= 0) {
+        abilityHudStatus.textContent = 'Recharge from energy nodes';
+    }
+}
+
+updateAbilityHud();
+
 /**
  * Handle Mission Start
  */
+function onMissionBeginClick() {
+    if (!board) initGame();
+    startGame();
+    if (overlay) overlay.classList.add('hidden');
+}
+
 if (btnBegin) {
-    btnBegin.addEventListener('click', () => {
-        if (!board) initGame();
-        startGame();
-        if (overlay) overlay.classList.add('hidden');
-    });
+    btnBegin.addEventListener('click', onMissionBeginClick);
 }
 
 function showChargeFeedback(row, col, text = '+1 CHARGE') {
@@ -73,6 +151,7 @@ function syncPlayableBoardState() {
     board.placeElements(elements);
     if (renderer) renderer.updateLogicState(elements, board);
     if (typeof updateStats === 'function') updateStats();
+    updateAbilityHud();
 }
 
 function getEnemyCap() {
@@ -180,6 +259,7 @@ function collectEnergyNode(predicate) {
         }
         const gain = abilityCharges - prevCharges;
         showChargeFeedback(ent.row, ent.col, gain > 0 ? `+${gain} CHARGE${gain > 1 ? 'S' : ''}` : 'MAX');
+        if (gain > 0) setHudStatus(`+${gain} charge${gain > 1 ? 's' : ''}`, '#22d3ee');
         EventManager.emit({ type: 'fight', row: ent.row, col: ent.col, color: Colors.energy });
         syncPlayableBoardState();
         return true;
@@ -257,11 +337,21 @@ function processTemporaryElectronClones() {
  * Override tick function to include player logic
  */
 window.tick = function() {
+    const tickStartMs = performance.now();
     if (paused || !elements || !board || !renderer) return;
 
+    const runners = [];
+    const chasers = [];
+    const energyNodes = [];
     for (const e of elements) {
-        if (e instanceof Chaser) e.setTarget(elements);
-        if (e instanceof Runner) e.setTarget(elements);
+        if (e instanceof Runner) runners.push(e);
+        else if (e instanceof Chaser) chasers.push(e);
+        else if (e instanceof EnergyNode) energyNodes.push(e);
+    }
+
+    for (const e of elements) {
+        if (e instanceof Chaser) e.setTarget(elements, runners, energyNodes);
+        if (e instanceof Runner) e.setTarget(elements, chasers, energyNodes);
     }
 
     Game.playGame(elements, board);
@@ -288,43 +378,57 @@ window.tick = function() {
     renderer.updateLogicState(elements, board);
     if (typeof updateStats === 'function') updateStats();
     if (cntCharges) cntCharges.textContent = abilityCharges;
+    updateAbilityHud();
+    if (typeof window.__recordLogicFrame === 'function') {
+        window.__recordLogicFrame(performance.now() - tickStartMs);
+    }
 };
 
 /**
  * Handle Mouse Interaction
  */
-if (canvas) {
-    // Ability Activation
-    canvas.addEventListener('mousedown', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        const x = (e.clientX - rect.left) * scaleX;
-        const y = (e.clientY - rect.top) * scaleY;
-		
-        if (board && renderer && renderer.cellSize) {
-            const clickedRow = Math.max(0, Math.min(board.rows - 1, Math.floor(y / renderer.cellSize)));
-            const clickedCol = Math.max(0, Math.min(board.cols - 1, Math.floor(x / renderer.cellSize)));
-            if (collectClickedEnergyNode(clickedRow, clickedCol)) return;
+function onCanvasMouseDown(e) {
+    if (!canvas) return;
 
-            if (!logicRunning || paused || abilityCharges <= 0) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
 
-            abilityCharges--;
-            if (playerRole === 'photon') {
-                usePhotonAbility(clickedRow, clickedCol, x, y);
-            } else {
-                useElectronAbility(clickedRow, clickedCol, x, y);
-            }
+    if (board && renderer && renderer.cellSize) {
+        const clickedRow = Math.max(0, Math.min(board.rows - 1, Math.floor(y / renderer.cellSize)));
+        const clickedCol = Math.max(0, Math.min(board.cols - 1, Math.floor(x / renderer.cellSize)));
+        if (collectClickedEnergyNode(clickedRow, clickedCol)) return;
 
-            let j = elements.length;
-            while (j--) {
-                const ent = elements[j];
-                if ((ent instanceof Runner || ent instanceof Chaser) && ent.life <= 0) elements.splice(j, 1);
-            }
-            syncPlayableBoardState();
+        if (!logicRunning || paused) return;
+        if (abilityCharges <= 0) {
+            showChargeFeedback(clickedRow, clickedCol, 'NO CHARGE');
+            setHudStatus('No charges available', '#f97316', 900);
             return;
         }
-    });
+
+        abilityCharges--;
+        if (playerRole === 'photon') {
+            usePhotonAbility(clickedRow, clickedCol, x, y);
+        } else {
+            useElectronAbility(clickedRow, clickedCol, x, y);
+        }
+
+        setHudStatus('Ability activated', '#22c55e', 900);
+
+        let j = elements.length;
+        while (j--) {
+            const ent = elements[j];
+            if ((ent instanceof Runner || ent instanceof Chaser) && ent.life <= 0) elements.splice(j, 1);
+        }
+        syncPlayableBoardState();
+    }
+}
+
+if (canvas) {
+    // Ability activation in playable mode
+    canvas.addEventListener('mousedown', onCanvasMouseDown);
 }
 
 if (inpEnemyCap) {
@@ -332,17 +436,65 @@ if (inpEnemyCap) {
     inpEnemyCap.addEventListener('blur', normalizeEnemyCapInput);
 }
 
+function disposePlayableMode() {
+    if (playableModeDisposed) return;
+    playableModeDisposed = true;
+
+    if (btnBegin) btnBegin.removeEventListener('click', onMissionBeginClick);
+    if (canvas) canvas.removeEventListener('mousedown', onCanvasMouseDown);
+    if (inpEnemyCap) {
+        inpEnemyCap.removeEventListener('change', normalizeEnemyCapInput);
+        inpEnemyCap.removeEventListener('blur', normalizeEnemyCapInput);
+    }
+    if (hudStatusTimeoutId !== null) {
+        clearTimeout(hudStatusTimeoutId);
+        hudStatusTimeoutId = null;
+    }
+    if (abilityHud.parentNode) abilityHud.parentNode.removeChild(abilityHud);
+    if (typeof originalTick === 'function') window.tick = originalTick;
+    if (typeof originalInit === 'function') window.initGame = originalInit;
+    if (typeof originalStartGame === 'function') window.startGame = originalStartGame;
+    if (typeof originalPauseGame === 'function') window.pauseGame = originalPauseGame;
+    if (typeof originalStopGame === 'function') window.stopGame = originalStopGame;
+    if (typeof originalResetGame === 'function') window.resetGame = originalResetGame;
+}
+
+window.addEventListener('pagehide', disposePlayableMode, { once: true });
+window.addEventListener('beforeunload', disposePlayableMode, { once: true });
+
 /**
  * Injected logic to spawn the player
  */
-const originalInit = window.initGame;
 window.initGame = function() {
     if (typeof originalInit === 'function') originalInit();
 
     abilityCharges = 5;
 	enemySpawnCooldown = 0;
 	normalizeEnemyCapInput();
+    setHudStatus('Mission initialized', '#38bdf8', 700);
     syncPlayableBoardState();
+};
+
+window.startGame = function() {
+    if (typeof originalStartGame === 'function') originalStartGame();
+    updateAbilityHud();
+};
+
+window.pauseGame = function() {
+    if (typeof originalPauseGame === 'function') originalPauseGame();
+    updateAbilityHud();
+};
+
+window.stopGame = function() {
+    if (typeof originalStopGame === 'function') originalStopGame();
+    updateAbilityHud();
+};
+
+window.resetGame = function() {
+    if (typeof originalResetGame === 'function') originalResetGame();
+    abilityCharges = MAX_ABILITY_CHARGES;
+    enemySpawnCooldown = 0;
+    updateAbilityHud();
 };
 
 // Delayed init to ensure board is sized
