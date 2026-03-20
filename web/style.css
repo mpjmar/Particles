@@ -781,9 +781,10 @@ canvas {
 	}
 
 	canvas {
-		width: min(100%, 98vw);
+		display: block;
+		width: auto;
 		height: auto;
-		max-width: 100%;
+		max-width: min(100%, 98vw);
 		max-height: 50vh;
 		border-radius: 10px;
 	}
@@ -818,7 +819,8 @@ canvas {
 
 @media (max-width: 900px) and (orientation: landscape) {
 	canvas {
-		max-height: 35vh;
+		max-width: min(100%, 96vw);
+		max-height: 42vh;
 	}
 
 	.board-wrap {
