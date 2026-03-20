@@ -313,10 +313,10 @@ function updateLevelHud() {
     if (cntObjective) cntObjective.textContent = `${clampedProgress}/${cfg.targetTurns}`;
     if (cntCharges) {
         cntCharges.textContent = String(abilityCharges);
-        cntCharges.style.color = usableCharges <= 0 ? '#f97316' : '#22d3ee';
+        cntCharges.style.color = usableCharges <= 0 ? '#f97316' : '#d946ef';
         cntCharges.style.textShadow = usableCharges <= 0
             ? '0 0 10px rgba(249,115,22,0.7)'
-            : '0 0 12px rgba(34,211,238,0.8)';
+            : '0 0 12px rgba(217,70,239,0.85)';
         cntCharges.style.fontWeight = '900';
     }
     levelBadge.textContent = `LEVEL ${currentLevel + 1}/${LEVELS.length}`;
@@ -707,7 +707,13 @@ function collectEnergyNode(predicate) {
 
         if (renderer) renderer.spawnFlash(ent.col * renderer.cellSize, ent.row * renderer.cellSize, Colors.energy, 2);
         const gain = abilityCharges - prevCharges;
-        showChargeFeedback(ent.row, ent.col, gain > 0 ? `+${gain} CHARGE${gain > 1 ? 'S' : ''}` : 'MAX');
+        showChargeFeedback(
+            ent.row,
+            ent.col,
+            gain > 0
+                ? `+${gain} CHARGE${gain > 1 ? 'S' : ''} | ${abilityCharges}/${MAX_ABILITY_CHARGES}`
+                : `MAX ${abilityCharges}/${MAX_ABILITY_CHARGES}`
+        );
         EventManager.emit({ type: 'fight', row: ent.row, col: ent.col, color: Colors.energy });
         syncLevelsBoardState();
         return true;
