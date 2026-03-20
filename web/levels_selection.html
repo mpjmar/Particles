@@ -128,9 +128,59 @@
 			transition: color 0.25s;
 		}
 		.back-btn:hover { color: #fff; }
+
+		@media (max-width: 980px) {
+			body {
+				height: auto;
+				min-height: 100vh;
+				overflow-y: auto;
+				padding: 96px 12px 24px;
+			}
+
+			.selection-container {
+				width: 100%;
+				max-width: 760px;
+			}
+
+			.selection-title {
+				margin-bottom: 1.3rem;
+			}
+
+			.selection-title h1 {
+				font-size: clamp(1.2rem, 7vw, 1.9rem);
+				letter-spacing: 0.1em;
+			}
+
+			.selection-title p {
+				font-size: 0.65rem;
+				letter-spacing: 0.12em;
+			}
+
+			.particle-options {
+				flex-direction: column;
+				gap: 12px;
+				align-items: center;
+			}
+
+			.particle-card {
+				width: min(100%, 420px);
+				padding: 22px 16px;
+			}
+		}
 	</style>
 </head>
 <body>
+	<!-- Top Bar -->
+	<header class="top-bar" style="left:0; background: rgba(2, 6, 23, 0.8); backdrop-filter: blur(10px);">
+		<div class="top-bar-branding">
+			<span class="logo-icon">⚛</span>
+			<h1>PARTICLES</h1>
+		</div>
+		<div class="top-bar-info">
+			<span class="logo-sub">SELECTION PROTOCOL</span>
+		</div>
+	</header>
+
 	<div class="selection-container">
 		<div class="selection-title">
 			<h1>Levels Protocol</h1>

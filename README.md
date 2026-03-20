@@ -40,13 +40,6 @@ This repository extends that idea into a web-focused implementation with multipl
 - Per-level balancing (density, enemy life, spawn pace).
 - Local persistence for selected settings and metrics.
 
-### Screenshots
-
-![Main visual](imgs/High-energy-particles-scaled.jpg)
-![Particle field](imgs/pexels-photo-9667551.jpg)
-![Subatomic concept](imgs/Subatomic-Particles-1.webp)
-![Energy burst](imgs/blue-explosion-particle-space-000798309_prevstill.webp)
-
 ### Tech Stack
 
 - HTML5
@@ -158,13 +151,6 @@ Este repositorio traslada y amplia esa base hacia una implementacion web con var
 - Sistema Reserve Lock en modo Levels.
 - Balance por nivel (densidad, vida enemiga, ritmo de aparicion).
 - Persistencia local de ajustes y metricas.
-
-### Capturas
-
-![Visual principal](imgs/High-energy-particles-scaled.jpg)
-![Campo de particulas](imgs/pexels-photo-9667551.jpg)
-![Concepto subatomico](imgs/Subatomic-Particles-1.webp)
-![Estallido de energia](imgs/blue-explosion-particle-space-000798309_prevstill.webp)
 
 ### Tecnologias
 
