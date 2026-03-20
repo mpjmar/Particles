@@ -20,6 +20,7 @@ const gameTitle = document.getElementById('game-title');
 const btnBegin = document.getElementById('btn-begin');
 const overlayIcon = document.getElementById('overlay-icon');
 const inpEnemyCap = document.getElementById('inp-enemy-cap');
+const inpSpawnPace = document.getElementById('inp-spawn-pace');
 const boardWrap = document.querySelector('.board-wrap');
 let enemySpawnCooldown = 0;
 let playableModeDisposed = false;
@@ -166,22 +167,84 @@ function normalizeEnemyCapInput() {
     inpEnemyCap.value = String(getEnemyCap());
 }
 
+function getSpawnPace() {
+    if (!inpSpawnPace) return 'normal';
+    const value = String(inpSpawnPace.value || 'normal').toLowerCase();
+    if (value === 'slow' || value === 'aggressive') return value;
+    return 'normal';
+}
+
+function getSpawnPaceConfig() {
+    const pace = getSpawnPace();
+    if (pace === 'slow') {
+        return {
+            minAliveFactor: 0.82,
+            chanceBias: -0.08,
+            chanceScale: 0.82,
+            emergencyBurstDelta: -1,
+            cooldownBias: 1
+        };
+    }
+    if (pace === 'aggressive') {
+        return {
+            minAliveFactor: 1.25,
+            chanceBias: 0.12,
+            chanceScale: 1.32,
+            emergencyBurstDelta: 1,
+            cooldownBias: -1
+        };
+    }
+    return {
+        minAliveFactor: 1,
+        chanceBias: 0,
+        chanceScale: 1,
+        emergencyBurstDelta: 0,
+        cooldownBias: 0
+    };
+}
+
+function onSpawnPaceChange() {
+    const pace = getSpawnPace();
+    const label = pace === 'aggressive' ? 'Aggressive spawn pace' : (pace === 'slow' ? 'Slow spawn pace' : 'Normal spawn pace');
+    setHudStatus(label, '#38bdf8', 900);
+}
+
 function spawnOpposingParticles() {
     if (!board || !elements || !logicRunning || paused) return false;
     const enemyCtor = playerRole === 'photon' ? Chaser : Runner;
     const currentEnemies = elements.filter(e => e instanceof enemyCtor).length;
     const maxEnemies = getEnemyCap();
     if (currentEnemies >= maxEnemies) return false;
+    const paceCfg = getSpawnPaceConfig();
+
+    const baseAliveFactor = playerRole === 'photon' ? 0.2 : 0.16;
+    const minAliveTarget = Math.max(6, Math.floor(maxEnemies * baseAliveFactor * paceCfg.minAliveFactor));
+    const emergencyMode = currentEnemies <= Math.max(2, Math.floor(minAliveTarget * 0.35));
+
     if (enemySpawnCooldown > 0) {
         enemySpawnCooldown--;
-        return false;
+        if (!emergencyMode) return false;
     }
 
     const deficit = maxEnemies - currentEnemies;
-    const spawnChance = Math.min(0.22, 0.08 + (deficit / 500));
-    if (Math.random() > spawnChance) return false;
+    if (!emergencyMode) {
+        const lowPopulationBoost = currentEnemies < minAliveTarget ? 0.18 : 0;
+        const baseChance = 0.12 + (deficit / 360) + lowPopulationBoost;
+        const spawnChance = Math.min(0.75, Math.max(0.04, baseChance * paceCfg.chanceScale + paceCfg.chanceBias));
+        if (Math.random() > spawnChance) return false;
+    }
 
-    const toSpawn = (deficit > 50 && Math.random() < 0.2) ? 2 : 1;
+    let toSpawn = 1;
+    if (emergencyMode) {
+        const emergencyGap = minAliveTarget - currentEnemies;
+        toSpawn = Math.max(2, Math.min(6, emergencyGap + paceCfg.emergencyBurstDelta));
+    } else if (currentEnemies < minAliveTarget) {
+        toSpawn = Math.min(4, Math.max(1, Math.ceil((minAliveTarget - currentEnemies) / 4)));
+    } else if (deficit > 50 && Math.random() < 0.25) {
+        toSpawn = 2;
+    }
+
+    toSpawn = Math.min(toSpawn, maxEnemies - currentEnemies);
     let spawned = 0;
 
     for (let n = 0; n < toSpawn; n++) {
@@ -207,7 +270,10 @@ function spawnOpposingParticles() {
     }
 
     if (spawned > 0) {
-        enemySpawnCooldown = generateRandom(1, 4);
+        enemySpawnCooldown = emergencyMode
+            ? generateRandom(0, 2)
+            : (currentEnemies < minAliveTarget ? generateRandom(1, 3) : generateRandom(1, 4));
+        enemySpawnCooldown = Math.max(0, enemySpawnCooldown + paceCfg.cooldownBias);
         syncPlayableBoardState();
         return true;
     }
@@ -436,6 +502,10 @@ if (inpEnemyCap) {
     inpEnemyCap.addEventListener('blur', normalizeEnemyCapInput);
 }
 
+if (inpSpawnPace) {
+    inpSpawnPace.addEventListener('change', onSpawnPaceChange);
+}
+
 function disposePlayableMode() {
     if (playableModeDisposed) return;
     playableModeDisposed = true;
@@ -446,6 +516,7 @@ function disposePlayableMode() {
         inpEnemyCap.removeEventListener('change', normalizeEnemyCapInput);
         inpEnemyCap.removeEventListener('blur', normalizeEnemyCapInput);
     }
+    if (inpSpawnPace) inpSpawnPace.removeEventListener('change', onSpawnPaceChange);
     if (hudStatusTimeoutId !== null) {
         clearTimeout(hudStatusTimeoutId);
         hudStatusTimeoutId = null;
@@ -471,6 +542,7 @@ window.initGame = function() {
     abilityCharges = 5;
 	enemySpawnCooldown = 0;
 	normalizeEnemyCapInput();
+    if (inpSpawnPace && !inpSpawnPace.value) inpSpawnPace.value = 'normal';
     setHudStatus('Mission initialized', '#38bdf8', 700);
     syncPlayableBoardState();
 };

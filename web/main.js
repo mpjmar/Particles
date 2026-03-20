@@ -1703,8 +1703,8 @@ function toggleRenderProfile() {
 }
 
 function getRows() {
-	const rows = inpRows ? parseInt(inpRows.value, 10) : 30;
-	if (!Number.isFinite(rows)) return 30;
+	const rows = inpRows ? parseInt(inpRows.value, 10) : 40;
+	if (!Number.isFinite(rows)) return 40;
 	return Math.max(10, Math.min(100, rows));
 }
 function getCols() {
