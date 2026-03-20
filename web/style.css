@@ -818,20 +818,34 @@ canvas {
 }
 
 @media (max-width: 900px) and (orientation: landscape) {
+	html,
+	body {
+		height: 100vh;
+		min-height: 100vh;
+		overflow: hidden;
+	}
+
+	body {
+		display: block;
+	}
+
+	.sidebar,
+	.top-bar {
+		display: none;
+	}
+
 	canvas {
-		max-width: min(100%, 96vw);
-		max-height: 42vh;
+		max-width: 100vw;
+		max-height: 100vh;
+		border-radius: 0;
 	}
 
 	.board-wrap {
-		min-height: auto;
-		max-height: 50vh;
-		padding: 6px 8px 8px;
-	}
-
-	.top-bar {
-		margin-bottom: 4px;
-		padding: 4px 10px;
+		padding: 0;
+		width: 100vw;
+		min-height: 100vh;
+		max-height: 100vh;
+		justify-content: center;
 	}
 }
 
