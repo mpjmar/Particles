@@ -55,29 +55,43 @@ This repository extends that idea into a web-focused implementation with multipl
 
 ### How To Play (Quick Start) 🕹️
 
+
 1. Open the mode you want from the main menu.
 2. Press `BEGIN`/`START` to launch the match.
 3. Watch your faction counters and `Ability Charges`.
 4. Click on Energy Nodes to recover charges.
 5. Use your ability only when it creates value (avoid wasting charges).
 
+#### Pulse Clash / Core Ascension
+
+
+**ENGLISH:**
+- If you play as Photon: Click near or on an Electron to trigger an explosion that destroys it.
+- If you play as Electron: Click near or on a Photon to generate a cluster of new Electrons to hunt them down.
+- You can recharge your shot reserve by clicking on Energy Nodes that appear temporarily during the game.
+
+**ESPAÑOL:**
+- Si juegas como Photon: Pulsa cerca o sobre un electrón para provocar una explosión que lo destruya.
+- Si juegas como Electron: Pulsa cerca o sobre un fotón para generar un clúster de nuevos electrones para acabar con ellos.
+- Puedes recargar tu reserva de disparos pulsando sobre los Nodos de Energía que aparecen temporalmente durante la partida.
+
 Pulse Clash:
 1. Pick side: Photon or Electron.
-2. Click board to use ability:
+2. Click board to use ability.
 3. Photon: area shockwave (clear nearby enemies).
 4. Electron: clone burst (create pressure with extra allies).
 5. Win by eliminating the opposing faction.
 
 Core Ascension:
 1. Complete each level objective to advance.
-2. Click ability depends on your side:
-3. Photon click = area explosion that removes nearby Electrons.
-4. Electron click = spawn Electron clusters to pressure Photons.
-5. Max ability charges = 5 in both sides.
-6. Recover charges by clicking Energy Nodes.
+2. The ability you use depends on your side.
+3. If you play as Photon, clicking near or on an Electron will trigger an area explosion that removes nearby Electrons.
+4. If you play as Electron, clicking near or on a Photon will summon more Electrons that will chase the Photons. Try to use your charges when there are many Photons together or when you are in danger, so your ability is most effective.
+5. You can have a maximum of 5 ability charges on both sides.
+6. Recover your charges by clicking on Energy Nodes.
 7. Keep an eye on `Reserve Lock` to avoid running out of emergency charges.
-8. Adjust Reserve Lock with HUD `[-]/[+]` or arrow keys.
-9. Spend charges when objective pressure is high.
+8. Adjust Reserve Lock with the HUD `[-]/[+]` or arrow keys.
+9. Spend your charges when there are many enemies together or when the situation is most dangerous, so you get the most value from your abilities.
 10. Survive transitions and scale into the next stage.
 
 Simulation:
