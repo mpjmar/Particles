@@ -160,7 +160,7 @@ Active development focused on UX clarity, high-density stability, and faction ba
 
 ### Resumen 🔭
 
-PARTICLES es un simulador/juego de estrategia en tiempo real basado en sistemas de particulas, con interfaz web y campana por niveles.
+PARTICLES es un simulador/juego de estrategia en tiempo real basado en sistemas de particulas, con interfaz web y campaña por niveles.
 
 <p align="center">
 	<img src="imgs/game.png" alt="Captura de juego" width="88%" />
@@ -185,7 +185,7 @@ Este repositorio traslada y amplia esa base hacia una implementacion web con var
 
 - <img src="imgs/atom-logo.svg" alt="atomo" width="20" /> Simulation: modo autonomo para observar comportamiento emergente.
 - ⚡ Pulse Clash: modo jugador contra sistema, eligiendo faccion y activando habilidades.
-- 🛸 Core Ascension: campana por fases con objetivos de supervivencia, transiciones y dificultad progresiva.
+- 🛸 Core Ascension: campaña por fases con objetivos de supervivencia, transiciones y dificultad progresiva.
 
 ### Matriz de Modos 🧭
 
@@ -193,7 +193,7 @@ Este repositorio traslada y amplia esa base hacia una implementacion web con var
 |---|---|---|---|
 | <img src="imgs/atom-logo.svg" alt="atomo" width="20" /> Simulation | Autonomo | Ninguna | Observacion visual y ajustes |
 | ⚡ Pulse Clash | Jugador vs Sistema | Tap/Click + habilidad | Partidas tacticas rapidas |
-| 🛸 Core Ascension | Campana progresiva | Tap/Click + Reserve Lock | Progreso por fases |
+| 🛸 Core Ascension | Campaña progresiva | Tap/Click + Reserve Lock | Progreso por fases |
 
 ### Vista Previa 🖼️
 
