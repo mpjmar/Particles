@@ -2012,8 +2012,8 @@ window.addEventListener("keydown", (e) => {
 loadCorePanelSettings();
 attachCoreSettingsPersistence();
 
-// Initialization - Don't auto-init if in game mode
-if (!window.location.href.includes('game.html')) {
+// Initialization - Don't auto-init if a custom mode script handles bootstrapping
+if (!window.location.href.includes('game.html') && !window.location.href.includes('levels.html')) {
 	applyBoardSizeInputs();
 	if (inpQuality) inpQuality.value = getFxQuality();
     initGame();

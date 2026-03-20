@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Choose Your Side – Levels Mode</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="style.css" />
+	<style>
+		body {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: 100vh;
+			margin: 0;
+			overflow: hidden;
+			background: radial-gradient(circle at center, #082f49 0%, #020617 100%);
+		}
+
+		.selection-container {
+			text-align: center;
+			z-index: 10;
+		}
+
+		.selection-title {
+			margin-bottom: 3rem;
+		}
+
+		.selection-title h1 {
+			font-family: 'Orbitron', sans-serif;
+			font-size: 2.4rem;
+			color: #fff;
+			letter-spacing: 0.16em;
+			text-transform: uppercase;
+		}
+
+		.selection-title p {
+			color: #7dd3fc;
+			font-family: 'Orbitron', sans-serif;
+			font-size: 0.78rem;
+			letter-spacing: 0.18em;
+		}
+
+		.particle-options {
+			display: flex;
+			gap: 36px;
+			justify-content: center;
+		}
+
+		.particle-card {
+			width: 320px;
+			padding: 36px 20px;
+			background: rgba(15, 23, 42, 0.68);
+			border: 2px solid rgba(255, 255, 255, 0.12);
+			border-radius: 24px;
+			cursor: pointer;
+			transition: all 0.35s ease;
+			text-decoration: none;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+
+		.particle-card.photon:hover {
+			border-color: #22d3ee;
+			background: rgba(34, 211, 238, 0.08);
+			box-shadow: 0 0 58px rgba(34, 211, 238, 0.28);
+			transform: translateY(-12px);
+		}
+
+		.particle-card.electron:hover {
+			border-color: #fb923c;
+			background: rgba(251, 146, 60, 0.08);
+			box-shadow: 0 0 58px rgba(251, 146, 60, 0.24);
+			transform: translateY(-12px);
+		}
+
+		.particle-preview {
+			width: 102px;
+			height: 102px;
+			border-radius: 50%;
+			margin-bottom: 22px;
+		}
+
+		.photon .particle-preview {
+			background: radial-gradient(circle, #fff 0%, #22d3ee 60%, transparent 100%);
+			box-shadow: 0 0 30px #22d3ee;
+		}
+
+		.electron .particle-preview {
+			background: radial-gradient(circle, #fff 0%, #fb923c 60%, transparent 100%);
+			box-shadow: 0 0 30px #fb923c;
+		}
+
+		.particle-card h2 {
+			font-family: 'Orbitron', sans-serif;
+			font-size: 1.8rem;
+			color: #fff;
+			margin: 8px 0;
+		}
+
+		.particle-card p {
+			color: #94a3b8;
+			font-size: 0.95rem;
+			margin-bottom: 16px;
+		}
+
+		.ability-badge {
+			padding: 8px 14px;
+			border-radius: 100px;
+			font-size: 0.72rem;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.09em;
+			background: rgba(255,255,255,0.05);
+			color: #fff;
+			border: 1px solid rgba(255,255,255,0.15);
+		}
+
+		.back-btn {
+			margin-top: 2.6rem;
+			display: inline-block;
+			color: #64748b;
+			text-decoration: none;
+			font-family: 'Orbitron';
+			font-size: 0.82rem;
+			transition: color 0.25s;
+		}
+		.back-btn:hover { color: #fff; }
+	</style>
+</head>
+<body>
+	<div class="selection-container">
+		<div class="selection-title">
+			<h1>Levels Protocol</h1>
+			<p>SELECT YOUR PILOT CORE</p>
+		</div>
+
+		<div class="particle-options">
+			<a href="levels.html?role=photon" class="particle-card photon">
+				<div class="particle-preview"></div>
+				<h2>PHOTON</h2>
+				<p>High control, area denial and survival scaling.</p>
+				<span class="ability-badge">Levels Campaign</span>
+			</a>
+
+			<a href="levels.html?role=electron" class="particle-card electron">
+				<div class="particle-preview"></div>
+				<h2>ELECTRON</h2>
+				<p>Swarm pressure with tactical clone bursts.</p>
+				<span class="ability-badge">Levels Campaign</span>
+			</a>
+		</div>
+
+		<a href="index.html" class="back-btn">← BACK TO MODES</a>
+	</div>
+</body>
+</html>

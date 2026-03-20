@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>PARTICLES – Levels Mode</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="style.css" />
+	<style>
+		body {
+			display: flex;
+			height: 100vh;
+			overflow: hidden;
+			background: var(--bg);
+		}
+	</style>
+</head>
+<body>
+	<aside class="sidebar">
+		<div class="logo">
+			<span class="logo-icon">🧭</span>
+			<h1 id="game-title">LEVELS</h1>
+			<p class="logo-sub">Campaign Session</p>
+		</div>
+
+		<section class="panel" id="scoreboard">
+			<h2 class="panel-title">Campaign Stats</h2>
+			<div class="score-row runner">
+				<span class="score-dot"></span>
+				<span class="score-label">Photons</span>
+				<span class="score-count" id="cnt-runners">0</span>
+			</div>
+			<div class="score-row chaser">
+				<span class="score-dot"></span>
+				<span class="score-label">Electrons</span>
+				<span class="score-count" id="cnt-chasers">0</span>
+			</div>
+			<div class="score-row turn-row">
+				<span class="score-label">Ability Charges</span>
+				<span class="score-count neutral" id="cnt-charges">5</span>
+			</div>
+			<div class="score-row turn-row">
+				<span class="score-label">Turn</span>
+				<span class="score-count neutral" id="cnt-turn">0</span>
+			</div>
+			<div class="score-row turn-row">
+				<span class="score-label">Level</span>
+				<span class="score-count neutral" id="cnt-level">1</span>
+			</div>
+			<div class="score-row turn-row">
+				<span class="score-label">Objective</span>
+				<span class="score-count neutral" id="cnt-objective">0/0</span>
+			</div>
+		</section>
+
+		<section class="panel">
+			<h2 class="panel-title">Campaign Settings</h2>
+			<div class="control-grid">
+				<div class="control-row full-width">
+					<label for="inp-speed">Sim. Speed</label>
+					<div class="control-input-wrap">
+						<input type="number" id="inp-speed" min="1" max="20" value="2" />
+						<span class="val-badge">x</span>
+					</div>
+				</div>
+				<div class="control-row full-width">
+					<label for="inp-quality">Visual FX</label>
+					<div class="control-input-wrap">
+						<select id="inp-quality">
+							<option value="high" selected>High</option>
+							<option value="low">Performance</option>
+						</select>
+					</div>
+				</div>
+				<div class="control-row full-width">
+					<label>Board</label>
+					<div class="control-input-wrap">
+						<span class="val-badge" style="width:100%; text-align:center;">40 x 60 (locked by campaign)</span>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="panel">
+			<h2 class="panel-title">Level Density</h2>
+			<p style="color: var(--text-dim); font-size: 0.82rem; line-height: 1.4; margin: 0;">Particle density, enemy cap and support nodes are predefined by each level stage.</p>
+		</section>
+
+		<div style="display:none;">
+			<input type="number" id="inp-rows" value="40" />
+			<input type="number" id="inp-cols" value="60" />
+			<input type="number" id="inp-run" value="20" />
+			<input type="number" id="inp-cha" value="20" />
+			<input type="number" id="inp-obs" value="50" />
+			<input type="number" id="inp-hea" value="5" />
+			<input type="number" id="inp-spe" value="5" />
+		</div>
+
+		<div class="controls">
+			<button id="btn-start" class="btn-primary">START CAMPAIGN</button>
+			<button id="btn-reset">NEW RUN</button>
+			<button id="btn-pause">ABORT</button>
+			<a href="index.html" style="text-decoration:none;"><button id="btn-home" style="width:100%">EXIT TO MENU</button></a>
+		</div>
+	</aside>
+
+	<main class="board-wrap">
+		<header class="top-bar">
+			<div class="top-bar-branding">
+				<span class="logo-icon">🧭</span>
+				<h1 id="top-title">PARTICLES LEVELS</h1>
+			</div>
+			<div class="top-bar-info">
+				<span class="logo-sub" id="top-mode">CAMPAIGN MODE</span>
+			</div>
+		</header>
+
+		<canvas id="board-canvas"></canvas>
+
+		<div id="overlay" class="overlay">
+			<div class="overlay-card">
+				<div class="overlay-icon" id="overlay-icon">🧭</div>
+				<p class="overlay-result" id="overlay-msg">READY FOR LEVEL 1?</p>
+				<p id="overlay-sub" style="color: var(--text-dim); margin-bottom: 20px; font-size: 0.8rem;">Survive each stage objective to unlock the next level.</p>
+				<button id="btn-begin" class="btn-primary">BEGIN CAMPAIGN</button>
+				<button id="btn-overlay-reset" style="width:100%; margin-top:10px;">PLAY AGAIN</button>
+				<a href="levels_selection.html" style="text-decoration:none; display:block; margin-top:15px;">
+					<button style="width:100%; padding:10px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);">CHANGE SIDE</button>
+				</a>
+			</div>
+		</div>
+	</main>
+
+	<script src="main.js"></script>
+	<script src="levels.js?v=20260320c"></script>
+</body>
+</html>
