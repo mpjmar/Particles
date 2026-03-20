@@ -52,9 +52,15 @@ This repository extends that idea into a web-focused implementation with multipl
 ### Visual Preview 🖼️
 
 <p align="center">
-	<img src="imgs/preview-simulation.svg" alt="Particles preview simulation" width="31%" />
-	<img src="imgs/preview-pulse-clash.svg" alt="Particles preview pulse clash" width="31%" />
-	<img src="imgs/preview-core-ascension.svg" alt="Particles preview core ascension" width="31%" />
+	<a href="https://mpjmar.github.io/Particles/simulation.html">
+		<img src="imgs/card-simulation.svg" alt="Simulation mode card" width="31%" />
+	</a>
+	<a href="https://mpjmar.github.io/Particles/game_selection.html">
+		<img src="imgs/card-pulse-clash.svg" alt="Pulse Clash mode card" width="31%" />
+	</a>
+	<a href="https://mpjmar.github.io/Particles/levels_selection.html">
+		<img src="imgs/card-core-ascension.svg" alt="Core Ascension mode card" width="31%" />
+	</a>
 </p>
 
 ### Highlights ✨
@@ -184,9 +190,15 @@ Este repositorio traslada y amplia esa base hacia una implementacion web con var
 ### Vista Previa 🖼️
 
 <p align="center">
-	<img src="imgs/preview-simulation.svg" alt="Vista previa simulacion" width="31%" />
-	<img src="imgs/preview-pulse-clash.svg" alt="Vista previa pulse clash" width="31%" />
-	<img src="imgs/preview-core-ascension.svg" alt="Vista previa core ascension" width="31%" />
+	<a href="https://mpjmar.github.io/Particles/simulation.html">
+		<img src="imgs/card-simulation.svg" alt="Tarjeta modo simulacion" width="31%" />
+	</a>
+	<a href="https://mpjmar.github.io/Particles/game_selection.html">
+		<img src="imgs/card-pulse-clash.svg" alt="Tarjeta modo pulse clash" width="31%" />
+	</a>
+	<a href="https://mpjmar.github.io/Particles/levels_selection.html">
+		<img src="imgs/card-core-ascension.svg" alt="Tarjeta modo core ascension" width="31%" />
+	</a>
 </p>
 
 ### Caracteristicas ✨
