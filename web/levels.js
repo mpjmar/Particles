@@ -13,48 +13,48 @@ const MAX_ABILITY_CHARGES = 5;
 const LEVELS = [
     {
         name: 'Boot Sector',
-        targetTurns: 28,
-        enemyCap: 45,
-        enemyLifeMin: 10,
-        enemyLifeMax: 18,
+        targetTurns: 80,
+        enemyCap: 42,
+        enemyLifeMin: 9,
+        enemyLifeMax: 16,
         pace: 'slow',
-        counts: { runners: 18, chasers: 18, obstacles: 36, healers: 6, speeders: 5 }
+        counts: { runners: 20, chasers: 16, obstacles: 34, healers: 7, speeders: 4 }
     },
     {
         name: 'Ion Drift',
-        targetTurns: 34,
-        enemyCap: 60,
-        enemyLifeMin: 12,
-        enemyLifeMax: 22,
-        pace: 'normal',
-        counts: { runners: 20, chasers: 24, obstacles: 44, healers: 5, speeders: 6 }
+        targetTurns: 95,
+        enemyCap: 54,
+        enemyLifeMin: 10,
+        enemyLifeMax: 19,
+        pace: 'slow',
+        counts: { runners: 22, chasers: 20, obstacles: 40, healers: 6, speeders: 5 }
     },
     {
         name: 'Flux Corridor',
-        targetTurns: 40,
-        enemyCap: 78,
-        enemyLifeMin: 13,
-        enemyLifeMax: 24,
+        targetTurns: 110,
+        enemyCap: 70,
+        enemyLifeMin: 12,
+        enemyLifeMax: 22,
         pace: 'normal',
-        counts: { runners: 22, chasers: 30, obstacles: 52, healers: 5, speeders: 7 }
+        counts: { runners: 24, chasers: 26, obstacles: 48, healers: 5, speeders: 6 }
     },
     {
         name: 'Pressure Node',
-        targetTurns: 48,
-        enemyCap: 96,
-        enemyLifeMin: 14,
-        enemyLifeMax: 26,
+        targetTurns: 130,
+        enemyCap: 92,
+        enemyLifeMin: 13,
+        enemyLifeMax: 25,
         pace: 'aggressive',
-        counts: { runners: 24, chasers: 36, obstacles: 60, healers: 4, speeders: 8 }
+        counts: { runners: 26, chasers: 34, obstacles: 58, healers: 4, speeders: 8 }
     },
     {
         name: 'Omega Core',
-        targetTurns: 56,
+        targetTurns: 155,
         enemyCap: 120,
         enemyLifeMin: 15,
         enemyLifeMax: 30,
         pace: 'aggressive',
-        counts: { runners: 26, chasers: 44, obstacles: 70, healers: 4, speeders: 10 }
+        counts: { runners: 28, chasers: 44, obstacles: 70, healers: 4, speeders: 10 }
     }
 ];
 
@@ -72,11 +72,11 @@ const cntObjective = document.getElementById('cnt-objective');
 const gameTitle = document.getElementById('game-title');
 let btnBegin = document.getElementById('btn-begin');
 let btnOverlayReset = document.getElementById('btn-overlay-reset');
-let btnStartControl = document.getElementById('btn-start');
 let btnPauseControl = document.getElementById('btn-pause');
 let btnResetControl = document.getElementById('btn-reset');
 const overlayIcon = document.getElementById('overlay-icon');
 const boardWrap = document.querySelector('.board-wrap');
+const sidebar = document.querySelector('.sidebar');
 const inpRows = document.getElementById('inp-rows');
 const inpCols = document.getElementById('inp-cols');
 const inpRun = document.getElementById('inp-run');
@@ -95,6 +95,7 @@ let currentLevel = 0;
 let levelTurnStart = 0;
 let pendingLevelAdvance = false;
 let pendingLevelIndex = -1;
+let reserveCharges = 1;
 const canvasInputEvent = 'click';
 
 function setInputValue(input, value) {
@@ -122,21 +123,22 @@ if (topBarInfo) topBarInfo.appendChild(levelBadge);
 
 const abilityHud = document.createElement('div');
 abilityHud.setAttribute('id', 'levels-ability-hud');
-abilityHud.style.position = 'absolute';
-abilityHud.style.right = '16px';
-abilityHud.style.bottom = '16px';
-abilityHud.style.padding = '10px 14px';
-abilityHud.style.borderRadius = '14px';
-abilityHud.style.background = 'rgba(2, 6, 23, 0.72)';
-abilityHud.style.border = '1px solid rgba(148, 163, 184, 0.35)';
+abilityHud.style.position = 'static';
+abilityHud.style.padding = '12px 16px';
+abilityHud.style.borderRadius = '16px';
+abilityHud.style.background = 'linear-gradient(180deg, rgba(2, 6, 23, 0.88), rgba(15, 23, 42, 0.84))';
+abilityHud.style.border = '1px solid rgba(56, 189, 248, 0.55)';
+abilityHud.style.boxShadow = '0 10px 28px rgba(2, 132, 199, 0.25), inset 0 0 0 1px rgba(125, 211, 252, 0.2)';
 abilityHud.style.backdropFilter = 'blur(6px)';
 abilityHud.style.fontFamily = 'Orbitron, sans-serif';
 abilityHud.style.color = '#e2e8f0';
 abilityHud.style.letterSpacing = '0.06em';
 abilityHud.style.fontSize = '0.74rem';
-abilityHud.style.zIndex = '40';
-abilityHud.style.minWidth = '180px';
-abilityHud.style.pointerEvents = 'none';
+abilityHud.style.zIndex = '5';
+abilityHud.style.width = '100%';
+abilityHud.style.maxWidth = '100%';
+abilityHud.style.marginTop = '8px';
+abilityHud.style.pointerEvents = 'auto';
 
 const abilityHudTitle = document.createElement('div');
 abilityHudTitle.style.fontWeight = '700';
@@ -144,18 +146,75 @@ abilityHudTitle.style.marginBottom = '4px';
 
 const abilityHudCharges = document.createElement('div');
 abilityHudCharges.style.fontWeight = '900';
-abilityHudCharges.style.fontSize = '0.92rem';
+abilityHudCharges.style.fontSize = '1.1rem';
+abilityHudCharges.style.marginBottom = '6px';
+
+const abilityHudReserve = document.createElement('div');
+abilityHudReserve.style.display = 'flex';
+abilityHudReserve.style.alignItems = 'center';
+abilityHudReserve.style.justifyContent = 'space-between';
+abilityHudReserve.style.gap = '8px';
+abilityHudReserve.style.marginTop = '2px';
+abilityHudReserve.style.marginBottom = '4px';
+
+const reserveLabel = document.createElement('div');
+reserveLabel.style.color = '#93c5fd';
+reserveLabel.style.fontSize = '0.66rem';
+reserveLabel.textContent = 'RESERVE LOCK';
+
+const reserveControls = document.createElement('div');
+reserveControls.style.display = 'flex';
+reserveControls.style.alignItems = 'center';
+reserveControls.style.gap = '6px';
+
+const reserveDownBtn = document.createElement('button');
+reserveDownBtn.type = 'button';
+reserveDownBtn.textContent = '-';
+reserveDownBtn.style.width = '22px';
+reserveDownBtn.style.height = '22px';
+reserveDownBtn.style.borderRadius = '6px';
+reserveDownBtn.style.border = '1px solid rgba(125, 211, 252, 0.5)';
+reserveDownBtn.style.background = 'rgba(15, 23, 42, 0.8)';
+reserveDownBtn.style.color = '#e2e8f0';
+reserveDownBtn.style.cursor = 'pointer';
+
+const reserveValue = document.createElement('div');
+reserveValue.style.minWidth = '24px';
+reserveValue.style.textAlign = 'center';
+reserveValue.style.fontSize = '0.8rem';
+reserveValue.style.fontWeight = '800';
+reserveValue.style.color = '#7dd3fc';
+
+const reserveUpBtn = document.createElement('button');
+reserveUpBtn.type = 'button';
+reserveUpBtn.textContent = '+';
+reserveUpBtn.style.width = '22px';
+reserveUpBtn.style.height = '22px';
+reserveUpBtn.style.borderRadius = '6px';
+reserveUpBtn.style.border = '1px solid rgba(125, 211, 252, 0.5)';
+reserveUpBtn.style.background = 'rgba(15, 23, 42, 0.8)';
+reserveUpBtn.style.color = '#e2e8f0';
+reserveUpBtn.style.cursor = 'pointer';
+
+reserveControls.appendChild(reserveDownBtn);
+reserveControls.appendChild(reserveValue);
+reserveControls.appendChild(reserveUpBtn);
+abilityHudReserve.appendChild(reserveLabel);
+abilityHudReserve.appendChild(reserveControls);
 
 const abilityHudStatus = document.createElement('div');
 abilityHudStatus.style.marginTop = '4px';
 abilityHudStatus.style.color = '#94a3b8';
 abilityHudStatus.style.minHeight = '1.1em';
+abilityHudStatus.style.fontSize = '0.66rem';
 
 abilityHud.appendChild(abilityHudTitle);
 abilityHud.appendChild(abilityHudCharges);
+abilityHud.appendChild(abilityHudReserve);
 abilityHud.appendChild(abilityHudStatus);
 
-if (boardWrap) {
+if (sidebar) sidebar.appendChild(abilityHud);
+else if (boardWrap) {
     if (getComputedStyle(boardWrap).position === 'static') boardWrap.style.position = 'relative';
     boardWrap.appendChild(abilityHud);
 }
@@ -188,20 +247,6 @@ function stripElementListenersByClone(el) {
     return cloned;
 }
 
-function onStartCampaignClick(e) {
-    if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    if (!board && typeof window.initGame === 'function') window.initGame();
-    if (paused && typeof window.pauseGame === 'function') window.pauseGame();
-    if (typeof window.startGame === 'function') window.startGame();
-    pendingLevelAdvance = false;
-    pendingLevelIndex = -1;
-    if (overlay) overlay.classList.add('hidden');
-}
-
 function onPauseCampaignClick(e) {
     if (e) {
         e.preventDefault();
@@ -221,25 +266,77 @@ function setHudStatus(text, color = '#94a3b8', ttl = 1200) {
     }, ttl);
 }
 
+function clampReserveCharges() {
+    reserveCharges = Math.max(0, Math.min(MAX_ABILITY_CHARGES - 1, reserveCharges));
+}
+
+function setReserveCharges(next) {
+    reserveCharges = next;
+    clampReserveCharges();
+    updateLevelHud();
+}
+
+function onReserveDownClick(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    setReserveCharges(reserveCharges - 1);
+}
+
+function onReserveUpClick(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    setReserveCharges(reserveCharges + 1);
+}
+
+function onReserveHotkey(e) {
+    if (!e || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.key === '[') {
+        e.preventDefault();
+        setReserveCharges(reserveCharges - 1);
+    } else if (e.key === ']') {
+        e.preventDefault();
+        setReserveCharges(reserveCharges + 1);
+    }
+}
+
 function updateLevelHud() {
     const cfg = getLevelConfig();
     const progress = Math.max(0, turn - levelTurnStart);
     const clampedProgress = Math.min(cfg.targetTurns, progress);
+    const usableCharges = Math.max(0, abilityCharges - reserveCharges);
 
     if (cntLevel) cntLevel.textContent = String(currentLevel + 1);
     if (cntObjective) cntObjective.textContent = `${clampedProgress}/${cfg.targetTurns}`;
+    if (cntCharges) {
+        cntCharges.textContent = String(abilityCharges);
+        cntCharges.style.color = usableCharges <= 0 ? '#f97316' : '#22d3ee';
+        cntCharges.style.textShadow = usableCharges <= 0
+            ? '0 0 10px rgba(249,115,22,0.7)'
+            : '0 0 12px rgba(34,211,238,0.8)';
+        cntCharges.style.fontWeight = '900';
+    }
     levelBadge.textContent = `LEVEL ${currentLevel + 1}/${LEVELS.length}`;
 
     const roleLabel = playerRole === 'photon' ? 'Shockwave' : 'Clone Swarm';
     abilityHudTitle.textContent = `${roleLabel}`;
-    abilityHudCharges.textContent = `Charges ${abilityCharges}/${MAX_ABILITY_CHARGES}`;
+    abilityHudCharges.textContent = `Charges ${abilityCharges}/${MAX_ABILITY_CHARGES}  |  Spendable ${usableCharges}`;
+    abilityHudCharges.style.color = usableCharges <= 0 ? '#fb923c' : '#e2e8f0';
+    reserveValue.textContent = String(reserveCharges);
 
     if (!logicRunning) {
         abilityHudStatus.textContent = `Level ${currentLevel + 1} ready`;
     } else if (paused) {
         abilityHudStatus.textContent = 'Simulation paused';
+    } else if (abilityCharges <= reserveCharges) {
+        abilityHudStatus.textContent = `Reserve lock active (${reserveCharges})`;
     } else if (abilityCharges <= 0) {
         abilityHudStatus.textContent = 'Recharge from energy nodes';
+    } else {
+        abilityHudStatus.textContent = 'Tap nodes to refill charges';
     }
 }
 
@@ -284,15 +381,16 @@ if (btnOverlayReset) btnOverlayReset.addEventListener('click', restartCampaignFr
 
 btnBegin = stripElementListenersByClone(btnBegin);
 btnOverlayReset = stripElementListenersByClone(btnOverlayReset);
-btnStartControl = stripElementListenersByClone(btnStartControl);
 btnPauseControl = stripElementListenersByClone(btnPauseControl);
 btnResetControl = stripElementListenersByClone(btnResetControl);
 
 if (btnBegin) btnBegin.addEventListener('click', restartCampaignFromOverlay);
 if (btnOverlayReset) btnOverlayReset.addEventListener('click', restartCampaignFromOverlay);
-if (btnStartControl) btnStartControl.addEventListener('click', onStartCampaignClick);
 if (btnPauseControl) btnPauseControl.addEventListener('click', onPauseCampaignClick);
 if (btnResetControl) btnResetControl.addEventListener('click', restartCampaignFromOverlay);
+reserveDownBtn.addEventListener('click', onReserveDownClick);
+reserveUpBtn.addEventListener('click', onReserveUpClick);
+window.addEventListener('keydown', onReserveHotkey);
 
 function showChargeFeedback(row, col, text = '+1 CHARGE') {
     if (!canvas || !renderer || !board) return;
@@ -361,25 +459,128 @@ function spawnEntitiesIntoBoard(Ctor, amount, factory) {
     return created;
 }
 
+function clearObstaclesFromBoard() {
+    if (!Array.isArray(elements)) return;
+    let i = elements.length;
+    while (i--) {
+        if (elements[i] instanceof Obstacle) elements.splice(i, 1);
+    }
+}
+
+function addPatternPoint(points, used, row, col) {
+    if (!board) return;
+    if (row < 0 || col < 0 || row >= board.rows || col >= board.cols) return;
+    const key = `${row},${col}`;
+    if (used.has(key)) return;
+    used.add(key);
+    points.push({ row, col });
+}
+
+function buildObstaclePattern(levelIndex) {
+    if (!board) return [];
+    const points = [];
+    const used = new Set();
+    const centerRow = Math.floor(board.rows / 2);
+    const centerCol = Math.floor(board.cols / 2);
+
+    if (levelIndex === 0) {
+        // Level 1: central ring.
+        const top = Math.max(2, centerRow - 6);
+        const bottom = Math.min(board.rows - 3, centerRow + 6);
+        const left = Math.max(2, centerCol - 10);
+        const right = Math.min(board.cols - 3, centerCol + 10);
+        for (let c = left; c <= right; c++) {
+            addPatternPoint(points, used, top, c);
+            addPatternPoint(points, used, bottom, c);
+        }
+        for (let r = top + 1; r < bottom; r++) {
+            addPatternPoint(points, used, r, left);
+            addPatternPoint(points, used, r, right);
+        }
+    } else if (levelIndex === 1) {
+        // Level 2: dual diagonals.
+        const usable = Math.min(board.rows - 4, board.cols - 8);
+        for (let i = 0; i < usable; i += 2) {
+            addPatternPoint(points, used, 2 + i, 4 + i);
+            addPatternPoint(points, used, 2 + i, board.cols - 5 - i);
+        }
+    } else if (levelIndex === 2) {
+        // Level 3: corridor with side gates.
+        const leftWall = Math.max(6, centerCol - 8);
+        const rightWall = Math.min(board.cols - 7, centerCol + 8);
+        for (let r = 2; r < board.rows - 2; r++) {
+            if (r % 9 === 0 || r % 9 === 1) continue;
+            addPatternPoint(points, used, r, leftWall);
+            addPatternPoint(points, used, r, rightWall);
+        }
+    } else if (levelIndex === 3) {
+        // Level 4: zigzag bands.
+        for (let r = 5; r < board.rows - 5; r += 6) {
+            for (let c = 3; c < board.cols - 3; c++) {
+                if ((c + r) % 4 === 0) addPatternPoint(points, used, r, c);
+            }
+        }
+    } else {
+        // Level 5: concentric boxes near core.
+        const layers = [
+            { tr: centerRow - 11, br: centerRow + 11, lc: centerCol - 18, rc: centerCol + 18 },
+            { tr: centerRow - 7, br: centerRow + 7, lc: centerCol - 12, rc: centerCol + 12 },
+            { tr: centerRow - 3, br: centerRow + 3, lc: centerCol - 6, rc: centerCol + 6 }
+        ];
+        for (const layer of layers) {
+            const tr = Math.max(2, layer.tr);
+            const br = Math.min(board.rows - 3, layer.br);
+            const lc = Math.max(2, layer.lc);
+            const rc = Math.min(board.cols - 3, layer.rc);
+            for (let c = lc; c <= rc; c++) {
+                addPatternPoint(points, used, tr, c);
+                addPatternPoint(points, used, br, c);
+            }
+            for (let r = tr + 1; r < br; r++) {
+                addPatternPoint(points, used, r, lc);
+                addPatternPoint(points, used, r, rc);
+            }
+        }
+    }
+
+    return points;
+}
+
+function applyObstaclePattern(levelIndex, targetObstacles) {
+    if (!board || !Array.isArray(elements)) return;
+
+    clearObstaclesFromBoard();
+    const points = buildObstaclePattern(levelIndex);
+    let placed = 0;
+
+    for (const p of points) {
+        if (placed >= targetObstacles) break;
+        if (!MovUtils.isEmpty(elements, p.row, p.col)) continue;
+        elements.push(new Obstacle(p.row, p.col));
+        placed++;
+    }
+
+    const remaining = Math.max(0, targetObstacles - placed);
+    if (remaining > 0) spawnEntitiesIntoBoard(Obstacle, remaining);
+}
+
 function reinforceLevelDensity(levelCfg) {
     if (!board || !Array.isArray(elements) || !levelCfg || !levelCfg.counts) return;
 
     const density = levelCfg.counts;
     const runnerCount = elements.filter(e => e instanceof Runner).length;
     const chaserCount = elements.filter(e => e instanceof Chaser).length;
-    const obstacleCount = elements.filter(e => e instanceof Obstacle).length;
     const healerCount = elements.filter(e => e instanceof Healer).length;
     const speederCount = elements.filter(e => e instanceof Speeder).length;
 
     const addRunners = Math.max(0, density.runners - runnerCount);
     const addChasers = Math.max(0, density.chasers - chaserCount);
-    const addObstacles = Math.max(0, density.obstacles - obstacleCount);
     const addHealers = Math.max(0, density.healers - healerCount);
     const addSpeeders = Math.max(0, density.speeders - speederCount);
 
     spawnEntitiesIntoBoard(Runner, addRunners);
     spawnEntitiesIntoBoard(Chaser, addChasers);
-    spawnEntitiesIntoBoard(Obstacle, addObstacles);
+    applyObstaclePattern(currentLevel, density.obstacles);
     spawnEntitiesIntoBoard(Healer, addHealers, (row, col) => new Healer(row, col, generateRandom(2, 7)));
     spawnEntitiesIntoBoard(Speeder, addSpeeders);
 }
@@ -704,9 +905,9 @@ function onCanvasMouseDown(e) {
         if (collectEnergyNode((ent) => ent.row === clickedRow && ent.col === clickedCol)) return;
 
         if (!logicRunning || paused) return;
-        if (abilityCharges <= 0) {
+        if (abilityCharges <= reserveCharges) {
             showChargeFeedback(clickedRow, clickedCol, 'NO CHARGE');
-            setHudStatus('No charges available', '#f97316', 900);
+            setHudStatus(`Reserve lock: keep ${reserveCharges}`, '#f97316', 900);
             return;
         }
 
@@ -736,9 +937,11 @@ function disposeLevelsMode() {
 
     if (btnBegin) btnBegin.removeEventListener('click', restartCampaignFromOverlay);
     if (btnOverlayReset) btnOverlayReset.removeEventListener('click', restartCampaignFromOverlay);
-    if (btnStartControl) btnStartControl.removeEventListener('click', onStartCampaignClick);
     if (btnPauseControl) btnPauseControl.removeEventListener('click', onPauseCampaignClick);
     if (btnResetControl) btnResetControl.removeEventListener('click', restartCampaignFromOverlay);
+    reserveDownBtn.removeEventListener('click', onReserveDownClick);
+    reserveUpBtn.removeEventListener('click', onReserveUpClick);
+    window.removeEventListener('keydown', onReserveHotkey);
     if (canvas) canvas.removeEventListener(canvasInputEvent, onCanvasMouseDown);
 
     if (hudStatusTimeoutId !== null) {

@@ -60,6 +60,62 @@
 			justify-content: center;
 		}
 
+		.mode-help {
+			max-width: 920px;
+			margin: 30px auto 0;
+			padding: 16px 20px;
+			background: rgba(15, 23, 42, 0.62);
+			border: 1px solid rgba(56, 189, 248, 0.25);
+			border-radius: 16px;
+			backdrop-filter: blur(8px);
+			text-align: left;
+			display: none;
+		}
+
+		.mode-help.visible {
+			display: block;
+		}
+
+		.mode-help-toggle {
+			margin-top: 18px;
+			padding: 10px 16px;
+			border-radius: 999px;
+			border: 1px solid rgba(34, 211, 238, 0.5);
+			background: rgba(2, 132, 199, 0.15);
+			color: #e2e8f0;
+			font-family: 'Orbitron', sans-serif;
+			font-size: 0.72rem;
+			letter-spacing: 0.12em;
+			cursor: pointer;
+			transition: all 0.2s ease;
+		}
+
+		.mode-help-toggle:hover {
+			background: rgba(34, 211, 238, 0.22);
+			border-color: rgba(34, 211, 238, 0.8);
+		}
+
+		.mode-help h3 {
+			font-family: 'Orbitron', sans-serif;
+			font-size: 0.86rem;
+			letter-spacing: 0.14em;
+			color: #22d3ee;
+			margin: 0 0 8px;
+		}
+
+		.mode-help p {
+			color: #cbd5e1;
+			font-size: 0.82rem;
+			line-height: 1.5;
+			margin: 0 0 4px;
+		}
+
+		.mode-help .hint {
+			color: #94a3b8;
+			font-size: 0.76rem;
+			margin-top: 8px;
+		}
+
 		.mode-card {
 			width: 280px;
 			padding: 40px 20px;
@@ -134,11 +190,23 @@
 			</a>
 
 			<a href="levels_selection.html" class="mode-card">
-				<div class="mode-icon" style="color: #22d3ee; text-shadow: 0 0 20px #22d3ee;">🧭</div>
+				<div class="mode-icon" style="color: #22d3ee; text-shadow: 0 0 20px #22d3ee;">🛸</div>
 				<h2>LEVELS</h2>
 				<p>Progress through staged challenges with scaling intensity and survival objectives.</p>
 			</a>
 		</div>
+
+		<button id="toggle-levels-guide" class="mode-help-toggle" type="button" aria-expanded="false" aria-controls="levels-guide">
+			HOW TO PLAY LEVELS
+		</button>
+
+		<section id="levels-guide" class="mode-help" aria-label="Levels Instructions">
+			<h3>LEVELS QUICK GUIDE</h3>
+			<p>Click energy nodes to recharge your ability. Click the board to trigger your ability.</p>
+			<p><strong>Charges</strong>: total stored charges. <strong>Spendable</strong>: charges available right now.</p>
+			<p><strong>Reserve Lock</strong>: minimum charges kept in reserve. If charges are at or below this value, ability use is blocked.</p>
+			<p class="hint">Tip: adjust Reserve Lock with [-] and [+] in the HUD, or keyboard [ and ] during Levels mode.</p>
+		</section>
 	</div>
 
 	<script>
@@ -172,6 +240,16 @@
 				requestAnimationFrame(move);
 			}
 			move();
+		}
+
+		const guideToggle = document.getElementById('toggle-levels-guide');
+		const levelsGuide = document.getElementById('levels-guide');
+		if (guideToggle && levelsGuide) {
+			guideToggle.addEventListener('click', () => {
+				const visible = levelsGuide.classList.toggle('visible');
+				guideToggle.setAttribute('aria-expanded', visible ? 'true' : 'false');
+				guideToggle.textContent = visible ? 'HIDE LEVELS GUIDE' : 'HOW TO PLAY LEVELS';
+			});
 		}
 	</script>
 </body>

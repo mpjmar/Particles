@@ -19,7 +19,7 @@
 <body>
 	<aside class="sidebar">
 		<div class="logo">
-			<span class="logo-icon">🧭</span>
+			<span class="logo-icon">🛸</span>
 			<h1 id="game-title">LEVELS</h1>
 			<p class="logo-sub">Campaign Session</p>
 		</div>
@@ -82,11 +82,6 @@
 			</div>
 		</section>
 
-		<section class="panel">
-			<h2 class="panel-title">Level Density</h2>
-			<p style="color: var(--text-dim); font-size: 0.82rem; line-height: 1.4; margin: 0;">Particle density, enemy cap and support nodes are predefined by each level stage.</p>
-		</section>
-
 		<div style="display:none;">
 			<input type="number" id="inp-rows" value="40" />
 			<input type="number" id="inp-cols" value="60" />
@@ -98,8 +93,8 @@
 		</div>
 
 		<div class="controls">
-			<button id="btn-start" class="btn-primary">START CAMPAIGN</button>
-			<button id="btn-reset">NEW RUN</button>
+			<button id="btn-start" style="display:none;" aria-hidden="true" tabindex="-1">START CAMPAIGN</button>
+			<button id="btn-reset" class="btn-primary">RESTART RUN</button>
 			<button id="btn-pause">PAUSE</button>
 			<a href="index.html" style="text-decoration:none;"><button id="btn-home" style="width:100%">EXIT TO MENU</button></a>
 		</div>
@@ -108,7 +103,7 @@
 	<main class="board-wrap">
 		<header class="top-bar">
 			<div class="top-bar-branding">
-				<span class="logo-icon">🧭</span>
+				<span class="logo-icon">🛸</span>
 				<h1 id="top-title">PARTICLES LEVELS</h1>
 			</div>
 			<div class="top-bar-info">
@@ -118,11 +113,11 @@
 
 		<canvas id="board-canvas"></canvas>
 
-		<div id="overlay" class="overlay">
+		<div id="overlay" class="overlay hidden">
 			<div class="overlay-card">
-				<div class="overlay-icon" id="overlay-icon">🧭</div>
-				<p class="overlay-result" id="overlay-msg">READY FOR LEVEL 1?</p>
-				<p id="overlay-sub" style="color: var(--text-dim); margin-bottom: 20px; font-size: 0.8rem;">Survive each stage objective to unlock the next level.</p>
+				<div class="overlay-icon" id="overlay-icon">🛸</div>
+				<p class="overlay-result" id="overlay-msg">CAMPAIGN READY</p>
+				<p id="overlay-sub" style="color: var(--text-dim); margin-bottom: 20px; font-size: 0.8rem;">Press BEGIN to continue.</p>
 				<button id="btn-begin" class="btn-primary">BEGIN CAMPAIGN</button>
 				<button id="btn-overlay-reset" style="width:100%; margin-top:10px;">PLAY AGAIN</button>
 				<a href="levels_selection.html" style="text-decoration:none; display:block; margin-top:15px;">
@@ -133,6 +128,6 @@
 	</main>
 
 	<script src="main.js"></script>
-	<script src="levels.js?v=20260320e"></script>
+	<script src="levels.js?v=20260320l"></script>
 </body>
 </html>
