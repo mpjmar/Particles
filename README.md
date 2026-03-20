@@ -1,12 +1,14 @@
-# PARTICLES
+<p align="center">⚛︎</p>
+
+<h1 align="center">P A R T I C L E S</h1>
+
+<p align="center"><sub>SIMULATION PROTOCOL</sub></p>
 
 ![Status](https://img.shields.io/badge/status-active-22c55e)
 ![Platform](https://img.shields.io/badge/platform-web-0ea5e9)
 ![Node](https://img.shields.io/badge/node-%3E%3D18-3c873a)
 
 Real-time particle strategy simulation/game with a web interface and a progressive campaign mode.
-
-## English
 
 ### Overview
 
@@ -116,7 +118,7 @@ https://<your-username>.github.io/<your-repo>/
 
 Active development focused on UX clarity, high-density stability, and faction balance.
 
-## Espanol
+## ----------------------------------------------------------------------------------------------------------------
 
 ### Resumen
 
