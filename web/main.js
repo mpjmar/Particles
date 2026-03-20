@@ -362,11 +362,20 @@ class ChaserStrategy {
 			if (occupied) occupied.add(MovUtils.toKey(c.row, c.col));
 			if (bestPos === null) bestPos = c.pos;
 		} else {
-			let candidate;
-			do {
+			let candidate = c.pos;
+			let found = false;
+			for (let tries = 0; tries < 12; tries++) {
 				candidate = MovUtils.randomPos(c.pos);
-			} while (!MovUtils.isValid(elements, board, candidate) || !(occupied ? MovUtils.isEmptyFast(occupied, candidate.row, candidate.col) : MovUtils.isEmpty(elements, candidate.row, candidate.col)));
-			bestPos = candidate;
+				const valid = MovUtils.isValid(elements, board, candidate);
+				const empty = occupied
+					? MovUtils.isEmptyFast(occupied, candidate.row, candidate.col)
+					: MovUtils.isEmpty(elements, candidate.row, candidate.col);
+				if (valid && empty) {
+					found = true;
+					break;
+				}
+			}
+			bestPos = found ? candidate : c.pos;
 		}
 		return bestPos;
 	}
@@ -406,11 +415,20 @@ class RunnerStrategy {
 			if (occupied) occupied.add(MovUtils.toKey(r.row, r.col));
 			if (bestPos === null) bestPos = r.pos;
 		} else {
-			let candidate;
-			do {
+			let candidate = r.pos;
+			let found = false;
+			for (let tries = 0; tries < 12; tries++) {
 				candidate = MovUtils.randomPos(r.pos);
-			} while (!MovUtils.isValid(elements, board, candidate) || !(occupied ? MovUtils.isEmptyFast(occupied, candidate.row, candidate.col) : MovUtils.isEmpty(elements, candidate.row, candidate.col)));
-			bestPos = candidate;
+				const valid = MovUtils.isValid(elements, board, candidate);
+				const empty = occupied
+					? MovUtils.isEmptyFast(occupied, candidate.row, candidate.col)
+					: MovUtils.isEmpty(elements, candidate.row, candidate.col);
+				if (valid && empty) {
+					found = true;
+					break;
+				}
+			}
+			bestPos = found ? candidate : r.pos;
 		}
 		return bestPos;
 	}

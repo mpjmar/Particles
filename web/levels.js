@@ -14,47 +14,47 @@ const LEVELS = [
     {
         name: 'Boot Sector',
         targetTurns: 100,
-        enemyCap: 42,
+        enemyCap: 68,
         enemyLifeMin: 9,
         enemyLifeMax: 16,
         pace: 'slow',
-        counts: { runners: 20, chasers: 16, obstacles: 34, healers: 7, speeders: 4 }
+        counts: { runners: 26, chasers: 24, obstacles: 34, healers: 7, speeders: 4 }
     },
     {
         name: 'Ion Drift',
         targetTurns: 150,
-        enemyCap: 54,
+        enemyCap: 92,
         enemyLifeMin: 10,
         enemyLifeMax: 19,
         pace: 'slow',
-        counts: { runners: 22, chasers: 20, obstacles: 40, healers: 6, speeders: 5 }
+        counts: { runners: 30, chasers: 30, obstacles: 40, healers: 6, speeders: 5 }
     },
     {
         name: 'Flux Corridor',
         targetTurns: 200,
-        enemyCap: 70,
+        enemyCap: 122,
         enemyLifeMin: 12,
         enemyLifeMax: 22,
         pace: 'normal',
-        counts: { runners: 24, chasers: 26, obstacles: 48, healers: 5, speeders: 6 }
+        counts: { runners: 36, chasers: 38, obstacles: 48, healers: 5, speeders: 6 }
     },
     {
         name: 'Pressure Node',
         targetTurns: 250,
-        enemyCap: 92,
-        enemyLifeMin: 13,
-        enemyLifeMax: 25,
+        enemyCap: 150,
+        enemyLifeMin: 14,
+        enemyLifeMax: 27,
         pace: 'aggressive',
-        counts: { runners: 26, chasers: 34, obstacles: 58, healers: 4, speeders: 8 }
+        counts: { runners: 42, chasers: 48, obstacles: 58, healers: 4, speeders: 8 }
     },
     {
         name: 'Omega Core',
         targetTurns: 300,
-        enemyCap: 120,
-        enemyLifeMin: 15,
-        enemyLifeMax: 30,
+        enemyCap: 190,
+        enemyLifeMin: 17,
+        enemyLifeMax: 33,
         pace: 'aggressive',
-        counts: { runners: 28, chasers: 44, obstacles: 70, healers: 4, speeders: 10 }
+        counts: { runners: 50, chasers: 62, obstacles: 70, healers: 4, speeders: 10 }
     }
 ];
 
@@ -89,6 +89,7 @@ const LEVEL_ROWS = 40;
 const LEVEL_COLS = 60;
 
 let enemySpawnCooldown = 0;
+let noEnemySpawnTicks = 0;
 let levelsDisposed = false;
 let hudStatusTimeoutId = null;
 let currentLevel = 0;
@@ -607,6 +608,7 @@ function spawnOpposingParticlesByLevel() {
 
     const minAliveTarget = Math.max(5, Math.floor(cfg.enemyCap * 0.2));
     const emergencyMode = currentEnemies <= Math.max(2, Math.floor(minAliveTarget * 0.35));
+    const forcedTopUp = noEnemySpawnTicks >= 8 || (currentEnemies < minAliveTarget && noEnemySpawnTicks >= 4);
 
     if (enemySpawnCooldown > 0) {
         enemySpawnCooldown--;
@@ -614,7 +616,7 @@ function spawnOpposingParticlesByLevel() {
     }
 
     const deficit = cfg.enemyCap - currentEnemies;
-    if (!emergencyMode) {
+    if (!emergencyMode && !forcedTopUp) {
         const lowPopulationBoost = currentEnemies < minAliveTarget ? 0.2 : 0;
         const baseChance = 0.12 + (deficit / 340) + lowPopulationBoost;
         const spawnChance = Math.min(0.78, Math.max(0.04, baseChance * paceCfg.chanceScale + paceCfg.chanceBias));
@@ -662,6 +664,7 @@ function spawnOpposingParticlesByLevel() {
             ? generateRandom(0, 2)
             : (currentEnemies < minAliveTarget ? generateRandom(1, 3) : generateRandom(1, 4));
         enemySpawnCooldown = Math.max(0, enemySpawnCooldown + paceCfg.cooldownBias);
+        noEnemySpawnTicks = 0;
         syncLevelsBoardState();
         return true;
     }
@@ -832,6 +835,7 @@ function checkLevelState() {
     pendingLevelAdvance = true;
     pendingLevelIndex = currentLevel + 1;
     enemySpawnCooldown = 0;
+    noEnemySpawnTicks = 0;
     if (!paused && typeof window.pauseGame === 'function') window.pauseGame();
     setHudStatus(`${getLevelName(pendingLevelIndex)} unlocked`, '#22d3ee', 1200);
     showLevelTransitionOverlay(pendingLevelIndex);
@@ -867,7 +871,10 @@ window.tick = function() {
     const clonesExpired = processTemporaryElectronClones();
     const erased = (elements.length < prevLen) || clonesExpired;
 
-    if (logicRunning) spawnOpposingParticlesByLevel();
+    if (logicRunning) {
+        const spawned = spawnOpposingParticlesByLevel();
+        if (!spawned) noEnemySpawnTicks++;
+    }
 
     if (erased) idleMoves = 0;
     else idleMoves++;
@@ -979,6 +986,7 @@ window.initGame = function() {
 
     levelTurnStart = 0;
     enemySpawnCooldown = 0;
+    noEnemySpawnTicks = 0;
     abilityCharges = MAX_ABILITY_CHARGES;
 
     setHudStatus('Level 1 initialized', '#38bdf8', 800);
@@ -1015,6 +1023,7 @@ window.resetGame = function() {
 
     levelTurnStart = 0;
     enemySpawnCooldown = 0;
+    noEnemySpawnTicks = 0;
     abilityCharges = MAX_ABILITY_CHARGES;
     syncLevelsBoardState(true);
 };
