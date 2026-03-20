@@ -13,7 +13,7 @@ const MAX_ABILITY_CHARGES = 5;
 const LEVELS = [
     {
         name: 'Boot Sector',
-        targetTurns: 80,
+        targetTurns: 100,
         enemyCap: 42,
         enemyLifeMin: 9,
         enemyLifeMax: 16,
@@ -22,7 +22,7 @@ const LEVELS = [
     },
     {
         name: 'Ion Drift',
-        targetTurns: 95,
+        targetTurns: 150,
         enemyCap: 54,
         enemyLifeMin: 10,
         enemyLifeMax: 19,
@@ -31,7 +31,7 @@ const LEVELS = [
     },
     {
         name: 'Flux Corridor',
-        targetTurns: 110,
+        targetTurns: 200,
         enemyCap: 70,
         enemyLifeMin: 12,
         enemyLifeMax: 22,
@@ -40,7 +40,7 @@ const LEVELS = [
     },
     {
         name: 'Pressure Node',
-        targetTurns: 130,
+        targetTurns: 250,
         enemyCap: 92,
         enemyLifeMin: 13,
         enemyLifeMax: 25,
@@ -49,7 +49,7 @@ const LEVELS = [
     },
     {
         name: 'Omega Core',
-        targetTurns: 155,
+        targetTurns: 300,
         enemyCap: 120,
         enemyLifeMin: 15,
         enemyLifeMax: 30,
@@ -711,8 +711,8 @@ function collectEnergyNode(predicate) {
             ent.row,
             ent.col,
             gain > 0
-                ? `+${gain} CHARGE${gain > 1 ? 'S' : ''} | ${abilityCharges}/${MAX_ABILITY_CHARGES}`
-                : `MAX ${abilityCharges}/${MAX_ABILITY_CHARGES}`
+                ? `+${gain} CHARGE${gain > 1 ? 'S' : ''}`
+                : 'MAX'
         );
         EventManager.emit({ type: 'fight', row: ent.row, col: ent.col, color: Colors.energy });
         syncLevelsBoardState();
