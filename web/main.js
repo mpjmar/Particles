@@ -106,6 +106,9 @@ class Runner extends Role {
 		this._enemyTarget = null;
 		this._energyTarget = null;
 		this._prevPos = new Position(row, col);
+		this._speedTurns = 0;
+		this._overchargeTurns = 0;
+		this._shieldLife = 0;
 	}
 	getTarget() { return this._energyTarget || this._enemyTarget; }
 	isTargetingEnergy() { return this._energyTarget !== null; }
@@ -136,9 +139,21 @@ class Runner extends Role {
 		}
 	}
 	get prevPos() { return this._prevPos; }
+	get speedTurns() { return this._speedTurns; }
+	set speedTurns(v) { this._speedTurns = Math.max(0, v); }
+	get overchargeTurns() { return this._overchargeTurns; }
+	set overchargeTurns(v) { this._overchargeTurns = Math.max(0, v); }
+	get shieldLife() { return this._shieldLife; }
+	set shieldLife(v) { this._shieldLife = Math.max(0, v); }
 	setPos(row, col) {
 		this._prevPos = new Position(this.row, this.col);
 		super.setPos(row, col);
+	}
+	decrementSpeedTurn() {
+		if (this._speedTurns > 0) this._speedTurns--;
+	}
+	decrementOverchargeTurn() {
+		if (this._overchargeTurns > 0) this._overchargeTurns--;
 	}
 }
 
@@ -211,9 +226,15 @@ class Speeder extends BoardElement {
 	constructor(row, col) {
 		super(row, col);
 		this._speedValue = 2; // Named avoiding collision with speed property
+		this._charges = generateRandom(3, 6);
+		this._cooldown = 0;
 	}
 	get speed() { return this._speedValue; }
 	set speed(v) { this._speedValue = v; }
+	get charges() { return this._charges; }
+	set charges(v) { this._charges = Math.max(0, v); }
+	get cooldown() { return this._cooldown; }
+	set cooldown(v) { this._cooldown = Math.max(0, v); }
 }
 
 class EnergyNode extends BoardElement {
@@ -400,11 +421,16 @@ class Movements {
 		const occupied = MovUtils.buildOccupancy(elements);
 		for (const e of elements) {
 			if (e instanceof Runner) {
-				const oldKey = MovUtils.toKey(e.row, e.col);
-				const best = RunnerStrategy.calcBestPos(elements, board, e, occupied);
-				e.setPos(best.row, best.col);
-				occupied.delete(oldKey);
-				occupied.add(MovUtils.toKey(e.row, e.col));
+				const steps = e.speedTurns > 0 ? 2 : 1;
+				for (let i = 0; i < steps; i++) {
+					const oldKey = MovUtils.toKey(e.row, e.col);
+					const best = RunnerStrategy.calcBestPos(elements, board, e, occupied);
+					e.setPos(best.row, best.col);
+					occupied.delete(oldKey);
+					occupied.add(MovUtils.toKey(e.row, e.col));
+					e.decrementSpeedTurn();
+				}
+				e.decrementOverchargeTurn();
 			} else if (e instanceof Chaser) {
 				const steps = e.speedTurns > 0 ? 2 : 1;
 				for (let i = 0; i < steps; i++) {
@@ -436,8 +462,22 @@ class Fight {
 	static fight(c, r) {
 		const cLife = c.life;
 		const rLife = r.life;
-		c.life = Math.max(0, cLife - rLife);
-		r.life = Math.max(0, rLife - cLife);
+
+		const runnerDamage = r.overchargeTurns > 0
+			? Math.max(1, Math.round(rLife * 1.3))
+			: rLife;
+
+		c.life = Math.max(0, cLife - runnerDamage);
+
+		let incomingToRunner = cLife;
+		if (r.shieldLife > 0) {
+			const absorbed = Math.min(r.shieldLife, incomingToRunner);
+			r.shieldLife -= absorbed;
+			incomingToRunner -= absorbed;
+			EventManager.emit({ type: "fight", row: r.row, col: r.col, color: Colors.runner });
+		}
+
+		r.life = Math.max(0, rLife - incomingToRunner);
 		if (c.life <= 0) EventManager.emit({ type: "death", row: c.row, col: c.col, color: Colors.chaser });
 		else EventManager.emit({ type: "fight", row: c.row, col: c.col, color: Colors.chaser });
 		if (r.life <= 0) EventManager.emit({ type: "death", row: r.row, col: r.col, color: Colors.runner });
@@ -449,11 +489,31 @@ class Heal {
 	static healRunners(elements) {
 		for (const e of elements) {
 			if (e instanceof Healer) {
-				for (const other of elements) {
-					if (other instanceof Runner && MovUtils.isNeighbour(e.pos, other.pos)) {
-						other.sumLife(e.extraLife);
-						e.extraLife = 0;
-					}
+				if (e.extraLife <= 0) continue;
+
+				const nearbyRunners = elements.filter(other =>
+					other instanceof Runner &&
+					Position.calcDistance(e.pos, other.pos) <= 2
+				);
+
+				if (nearbyRunners.length === 0) {
+					// Passive decay to avoid immortal healers when no photons are nearby.
+					e.extraLife = Math.max(0, e.extraLife - 1);
+					continue;
+				}
+
+				nearbyRunners.sort((a, b) => a.life - b.life);
+				const healTargets = nearbyRunners.slice(0, 2);
+				const baseHeal = Math.max(4, Math.min(12, Math.floor(e.extraLife / 3)));
+
+				for (const target of healTargets) {
+					if (e.extraLife <= 0) break;
+					const healAmount = Math.min(baseHeal, e.extraLife);
+					target.sumLife(healAmount);
+					target.overchargeTurns = Math.max(target.overchargeTurns, 10);
+					target.shieldLife = Math.min(140, target.shieldLife + Math.max(3, Math.round(healAmount * 0.9)));
+					e.extraLife -= healAmount;
+					EventManager.emit({ type: "fight", row: target.row, col: target.col, color: Colors.healer });
 				}
 			}
 		}
@@ -469,18 +529,35 @@ class Speed {
 	static speedChasers(elements) {
 		for (const e of elements) {
 			if (e instanceof Speeder) {
-				for (const other of elements) {
-					if (other instanceof Chaser && MovUtils.isNeighbour(e.pos, other.pos)) {
-						other.speedTurns = 2;
-						e.speed = 0;
-					}
+				if (e.charges <= 0) continue;
+				if (e.cooldown > 0) {
+					e.cooldown--;
+					continue;
 				}
+
+				const nearbyAllies = elements.filter(other =>
+					other instanceof Chaser &&
+					Position.calcDistance(e.pos, other.pos) <= 2
+				);
+
+				if (nearbyAllies.length === 0) continue;
+
+				nearbyAllies.sort((a, b) => Position.calcDistance(e.pos, a.pos) - Position.calcDistance(e.pos, b.pos));
+				const boostTargets = nearbyAllies.slice(0, 2);
+
+				for (const target of boostTargets) {
+					target.speedTurns = Math.max(target.speedTurns, 10);
+					EventManager.emit({ type: "fight", row: target.row, col: target.col, color: Colors.speeder });
+				}
+
+				e.charges -= 1;
+				e.cooldown = 2;
 			}
 		}
 		let i = elements.length;
 		while (i--) {
 			const e = elements[i];
-			if (e instanceof Speeder && e.speed === 0) elements.splice(i, 1);
+			if (e instanceof Speeder && e.charges <= 0) elements.splice(i, 1);
 		}
 	}
 }
@@ -865,7 +942,7 @@ class Renderer {
 		this._drawEnergyRings(ctx);
 
 		// Layer 5 – elements
-		const ease = this._easeInOut(this.turnProgress);
+			const ease = this._easeInOut(this.turnProgress);
 		for (const e of this.elements) {
 			let targetX = e.col * cs + cs / 2;
 			let targetY = e.row * cs + cs / 2;
@@ -875,8 +952,10 @@ class Renderer {
 				startX = e.prevPos.col * cs + cs / 2;
 				startY = e.prevPos.row * cs + cs / 2;
 			}
-			let cx = startX + (targetX - startX) * ease;
-			let cy = startY + (targetY - startY) * ease;
+				const speedBoosted = e instanceof Chaser && e.speedTurns > 0;
+				const moveEase = speedBoosted ? Math.min(1, Math.pow(ease, 0.62)) : ease;
+				let cx = startX + (targetX - startX) * moveEase;
+				let cy = startY + (targetY - startY) * moveEase;
 
 			// Apply Lattice Deformation
 			const def = this.getDeformationAt(cx, cy);
@@ -899,9 +978,14 @@ class Renderer {
 
 			const r = Math.max(3, cs * 0.34);
 
-			if (e instanceof Obstacle) { this._drawObstacle(ctx, cx, cy, cs); continue; }
-			if (e instanceof Runner) { this._drawPhoton(ctx, cx, cy, r, Colors.runner); continue; }
-			if (e instanceof Chaser) { this._drawElectron(ctx, cx, cy, r, Colors.chaser); continue; }
+				if (e instanceof Obstacle) { this._drawObstacle(ctx, cx, cy, cs); continue; }
+				if (e instanceof Runner) { this._drawPhoton(ctx, cx, cy, r, Colors.runner, e); continue; }
+				if (e instanceof Chaser) {
+					if (speedBoosted) this._drawBoostedElectronTrail(ctx, startX, startY, cx, cy, cs);
+					this._drawElectron(ctx, cx, cy, r, Colors.chaser);
+					if (speedBoosted) this._drawBoostedElectronGhosts(ctx, startX, startY, cx, cy, cs);
+					continue;
+				}
 			if (e instanceof Healer) { this._drawHealer(ctx, cx, cy, r, Colors.healer); continue; }
 			if (e instanceof Speeder) { this._drawSpeeder(ctx, cx, cy, r, Colors.speeder); continue; }
 			if (e instanceof EnergyNode) { this._drawEnergyNode(ctx, cx, cy, r, Colors.energy, e.life / e.maxLife); }
@@ -1114,12 +1198,16 @@ class Renderer {
 
 	// ── PHOTON (Runner) — pure intense neon cyan orb ──────────────────────────
 	// Visual inspiration: glowing nodes in the reference network images
-	_drawPhoton(ctx, cx, cy, r, _color) {
+	_drawPhoton(ctx, cx, cy, r, _color, runnerState = null) {
 		const T = performance.now();
-		const pulse = 0.82 + 0.18 * Math.sin(T / 160);
+		const boosted = !!(runnerState && runnerState.overchargeTurns > 0);
+		const shielded = !!(runnerState && runnerState.shieldLife > 0);
+		const pulse = boosted
+			? 0.9 + 0.22 * Math.sin(T / 110)
+			: 0.82 + 0.18 * Math.sin(T / 160);
 		const cs = this.cellSize;
 		// Photon is a small but intense electric node (scaled down to be smaller)
-		const rp = cs * 0.18 * pulse;
+		const rp = cs * (boosted ? 0.2 : 0.18) * pulse;
 		ctx.save();
 		ctx.globalCompositeOperation = "lighter";
 
@@ -1133,8 +1221,8 @@ class Renderer {
 
 		// Bright mid halo
 		g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rp * 2.8);
-		g.addColorStop(0, "rgba(100,240,255,0.75)");
-		g.addColorStop(0.5, "rgba(0,200,255,0.35)");
+		g.addColorStop(0, boosted ? "rgba(180,245,255,0.92)" : "rgba(100,240,255,0.75)");
+		g.addColorStop(0.5, boosted ? "rgba(60,210,255,0.55)" : "rgba(0,200,255,0.35)");
 		g.addColorStop(1, "rgba(0,0,0,0)");
 		ctx.fillStyle = g;
 		ctx.beginPath(); ctx.arc(cx, cy, rp * 2.8, 0, Math.PI * 2); ctx.fill();
@@ -1148,6 +1236,28 @@ class Renderer {
 		g.addColorStop(1, "rgba(0,150,255,0)");
 		ctx.fillStyle = g;
 		ctx.beginPath(); ctx.arc(cx, cy, rp, 0, Math.PI * 2); ctx.fill();
+
+		if (boosted) {
+			const ringR = cs * (0.36 + 0.05 * Math.sin(T / 130));
+			ctx.strokeStyle = "rgba(130, 240, 255, 0.8)";
+			ctx.lineWidth = Math.max(1, cs * 0.06);
+			ctx.shadowBlur = cs * 0.5;
+			ctx.shadowColor = "rgba(80, 220, 255, 0.9)";
+			ctx.beginPath();
+			ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
+			ctx.stroke();
+		}
+
+		if (shielded) {
+			const shieldR = cs * 0.46;
+			ctx.strokeStyle = "rgba(180, 255, 255, 0.65)";
+			ctx.lineWidth = Math.max(1, cs * 0.04);
+			ctx.shadowBlur = cs * 0.45;
+			ctx.shadowColor = "rgba(180, 255, 255, 0.8)";
+			ctx.beginPath();
+			ctx.arc(cx, cy, shieldR, 0, Math.PI * 2);
+			ctx.stroke();
+		}
 
 		ctx.restore();
 	}
@@ -1302,6 +1412,59 @@ class Renderer {
 		ctx.shadowColor = "rgba(255,50,50,0.8)";
 		ctx.fillStyle = g;
 		ctx.beginPath(); ctx.arc(cx, cy, rc, 0, Math.PI * 2); ctx.fill();
+
+		ctx.restore();
+	}
+
+	_drawBoostedElectronTrail(ctx, startX, startY, cx, cy, cs) {
+		const dx = cx - startX;
+		const dy = cy - startY;
+		const dist = Math.hypot(dx, dy);
+		if (dist < cs * 0.25) return;
+
+		ctx.save();
+		ctx.globalCompositeOperation = "lighter";
+
+		const gx = cx - dx * 0.9;
+		const gy = cy - dy * 0.9;
+		const grad = ctx.createLinearGradient(cx, cy, gx, gy);
+		grad.addColorStop(0, "rgba(255,210,120,0.95)");
+		grad.addColorStop(0.35, "rgba(255,110,40,0.58)");
+		grad.addColorStop(1, "rgba(255,40,40,0)");
+
+		ctx.strokeStyle = grad;
+		ctx.lineWidth = Math.max(1.8, cs * 0.18);
+		ctx.shadowBlur = cs * 0.55;
+		ctx.shadowColor = "rgba(255,110,40,0.8)";
+		ctx.beginPath();
+		ctx.moveTo(cx, cy);
+		ctx.lineTo(gx, gy);
+		ctx.stroke();
+
+		ctx.restore();
+	}
+
+	_drawBoostedElectronGhosts(ctx, startX, startY, cx, cy, cs) {
+		const dx = cx - startX;
+		const dy = cy - startY;
+		const dist = Math.hypot(dx, dy);
+		if (dist < cs * 0.35) return;
+
+		ctx.save();
+		ctx.globalCompositeOperation = "lighter";
+
+		const ghostRadius = cs * 0.16;
+		const points = [0.28, 0.56];
+		for (let i = 0; i < points.length; i++) {
+			const t = points[i];
+			const gx = cx - dx * t;
+			const gy = cy - dy * t;
+			const alpha = 0.22 - i * 0.08;
+			ctx.fillStyle = `rgba(255, 180, 120, ${alpha.toFixed(3)})`;
+			ctx.beginPath();
+			ctx.arc(gx, gy, ghostRadius, 0, Math.PI * 2);
+			ctx.fill();
+		}
 
 		ctx.restore();
 	}
