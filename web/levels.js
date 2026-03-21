@@ -419,8 +419,8 @@ function startLevelsGuidedTutorial(force = false) {
     ensureGuidedTutorialStyles();
 
     const roleHint = playerRole === 'photon'
-        ? 'Photon click = area explosion that removes nearby Electrons.'
-        : 'Electron click = spawn Electron clusters to hunt Photons.';
+        ? 'Click near or on Electrons to trigger an explosion and destroy them.'
+        : 'Click near or on Photons to summon a new cluster of Electrons that will chase and destroy the Photons.';
 
     const steps = [
         {
@@ -430,13 +430,13 @@ function startLevelsGuidedTutorial(force = false) {
         },
         {
             element: cntCharges,
-            title: 'Step 2/3 - Charges and Reserve Lock',
-            text: 'You have max 5 charges. Recharge via Energy Nodes. Keep Reserve Lock low enough to allow spending.'
+            title: 'Step 2/3 - Recharge your shots.',
+            text: 'You have max 5 charges. You can recharge your shot reserve by clicking on Energy Nodes that appear temporarily during the game.'
         },
         {
             element: canvas,
-            title: 'Step 3/3 - Click Ability',
-            text: `${roleHint} Use charges where pressure is highest.`
+            title: 'Step 3/3 - Use your Ability Charges.',
+            text: `${roleHint} Try to use your charges when there are many Photons together or when you are in danger, so your ability is most effective.`
         }
     ];
 
