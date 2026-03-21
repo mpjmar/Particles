@@ -292,7 +292,7 @@ Simulation:
 		<img src="imgs/pulse%20clash.png" alt="Tarjeta modo pulse clash" width="31%" />
 	</a>
 	<a href="https://mpjmar.github.io/Particles/levels_selection.html">
-		<img src="imgs/core%20ascension.png" alt="Tarjeta modo core ascension" width="30%" />
+		<img src="imgs/core%20ascension.png" alt="Tarjeta modo core ascension" width="31%" />
 	</a>
 </p>
 
